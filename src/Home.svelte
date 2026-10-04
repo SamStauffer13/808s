@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Notice from './Notice.svelte'
   import { attempt, once, saveName, savedName } from './lib/game.svelte'
   import { call } from './lib/supabase'
 
@@ -17,7 +18,7 @@
   let remembered = $state(!!localStorage.getItem('808s-host'))
 
   const create = once(() =>
-    attempt(async () => {
+    attempt('create', async () => {
       try {
         const { room } = await call<{ room: { code: string } }>('create-room', {
           passphrase,
@@ -43,9 +44,9 @@
   let confirming = $state<string>()
 
   const manage = (body: object) => call<{ playlists: Old[] }>('manage-playlists', { passphrase, ...body })
-  const cleanup = () => attempt(async () => (old = (await manage({ action: 'list' })).playlists))
+  const cleanup = () => attempt('cleanup', async () => (old = (await manage({ action: 'list' })).playlists))
   const remove = (id: string) =>
-    attempt(async () => {
+    attempt('cleanup', async () => {
       if (confirming !== id) {
         confirming = id
         return
@@ -83,10 +84,12 @@
   {#if !remembered}
     <label class="field"><span class="label">HOST ACCESS CODE</span><input class="secret" autocomplete="off" data-lpignore="true" bind:value={passphrase} required /></label>
   {/if}
+  <Notice scope="create" />
   <button class="btn">BUILD THE PLAYLIST</button>
 </form>
 
 <p class="center"><button type="button" class="link" onclick={cleanup}>/// CLEAN UP OLD PLAYLISTS</button></p>
+<Notice scope="cleanup" />
 {#if old}
   <div class="stack">
     {#each old as g (g.id)}

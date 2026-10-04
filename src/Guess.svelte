@@ -1,6 +1,7 @@
 <script lang="ts">
   import Art from './Art.svelte'
   import Head from './Head.svelte'
+  import Notice from './Notice.svelte'
   import Playlist from './Playlist.svelte'
   import { attempt, game, isHost, me, nameOf, once, packsOf, refresh, type Pack } from './lib/game.svelte'
   import { rpc } from './lib/supabase'
@@ -34,11 +35,11 @@
       ...game.guesses.filter((g) => !(g.guesser_id === meId && (ids.has(g.song_id) || g.guessed_player_id === playerId))),
       ...pack.songs.map((s) => ({ song_id: s.id, guesser_id: meId, guessed_player_id: playerId })),
     ]
-    await attempt(() => rpc('submit_guess', { p_pack: pack.id, p_guessed: playerId }))
+    await attempt(pack.id, () => rpc('submit_guess', { p_pack: pack.id, p_guessed: playerId }))
     await refresh()
   }
 
-  const reveal = once(() => attempt(() => rpc('host_set_phase', { p_room: room.id, p_phase: 'reveal' })))
+  const reveal = once(() => attempt('reveal', () => rpc('host_set_phase', { p_room: room.id, p_phase: 'reveal' })))
 </script>
 
 <Head step={`${done} / ${todo.length} TRACED`} title="Trace the source" />
@@ -80,6 +81,7 @@
           {/each}
         </div>
       {/if}
+      <Notice scope={pack.id} />
     </div>
   {/if}
 {/each}
@@ -93,5 +95,6 @@
 <div class="grow"></div>
 
 {#if isHost()}
+  <Notice scope="reveal" />
   <button class="btn" onclick={reveal}>REVEAL THE SOURCES</button>
 {/if}

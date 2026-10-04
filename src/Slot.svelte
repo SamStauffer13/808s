@@ -7,20 +7,21 @@
 <script lang="ts">
   import { fade } from 'svelte/transition'
   import Art from './Art.svelte'
-  import { attempt } from './lib/game.svelte'
+  import Notice from './Notice.svelte'
+  import { attempt, clearNotice, notify } from './lib/game.svelte'
   import { call } from './lib/supabase'
 
-  let { n, taken, onpick }: { n: number; taken: (t: Track) => boolean; onpick: (t: Track) => void } = $props()
+  let { n, taken, onpick }: { n: number; taken: (t: Track) => boolean; onpick: (t: Track, scope: string) => void } = $props()
 
+  const scope = $derived(`slot-${n}`)
   let q = $state('')
   let results = $state<Track[]>([])
-  let scolds = $state(0)
   let shaking = $state<string>()
 
   // a blocked track shakes and gets a comment instead of being added
   const pick = (t: Track) => {
-    if (!t.blocked) return onpick(t)
-    scolds++
+    if (!t.blocked) return onpick(t, scope)
+    notify(scope, "DON'T BE BORING/BASIC")
     shaking = t.id
   }
 
@@ -36,7 +37,7 @@
       return
     }
     const timer = setTimeout(async () => {
-      const found = (await attempt(() => call<{ tracks: Track[] }>('spotify-search', { q: text })))?.tracks
+      const found = (await attempt(scope, () => call<{ tracks: Track[] }>('spotify-search', { q: text })))?.tracks
       if (!found) return
       cache.set(text, found)
       if (q.trim().toLowerCase() === text) results = found
@@ -48,11 +49,9 @@
 <div class="stack">
   <label class="field">
     <span class="label">TRACK {n}</span>
-    <input bind:value={q} oninput={() => (scolds = 0)} autocomplete="off" placeholder="search tracks or artists" />
+    <input bind:value={q} oninput={() => clearNotice(scope)} autocomplete="off" placeholder="search tracks or artists" />
   </label>
-  {#key scolds}
-    {#if scolds}<p class="scold" role="alert">DON'T BE BORING/BASIC</p>{/if}
-  {/key}
+  <Notice {scope} />
   {#each results as t (t.id)}
     <button class="row" class:blocked={t.blocked} class:shake={shaking === t.id} disabled={taken(t)} onclick={() => pick(t)} onanimationend={() => (shaking = undefined)} in:fade={{ duration: 120 }}>
       <Art src={t.art} />

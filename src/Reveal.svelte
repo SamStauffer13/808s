@@ -1,6 +1,7 @@
 <script lang="ts">
   import Art from './Art.svelte'
   import Head from './Head.svelte'
+  import Notice from './Notice.svelte'
   import Playlist from './Playlist.svelte'
   import { fade } from 'svelte/transition'
   import { decrypt } from './lib/decrypt'
@@ -21,7 +22,7 @@
   $effect(() => decrypt(source, (shown) => (name = shown)))
 
   const next = once(() =>
-    attempt(() =>
+    attempt('next', () =>
       room.reveal_index < last
         ? rpc('host_set_reveal_index', { p_room: room.id, p_index: room.reveal_index + 1 })
         : rpc('host_set_phase', { p_room: room.id, p_phase: 'done' }),
@@ -70,6 +71,7 @@
 <div class="grow"></div>
 
 {#if isHost()}
+  <Notice scope="next" />
   <button class="btn" onclick={next}>{room.reveal_index < last ? 'NEXT SOURCE' : 'SEE RESULTS'}</button>
 {:else}
   <p class="muted center">/// HOST CONTROLS THE REVEAL</p>

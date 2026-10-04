@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Notice from './Notice.svelte'
   import { joinGame, savedName } from './lib/game.svelte'
   import { rpc } from './lib/supabase'
 
@@ -32,6 +33,7 @@
     <p class="muted center">/// {preview.phase === 'submit' ? 'RETURNING? USE THE SAME NAME TO TAKE YOUR SEAT' : 'IN PROGRESS · ONLY THE CREW CAN REJOIN'}</p>
     <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), join())}>
       <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
+      <Notice scope="join" />
       <button class="btn">JOIN THE PLAYLIST</button>
     </form>
   {/if}

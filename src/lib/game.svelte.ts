@@ -27,18 +27,27 @@ export const game = $state({
   counts: {} as Record<string, number>, // songs locked in per player
 })
 
-export const ui = $state({ error: '' })
+// A notice belongs to one spot on a screen (its scope), so it shows next to the control that caused it.
+export const ui = $state({ notice: undefined as { scope: string; message: string } | undefined })
 
 let dismiss: ReturnType<typeof setTimeout>
 
-export async function attempt<T>(fn: () => Promise<T>) {
-  ui.error = ''
+export function notify(scope: string, message: string) {
+  ui.notice = { scope, message }
+  clearTimeout(dismiss)
+  dismiss = setTimeout(() => (ui.notice = undefined), 5000)
+}
+
+export function clearNotice(scope: string) {
+  if (ui.notice?.scope === scope) ui.notice = undefined
+}
+
+export async function attempt<T>(scope: string, fn: () => Promise<T>) {
+  clearNotice(scope)
   try {
     return await fn()
   } catch (e) {
-    ui.error = (e as Error).message
-    clearTimeout(dismiss)
-    dismiss = setTimeout(() => (ui.error = ''), 5000)
+    notify(scope, (e as Error).message)
   }
 }
 
@@ -61,7 +70,7 @@ export const saveName = (name: string) => localStorage.setItem('808s-name', name
 
 // returns the room code once joined
 export const joinGame = (code: string, name: string) =>
-  attempt(async () => {
+  attempt('join', async () => {
     const room = await rpc('join_room', { p_code: code, p_name: name })
     saveName(name)
     return room.code as string

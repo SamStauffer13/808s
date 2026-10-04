@@ -2,6 +2,7 @@
   import { fade } from 'svelte/transition'
   import Art from './Art.svelte'
   import Head from './Head.svelte'
+  import Notice from './Notice.svelte'
   import Share from './Share.svelte'
   import Slot from './Slot.svelte'
   import { attempt, game, isHost, me, once, refresh, type Track } from './lib/game.svelte'
@@ -15,12 +16,12 @@
 
   const taken = (t: Track) => mine.some((s) => s.spotify_id === t.id)
 
-  const add = once(async (t: Track) => {
-    if (!taken(t)) await attempt(async () => (await call('add-song', { room_id: room.id, spotify_id: t.id }), refresh()))
+  const add = once(async (t: Track, scope: string) => {
+    if (!taken(t)) await attempt(scope, async () => (await call('add-song', { room_id: room.id, spotify_id: t.id }), refresh()))
   })
 
-  const remove = (id: string) => attempt(async () => (await rpc('remove_song', { p_song: id }), refresh()))
-  const startGuessing = once(() => attempt(() => call('start-guess', { room_id: room.id })))
+  const remove = (id: string) => attempt('songs', async () => (await rpc('remove_song', { p_song: id }), refresh()))
+  const startGuessing = once(() => attempt('start', () => call('start-guess', { room_id: room.id })))
 </script>
 
 <Head step={`LOADED ${mine.length} / ${room.songs_per_player}`} title="Add your songs" />
@@ -38,6 +39,7 @@
     <Slot n={i + 1} {taken} onpick={add} />
   {/if}
 {/each}
+<Notice scope="songs" />
 
 {#if mine.length >= room.songs_per_player}
   <p class="center good">TRACKS LOCKED · WAITING ON THE CREW</p>
@@ -61,5 +63,6 @@
 <div class="grow"></div>
 
 {#if isHost()}
+  <Notice scope="start" />
   <button class="btn" disabled={total < 2} onclick={startGuessing}>START LISTENING · {total} TRACKS</button>
 {/if}
