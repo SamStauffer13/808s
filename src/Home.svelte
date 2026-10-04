@@ -2,6 +2,8 @@
   import { attempt, once, saveName, savedName } from './lib/game.svelte'
   import { call } from './lib/supabase'
 
+  type Old = { id: string; theme: string; created_at: string; players: number }
+
   const tagline = ["CAN YOU SENSE PEOPLE'S VIBES?", "LET'S TEST THAT"]
 
   let name = $state(savedName())
@@ -35,6 +37,23 @@
       }
     }),
   )
+
+  // finished playlists the app made, which anyone with the access code can remove from Spotify
+  let old = $state<Old[]>()
+  let confirming = $state<string>()
+
+  const manage = (body: object) => call<{ playlists: Old[] }>('manage-playlists', { passphrase, ...body })
+  const cleanup = () => attempt(async () => (old = (await manage({ action: 'list' })).playlists))
+  const remove = (id: string) =>
+    attempt(async () => {
+      if (confirming !== id) {
+        confirming = id
+        return
+      }
+      await manage({ action: 'delete', room_id: id })
+      old = old!.filter((g) => g.id !== id)
+      confirming = undefined
+    })
 </script>
 
 <div class="logo big">808<small>s</small></div>
@@ -66,3 +85,21 @@
   {/if}
   <button class="btn">BUILD THE PLAYLIST</button>
 </form>
+
+<p class="center"><button type="button" class="link" onclick={cleanup}>/// CLEAN UP OLD PLAYLISTS</button></p>
+{#if old}
+  <div class="stack">
+    {#each old as g (g.id)}
+      <div class="row">
+        <div class="grow-text"><div>{g.theme}</div><div class="dim">{new Date(g.created_at).toLocaleDateString()} · {g.players} PLAYERS</div></div>
+        {#if confirming === g.id}
+          <button class="chip on" onclick={() => remove(g.id)}>DELETE?</button>
+        {:else}
+          <button class="round" onclick={() => remove(g.id)} aria-label="Delete playlist">×</button>
+        {/if}
+      </div>
+    {:else}
+      <p class="muted center">/// NOTHING TO CLEAN UP</p>
+    {/each}
+  </div>
+{/if}

@@ -8,7 +8,7 @@ each set of songs back to its source. Live at https://samstauffer.net/808s/
 | Part | Where |
 |---|---|
 | Website | GitHub Pages, repo `SamStauffer13/808s`. A push to `main` builds and deploys it. |
-| Backend | Supabase project `808s` (ref `yvvcqkuszlcxyvpimavs`): Postgres, realtime, anonymous auth, 4 Edge Functions |
+| Backend | Supabase project `808s` (ref `yvvcqkuszlcxyvpimavs`): Postgres, realtime, anonymous auth, 5 Edge Functions |
 | Spotify | Developer dashboard app `808s` (owner needs Premium). Players never log in to Spotify. |
 | Frontend | Svelte 5 + Vite + TypeScript. Only `svelte` and `@supabase/supabase-js` at runtime. |
 
@@ -75,12 +75,12 @@ Spotify only "deletes" a playlist by removing it from your library, which is wha
 - Rejoin: typing a name that is already in the playlist takes that seat, in any phase, host included. It trusts
   the crew, so anyone with the invite link could take a friend's seat. If that ever matters, require host approval.
 
+- Cleaning up playlists: on the home screen, `/// CLEAN UP OLD PLAYLISTS` (needs the host access code) lists finished
+  playlists the app made, and the delete button removes one from Spotify and deletes its game. It can only touch
+  playlists recorded for a game, never any other playlist on the account (`manage-playlists` function).
+
 ## Todo
 
-- **Test the Spotify playlist cleanup.** It is built and the `user-library-modify` permission is stored, but it has
-  never run for real. Age a finished test game (`update rooms set created_at = now() - interval '29 days' where code = '...'`
-  in the Supabase SQL editor), start a new playlist on the site, then check the old playlist left the Spotify profile and
-  the game row is gone. If it did not, read the `create-room` function logs. Until it is verified, delete old
-  `808s: <vibe>` playlists in Spotify by hand.
-- Optional: one nightly schedule for all cleanup instead of the nightly SQL job plus the on-demand Spotify cleanup
-  (needs pg_net and a stored secret).
+- **Confirm the playlist delete works.** It has never run against Spotify. Use the clean-up link on the home screen
+  once. If it fails with a 403, the `user-library-modify` permission is missing: rerun `scripts/spotify-auth.mjs`.
+  The automatic 4-week cleanup uses the same call, so this checks both.

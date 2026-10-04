@@ -29,6 +29,15 @@ export class HttpError extends Error {
   }
 }
 
+// whoever has the host access code can start playlists and clean them up
+export function requireHostCode(code: unknown) {
+  const expected = Deno.env.get('HOST_PASSPHRASE') ?? ''
+  const given = String(code ?? '')
+  let diff = given.length ^ expected.length
+  for (let i = 0; i < expected.length; i++) diff |= (given.charCodeAt(i) || 0) ^ expected.charCodeAt(i)
+  if (!expected || diff) throw new HttpError(403, 'wrong host access code')
+}
+
 export function handler(fn: (req: Request) => Promise<unknown>) {
   return async (req: Request) => {
     const headers = corsFor(req)
