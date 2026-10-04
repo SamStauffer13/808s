@@ -22,10 +22,10 @@
   {#if preview === undefined}
     <p class="muted center">/// LOADING</p>
   {:else if preview === null}
-    <p class="center">GAME NOT FOUND</p>
+    <p class="center">PLAYLIST NOT FOUND</p>
     <a class="btn ghost" href="#/">START YOUR OWN</a>
   {:else if preview.phase !== 'submit'}
-    <p class="center">THIS GAME HAS ALREADY STARTED GUESSING</p>
+    <p class="center">GUESSING HAS ALREADY STARTED</p>
   {:else}
     <div class="panel framed">
       <div class="label">YOU'RE INVITED</div>
@@ -33,7 +33,7 @@
     </div>
     <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), join())}>
       <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
-      <button class="btn">JOIN GAME</button>
+      <button class="btn">JOIN THE PLAYLIST</button>
     </form>
   {/if}
 </div>

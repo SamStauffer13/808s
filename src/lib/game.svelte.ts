@@ -59,7 +59,7 @@ export function once<A extends unknown[]>(fn: (...args: A) => Promise<unknown>) 
 export const savedName = () => localStorage.getItem('808s-name') ?? ''
 export const saveName = (name: string) => localStorage.setItem('808s-name', name.trim())
 
-// returns the game code once joined
+// returns the room code once joined
 export const joinGame = (code: string, name: string) =>
   attempt(async () => {
     const room = await rpc('join_room', { p_code: code, p_name: name })

@@ -64,5 +64,5 @@
   {#if !remembered}
     <label class="field"><span class="label">HOST PASSPHRASE</span><input class="secret" autocomplete="off" data-lpignore="true" bind:value={passphrase} required /></label>
   {/if}
-  <button class="btn">START A GAME</button>
+  <button class="btn">BUILD THE PLAYLIST</button>
 </form>

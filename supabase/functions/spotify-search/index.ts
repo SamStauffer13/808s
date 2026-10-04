@@ -6,9 +6,9 @@ Deno.serve(
     const user = await currentUser(req)
     if (!user) throw new HttpError(401, 'sign in first')
 
-    // search is for people in a game, so a stray script cannot spend the Spotify quota
+    // search is for people in a playlist, so a stray script cannot spend the Spotify quota
     const { count } = await admin().from('players').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
-    if (!count) throw new HttpError(403, 'join a game first')
+    if (!count) throw new HttpError(403, 'join a playlist first')
 
     const { q } = await req.json()
     const query = String(q ?? '').trim().slice(0, 80)
