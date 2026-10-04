@@ -16,7 +16,7 @@ if (!clientId) {
   process.exit(1)
 }
 const redirect = 'http://127.0.0.1:8888/callback'
-const scope = 'playlist-modify-public playlist-modify-private library-modify'
+const scope = 'playlist-modify-public playlist-modify-private user-library-modify'
 
 function askHidden(question) {
   return new Promise((resolve) => {
