@@ -1,3 +1,4 @@
+import { removeOldPlaylists } from '../_shared/cleanup.ts'
 import { admin, currentUser, handler, HttpError } from '../_shared/http.ts'
 
 function sameText(a: string, b: string) {
@@ -26,6 +27,9 @@ Deno.serve(
       p_max: 20,
     })
     if (error) throw new HttpError(400, error.message)
+
+    // old playlists are tidied up whenever a new one starts; a failure must never block it
+    await removeOldPlaylists().catch((e) => console.error('playlist cleanup failed', e))
     return { room: data }
   }),
 )

@@ -39,7 +39,8 @@ export async function spotify(token: string, path: string, init: RequestInit = {
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...init.headers },
   })
   if (!res.ok) throw new Error(`Spotify ${init.method ?? 'GET'} ${path.split('?')[0]} failed (${res.status})`)
-  return res.status === 204 ? null : await res.json()
+  const body = await res.text()
+  return body ? JSON.parse(body) : null
 }
 
 export function toTrack(t: any): Track {

@@ -39,7 +39,10 @@ If the build says "Cannot find native binding" on Windows: `npm install --no-sav
 
 ## Runs by itself
 
-- Nightly (04:00 UTC) pg_cron job `808s-cleanup` deletes games older than 28 days and the anonymous accounts left behind.
+- Nightly (04:00 UTC) pg_cron job `808s-cleanup` deletes games older than 28 days that never made a playlist, and
+  the anonymous accounts left behind.
+- Starting a new playlist (`create-room`) first removes the Spotify playlists of games older than 28 days, then those
+  games. It needs the `library-modify` Spotify permission; if it is missing nothing is deleted and it retries next time.
 - `keepalive.yml` pings Supabase every 3 days so the free tier does not pause. GitHub disables scheduled
   workflows after 60 days without repo activity; run it once by hand if that happens.
 
@@ -53,7 +56,7 @@ If the build says "Cannot find native binding" on Windows: `npm install --no-sav
 | Deploy fails with "multiple artifacts" | Never "Re-run" a deploy. Actions, Deploy to GitHub Pages, **Run workflow**. |
 | First deploy returns 404 | Repo Settings, Pages, Source must be **GitHub Actions**. |
 
-Old Spotify playlists (`808s: <vibe>`) are not cleaned up automatically; delete them in Spotify.
+Spotify only "deletes" a playlist by removing it from your library, which is what the cleanup does.
 
 ## Rules that keep it fair
 
