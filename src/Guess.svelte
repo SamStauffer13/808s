@@ -1,5 +1,6 @@
 <script lang="ts">
   import Art from './Art.svelte'
+  import Eq from './Eq.svelte'
   import Head from './Head.svelte'
   import Notice from './Notice.svelte'
   import Playlist from './Playlist.svelte'
@@ -46,16 +47,20 @@
 
 <p class="muted">VIBE: <span class="text">{room.theme}</span></p>
 
-<iframe title="Playlist" src={`https://open.spotify.com/embed/playlist/${room.playlist_id}?theme=0`} allow="encrypted-media" loading="lazy"></iframe>
+<div class="framed">
+  <iframe title="Playlist" src={`https://open.spotify.com/embed/playlist/${room.playlist_id}?theme=0`} allow="encrypted-media" loading="lazy"></iframe>
+</div>
 <Playlist />
 
 {#if todo.length}
-  <p class="muted center">/// LISTEN. THEN TRACE EACH SET TO ITS SOURCE.</p>
+  <p class="muted center"><Eq />/// LISTEN. THEN TRACE EACH SET TO ITS SOURCE.</p>
 {/if}
 
 {#if progress}
-  <div class="split"><span>CREW FINISHED</span><span class="good">{progress.finished} / {progress.total}</span></div>
+  <div class="split"><span><i class="rec"></i>CREW FINISHED</span><span class="good">{progress.finished} / {progress.total}</span></div>
 {/if}
+
+<div class="wave"></div>
 
 {#each packs as pack}
   {#if isMine(pack)}

@@ -62,16 +62,24 @@ a { color: var(--accent); }
 @keyframes blink { 50% { opacity: 0; } }
 
 .logo { font-family: 'Orbitron', sans-serif; font-weight: 900; line-height: 1; text-align: center; }
-.logo.big { font-size: 72px; }
+.logo.big { font-size: 72px; animation: glitch 700ms 1; }
+@keyframes glitch {
+  15% { text-shadow: -3px 0 var(--accent), 3px 0 var(--text-secondary); transform: translateX(2px); }
+  30% { text-shadow: 3px 0 var(--accent); transform: translateX(-2px); }
+  45% { text-shadow: none; transform: none; }
+  60% { text-shadow: -2px 0 var(--accent), 2px 0 var(--text-secondary); transform: skewX(-6deg); }
+  75% { text-shadow: none; transform: none; }
+}
 .logo.big small { font-size: 40px; }
 .logo.name { font-size: 52px; letter-spacing: 0.04em; }
 
 .panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 10px 14px; }
 .panel:not(.framed) > .label { display: block; margin-bottom: 8px; }
-.panel.framed { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 16px 14px; }
-.panel.framed::before, .panel.framed::after { content: ''; position: absolute; width: 16px; height: 16px; border: 2px solid var(--accent); }
-.panel.framed::before { left: -1px; top: -1px; border-right: 0; border-bottom: 0; }
-.panel.framed::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+.framed { position: relative; }
+.framed::before, .framed::after { content: ''; position: absolute; width: 16px; height: 16px; border: 2px solid var(--accent); pointer-events: none; }
+.framed::before { left: -1px; top: -1px; border-right: 0; border-bottom: 0; }
+.framed::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+.panel.framed { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 16px 14px; }
 .panel.stack { gap: 12px; }
 
 .stack { display: flex; flex-direction: column; gap: 8px; }
@@ -206,7 +214,30 @@ iframe { width: 100%; height: 152px; border: 0; border-radius: var(--radius); co
 
 
 .btn, .row, .chip, .pad, .round, .field input, .link { transition: background-color 150ms, border-color 150ms, color 150ms; }
+/* signal details: live equalizer, recording dot, waveform divider, the Spotify mark, the intro */
+.eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; margin-right: 8px; vertical-align: -1px; }
+.eq i { width: 3px; height: 3px; background: var(--accent); animation: eq 800ms ease-in-out infinite alternate; }
+.eq i:nth-child(2) { animation-duration: 600ms; animation-delay: -200ms; }
+.eq i:nth-child(3) { animation-duration: 950ms; animation-delay: -400ms; }
+.eq i:nth-child(4) { animation-duration: 700ms; animation-delay: -100ms; }
+@keyframes eq { to { height: 12px; } }
+
+.rec { display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.25; } }
+
+.wave {
+  height: 14px;
+  background: var(--border);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='14'%3E%3Cpath d='M3 5.5v3M9 3.5v7M15 1.5v11M21 4v6M27 .5v13M33 2.5v9M39 5v4M45 2v10M51 0v14M57 3.5v7M63 4.5v5M69 1.5v11M75 3v8M81 5.5v3M87 1v12M93 4v6M99 2.5v9M105 .5v13M111 4.5v5M117 3.5v7' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E") repeat-x center / auto 100%;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='14'%3E%3Cpath d='M3 5.5v3M9 3.5v7M15 1.5v11M21 4v6M27 .5v13M33 2.5v9M39 5v4M45 2v10M51 0v14M57 3.5v7M63 4.5v5M69 1.5v11M75 3v8M81 5.5v3M87 1v12M93 4v6M99 2.5v9M105 .5v13M111 4.5v5M117 3.5v7' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E") repeat-x center / auto 100%;
+}
+
+.spotify { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+.boot { all: unset; position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 0 max(20px, calc((100% - 520px) / 2)); background: var(--bg); color: var(--accent); font-size: 14px; letter-spacing: 0.14em; cursor: pointer; }
+
 @media (prefers-reduced-motion: reduce) {
+  .eq i { animation: none; height: 8px; }
+  .rec { animation: none; }
   *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
   .cursor { animation: none; }
 }

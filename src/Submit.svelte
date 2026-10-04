@@ -47,6 +47,7 @@
 
 <p class="muted center">/// ALL SOURCES ENCRYPTED UNTIL THE REVEAL.</p>
 
+<div class="wave"></div>
 <div class="split"><span>CREW</span><span class="good">{locked} / {game.players.length} DONE</span></div>
 <div class="stack">
   {#each game.players as p}

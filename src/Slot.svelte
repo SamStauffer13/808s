@@ -8,6 +8,7 @@
   import { fade } from 'svelte/transition'
   import Art from './Art.svelte'
   import Notice from './Notice.svelte'
+  import Spotify from './Spotify.svelte'
   import { attempt, clearNotice, notify } from './lib/game.svelte'
   import { call } from './lib/supabase'
 
@@ -59,4 +60,5 @@
       <span class="round" class:done={taken(t)}>{t.blocked ? '✗' : taken(t) ? '✓' : '+'}</span>
     </button>
   {/each}
+  {#if results.length}<p class="muted center">RESULTS FROM <Spotify /></p>{/if}
 </div>

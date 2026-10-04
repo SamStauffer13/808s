@@ -31,6 +31,7 @@
   <div class="muted"><span class="good">{top}</span> / {winners[0]?.total} TRACED</div>
 </div>
 
+<div class="wave"></div>
 <div class="label">LEADERBOARD</div>
 <div class="stack">
   {#each scores as s, n}
