@@ -227,17 +227,20 @@ iframe { width: 100%; height: 152px; border: 0; border-radius: var(--radius); co
 
 .wave {
   height: 14px;
-  background: var(--border);
+  background: linear-gradient(90deg, var(--border) 46%, var(--accent) 50%, var(--border) 54%) 0 0 / 300% 100%;
+  animation: scan 3.5s linear infinite;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='14'%3E%3Cpath d='M3 5.5v3M9 3.5v7M15 1.5v11M21 4v6M27 .5v13M33 2.5v9M39 5v4M45 2v10M51 0v14M57 3.5v7M63 4.5v5M69 1.5v11M75 3v8M81 5.5v3M87 1v12M93 4v6M99 2.5v9M105 .5v13M111 4.5v5M117 3.5v7' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E") repeat-x center / auto 100%;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='14'%3E%3Cpath d='M3 5.5v3M9 3.5v7M15 1.5v11M21 4v6M27 .5v13M33 2.5v9M39 5v4M45 2v10M51 0v14M57 3.5v7M63 4.5v5M69 1.5v11M75 3v8M81 5.5v3M87 1v12M93 4v6M99 2.5v9M105 .5v13M111 4.5v5M117 3.5v7' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E") repeat-x center / auto 100%;
 }
+
+@keyframes scan { from { background-position: 100% 0; } to { background-position: 0% 0; } }
 
 .spotify { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
 .boot { all: unset; position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 0 max(20px, calc((100% - 520px) / 2)); background: var(--bg); color: var(--accent); font-size: 14px; letter-spacing: 0.14em; cursor: pointer; }
 
 @media (prefers-reduced-motion: reduce) {
   .eq i { animation: none; height: 8px; }
-  .rec { animation: none; }
+  .rec, .wave { animation: none; }
   *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
   .cursor { animation: none; }
 }
