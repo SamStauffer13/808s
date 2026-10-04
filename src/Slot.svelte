@@ -51,7 +51,7 @@
     <input bind:value={q} oninput={() => (scolds = 0)} autocomplete="off" placeholder="search tracks or artists" />
   </label>
   {#key scolds}
-    {#if scolds}<p class="scold" role="alert">HAVE YOU TRIED NOT BEING BORING/BASIC?</p>{/if}
+    {#if scolds}<p class="scold" role="alert">DON'T BE BORING/BASIC</p>{/if}
   {/key}
   {#each results as t (t.id)}
     <button class="row" class:blocked={t.blocked} class:shake={shaking === t.id} disabled={taken(t)} onclick={() => pick(t)} onanimationend={() => (shaking = undefined)} in:fade={{ duration: 120 }}>
