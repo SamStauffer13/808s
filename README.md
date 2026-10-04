@@ -74,3 +74,13 @@ Spotify only "deletes" a playlist by removing it from your library, which is wha
 - The tagline lives at the top of `src/Home.svelte`. Colors and spacing are tokens at the top of `src/app.css`.
 - Rejoin: typing a name that is already in the playlist takes that seat, in any phase, host included. It trusts
   the crew, so anyone with the invite link could take a friend's seat. If that ever matters, require host approval.
+
+## Todo
+
+- **Test the Spotify playlist cleanup.** It is built and the `user-library-modify` permission is stored, but it has
+  never run for real. Age a finished test game (`update rooms set created_at = now() - interval '29 days' where code = '...'`
+  in the Supabase SQL editor), start a new playlist on the site, then check the old playlist left the Spotify profile and
+  the game row is gone. If it did not, read the `create-room` function logs. Until it is verified, delete old
+  `808s: <vibe>` playlists in Spotify by hand.
+- Optional: one nightly schedule for all cleanup instead of the nightly SQL job plus the on-demand Spotify cleanup
+  (needs pg_net and a stored secret).
