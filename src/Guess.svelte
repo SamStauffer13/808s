@@ -17,6 +17,15 @@
   const matchedElsewhere = (pack: Pack, playerId: string) => todo.some((p) => p !== pack && guessFor(p) === playerId)
 
   let open = $state<string | null>(null)
+  let progress = $state<{ finished: number; total: number }>()
+
+  // other players' guesses are private, so their progress is polled instead of arriving live
+  $effect(() => {
+    const load = () => rpc('guess_progress', { p_room: room.id }).then(([p]) => (progress = p)).catch(() => {})
+    load()
+    const timer = setInterval(load, 5000)
+    return () => clearInterval(timer)
+  })
 
   // a friend can only be matched to one set, so choosing them again moves them
   async function pick(pack: Pack, playerId: string) {
@@ -43,6 +52,10 @@
 
 {#if todo.length}
   <p class="muted center">/// MATCH EACH SET OF SONGS TO THE FRIEND WHO ADDED THEM</p>
+{/if}
+
+{#if progress}
+  <div class="split"><span>FINISHED GUESSING</span><span class="good">{progress.finished} / {progress.total}</span></div>
 {/if}
 
 {#each packs as pack}

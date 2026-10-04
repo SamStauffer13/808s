@@ -1,7 +1,7 @@
 <script lang="ts">
   import Head from './Head.svelte'
   import Playlist from './Playlist.svelte'
-  import { game, me, nameOf } from './lib/game.svelte'
+  import { game, me, nameOf, packsOf } from './lib/game.svelte'
   import { rpc } from './lib/supabase'
 
   type Score = { player_id: string; name: string; correct: number; total: number }
@@ -15,9 +15,9 @@
   const top = $derived(scores[0]?.correct ?? 0)
   const winners = $derived(scores.filter((s) => s.correct === top))
   const mine = $derived(
-    game.songs.flatMap((s) => {
-      const g = game.guesses.find((g) => g.song_id === s.id && g.guesser_id === me()?.id)
-      return g ? [{ song: s, guess: g.guessed_player_id, owner: game.owners[s.id] }] : []
+    packsOf(game.songs).flatMap(({ songs }) => {
+      const g = game.guesses.find((g) => g.song_id === songs[0].id && g.guesser_id === me()?.id)
+      return g ? [{ songs, guess: g.guessed_player_id, owner: game.owners[songs[0].id] }] : []
     }),
   )
   const hits = $derived(mine.filter((m) => m.guess === m.owner).length)
@@ -48,7 +48,7 @@
   {#each mine as m}
     <div class="row" class:hit={m.guess === m.owner}>
       <div class="grow-text">
-        <div>{m.song.title}</div>
+        <div>{m.songs.map((s) => s.title).join(' · ')}</div>
         <div class="dim">YOU: {nameOf(m.guess).toUpperCase()}{m.guess === m.owner ? '' : ` · IT WAS ${nameOf(m.owner).toUpperCase()}`}</div>
       </div>
       <b class:good={m.guess === m.owner} class:bad={m.guess !== m.owner}>{m.guess === m.owner ? '✓' : '✗'}</b>

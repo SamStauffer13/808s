@@ -25,6 +25,3 @@ npx supabase functions deploy
 node scripts/spotify-auth.mjs <spotify-client-id>   # one-time host Spotify login, stores secrets in Supabase
 npx supabase secrets set HOST_PASSPHRASE="..."      # the phrase hosts type to start a game
 ```
-
-`node --experimental-websocket --env-file=.env scripts/e2e.mjs` plays a full round against the backend
-(needs `E2E_PASSPHRASE`).
