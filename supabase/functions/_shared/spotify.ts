@@ -1,6 +1,9 @@
 const API = 'https://api.spotify.com/v1'
 
-export type Track = { id: string; title: string; artist: string; art: string | null }
+export type Track = { id: string; title: string; artist: string; art: string | null; blocked: boolean }
+
+// some artists are far too easy to trace back to whoever added them
+const tooEasyToTrace = /taylor swift/i
 
 let appCache: { token: string; expires: number } | null = null
 
@@ -41,10 +44,12 @@ export async function spotify(token: string, path: string, init: RequestInit = {
 
 export function toTrack(t: any): Track {
   const images = t.album?.images ?? []
+  const artist = (t.artists ?? []).map((a: any) => a.name).join(', ')
   return {
     id: t.id,
     title: t.name,
-    artist: (t.artists ?? []).map((a: any) => a.name).join(', '),
+    artist,
     art: (images[1] ?? images[0])?.url ?? null,
+    blocked: tooEasyToTrace.test(artist),
   }
 }

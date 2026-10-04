@@ -98,6 +98,7 @@ a { color: var(--accent); }
 .row .tag { font-size: 11px; color: var(--accent); }
 button.row { width: 100%; cursor: pointer; text-align: left; }
 button.row:hover:not(:disabled) { background: var(--surface-hover); }
+.row.blocked { border-style: dashed; opacity: 0.6; }
 button.row:disabled { cursor: default; border-color: var(--accent); background: var(--accent-tint); }
 
 .avatar {

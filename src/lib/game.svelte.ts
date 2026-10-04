@@ -13,7 +13,7 @@ export type Room = {
 }
 type Player = { id: string; user_id: string; name: string }
 export type Song = { id: string; pack: string | null; spotify_id: string; title: string; artist: string; art_url: string | null }
-export type Track = { id: string; title: string; artist: string; art: string | null }
+export type Track = { id: string; title: string; artist: string; art: string | null; blocked: boolean }
 export type Guess = { song_id: string; guesser_id: string; guessed_player_id: string }
 export type Pack = { id: string; songs: Song[] }
 
@@ -31,14 +31,18 @@ export const ui = $state({ error: '' })
 
 let dismiss: ReturnType<typeof setTimeout>
 
+export function notify(message: string) {
+  ui.error = message
+  clearTimeout(dismiss)
+  dismiss = setTimeout(() => (ui.error = ''), 5000)
+}
+
 export async function attempt<T>(fn: () => Promise<T>) {
   ui.error = ''
   try {
     return await fn()
   } catch (e) {
-    ui.error = (e as Error).message
-    clearTimeout(dismiss)
-    dismiss = setTimeout(() => (ui.error = ''), 5000)
+    notify((e as Error).message)
   }
 }
 
