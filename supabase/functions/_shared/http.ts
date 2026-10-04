@@ -1,15 +1,17 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-const cors = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+const origins = ['https://samstauffer.net', 'http://localhost:5173']
+
+// browsers from other sites are refused: they only ever get our own origin back
+const corsFor = (req: Request) => {
+  const origin = req.headers.get('Origin') ?? ''
+  return {
+    'Access-Control-Allow-Origin': origins.includes(origin) ? origin : origins[0],
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    Vary: 'Origin',
+  }
 }
-
-export const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
-
-export const preflight = (req: Request) => (req.method === 'OPTIONS' ? new Response('ok', { headers: cors }) : null)
 
 export const admin = () => createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
 
@@ -29,14 +31,18 @@ export class HttpError extends Error {
 
 export function handler(fn: (req: Request) => Promise<unknown>) {
   return async (req: Request) => {
-    const early = preflight(req)
-    if (early) return early
+    const headers = corsFor(req)
+    if (req.method === 'OPTIONS') return new Response('ok', { headers })
+
+    const reply = (body: unknown, status = 200) =>
+      new Response(JSON.stringify(body), { status, headers: { ...headers, 'Content-Type': 'application/json' } })
+
     try {
-      return json(await fn(req))
+      return reply(await fn(req))
     } catch (e) {
-      if (e instanceof HttpError) return json({ error: e.message }, e.status)
+      if (e instanceof HttpError) return reply({ error: e.message }, e.status)
       console.error(e)
-      return json({ error: (e as Error).message ?? 'something went wrong' }, 500)
+      return reply({ error: (e as Error).message ?? 'something went wrong' }, 500)
     }
   }
 }

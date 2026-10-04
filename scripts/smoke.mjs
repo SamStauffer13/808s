@@ -4,9 +4,10 @@ const sb = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE
 const { error: signInError } = await sb.auth.signInAnonymously()
 console.log('anonymous sign-in:', signInError ? signInError.message : 'ok')
 
-const { data, error } = await sb.functions.invoke('spotify-search', { body: { q: 'midnight city' } })
-if (error) console.log('search failed:', error.message, await error.context?.json?.().catch(() => ''))
-else console.log(`search ok: ${data.tracks.length} tracks, first: ${data.tracks[0]?.title} - ${data.tracks[0]?.artist}`)
+// search is for people in a game, so a fresh anonymous user must be refused
+const { error } = await sb.functions.invoke('spotify-search', { body: { q: 'midnight city' } })
+const reason = (await error?.context?.json?.().catch(() => null))?.error
+console.log('search without a game:', error ? `refused (${reason})` : 'unexpectedly worked')
 
 const { data: rooms } = await sb.from('rooms').select('id')
 console.log('rooms visible to a stranger:', rooms.length)

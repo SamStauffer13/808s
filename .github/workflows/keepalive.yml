@@ -1,0 +1,18 @@
+name: Keep Supabase awake
+
+# the free tier pauses a project after about a week without activity
+on:
+  schedule:
+    - cron: '0 12 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set -a; . ./.env; set +a
+          curl -fsS "$VITE_SUPABASE_URL/rest/v1/rpc/room_preview" \
+            -H "apikey: $VITE_SUPABASE_KEY" -H "Content-Type: application/json" \
+            -d '{"p_code":"KEEP-ALIVE"}'
