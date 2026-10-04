@@ -34,7 +34,7 @@
 
   <div class="panel framed">
     <div class="label">SUBMITTED BY</div>
-    <div class="avatar big">{nameOf(owner)[0].toUpperCase()}</div>
+    <div class="avatar big">{nameOf(owner)[0]}</div>
     <div class="logo name">{nameOf(owner).toUpperCase()}</div>
     {#if guesses.length}
       <div class="good muted">
@@ -47,7 +47,7 @@
   <div class="stack">
     {#each guesses as g}
       <div class="row" class:hit={g.guessed_player_id === owner}>
-        <div class="avatar">{nameOf(g.guesser_id)[0].toUpperCase()}</div>
+        <div class="avatar">{nameOf(g.guesser_id)[0]}</div>
         <div class="grow">{nameOf(g.guesser_id).toUpperCase()} {#if g.guesser_id === me()?.id}<span class="tag">YOU</span>{/if}</div>
         <span class="dim">→ {nameOf(g.guessed_player_id).toUpperCase()}</span>
         <b class:good={g.guessed_player_id === owner} class:bad={g.guessed_player_id !== owner}>{g.guessed_player_id === owner ? '✓ GOT IT' : '✗ NOT QUITE'}</b>

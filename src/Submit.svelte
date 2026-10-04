@@ -13,16 +13,11 @@
   const total = $derived(Object.values(game.counts).reduce((a, b) => a + b, 0))
   const locked = $derived(game.players.filter((p) => (game.counts[p.id] ?? 0) >= room.songs_per_player).length)
 
-  let busy = false
-
   const taken = (t: Track) => mine.some((s) => s.spotify_id === t.id)
 
-  async function add(t: Track) {
-    if (busy || taken(t)) return
-    busy = true
-    await attempt(async () => (await call('add-song', { room_id: room.id, spotify_id: t.id }), refresh()))
-    busy = false
-  }
+  const add = once(async (t: Track) => {
+    if (!taken(t)) await attempt(async () => (await call('add-song', { room_id: room.id, spotify_id: t.id }), refresh()))
+  })
 
   const remove = (id: string) => attempt(async () => (await rpc('remove_song', { p_song: id }), refresh()))
   const startGuessing = once(() => attempt(() => call('start-guess', { room_id: room.id })))
@@ -30,7 +25,7 @@
 
 <Head step={`PICK ${mine.length} / ${room.songs_per_player}`} title="Add your songs" />
 
-<div class="panel"><div class="label">THE PROMPT</div><div class="good" style="font-size: 16px">{room.theme}</div></div>
+<div class="panel"><div class="label">THE PROMPT</div><div class="good big">{room.theme}</div></div>
 
 {#each slots as s, i}
   {#if s}
@@ -54,7 +49,7 @@
 <div class="stack">
   {#each game.players as p}
     <div class="row">
-      <div class="avatar">{p.name[0].toUpperCase()}</div>
+      <div class="avatar">{p.name[0]}</div>
       <div class="grow">{p.name.toUpperCase()} {#if p.id === me()?.id}<span class="tag">YOU</span>{:else if p.user_id === room.host_user_id}<span class="tag">HOST</span>{/if}</div>
       <b class:good={(game.counts[p.id] ?? 0) >= room.songs_per_player}>{game.counts[p.id] ?? 0} / {room.songs_per_player}</b>
     </div>

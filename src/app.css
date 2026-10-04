@@ -52,6 +52,8 @@ a { color: var(--accent); }
 .grow { flex-grow: 1; }
 .center { text-align: center; }
 .good { color: var(--accent); }
+.text { color: var(--text); }
+.big { font-size: 16px; }
 .bad { color: var(--text-secondary); }
 
 .tagline { text-align: center; font-size: 13px; line-height: 1.8; letter-spacing: 0.14em; color: var(--text-secondary); }
@@ -109,6 +111,7 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
   background: var(--surface-raised);
   font-size: 14px;
   letter-spacing: 0;
+  text-transform: uppercase;
 }
 .avatar.big { width: 58px; height: 58px; font-size: 26px; border: 2px solid var(--accent); }
 .art { flex: none; display: block; width: 44px; height: 44px; object-fit: cover; border-radius: 4px; background: linear-gradient(135deg, var(--surface-hover), var(--surface)); }
@@ -184,7 +187,9 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .pad.on, .chip.on { border-color: var(--accent); background: var(--accent-tint); color: var(--text); font-weight: 700; }
 .chip.used { opacity: 0.5; }
 
-.bar { flex: 1; height: 4px; background: var(--surface-raised); }
+.score { display: grid; grid-template-columns: 24px 88px 1fr 24px; align-items: center; gap: 10px; font-size: 12px; letter-spacing: 0.1em; color: var(--text-secondary); }
+.score b { text-align: right; }
+.bar { height: 4px; background: var(--surface-raised); }
 .bar i { display: block; height: 100%; background: var(--text-secondary); }
 .bar.win i { background: var(--accent); }
 

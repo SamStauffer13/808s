@@ -2,10 +2,8 @@
   import Art from './Art.svelte'
   import Head from './Head.svelte'
   import Playlist from './Playlist.svelte'
-  import { attempt, game, isHost, me, nameOf, once, packsOf, refresh } from './lib/game.svelte'
+  import { attempt, game, isHost, me, nameOf, once, packsOf, refresh, type Pack } from './lib/game.svelte'
   import { rpc } from './lib/supabase'
-
-  type Pack = ReturnType<typeof packsOf>[number]
 
   const room = $derived(game.room!)
   const friends = $derived(game.players.filter((p) => p.id !== me()?.id))
@@ -45,7 +43,7 @@
 
 <Head step={`${done} OF ${todo.length} MATCHED`} title="Whose songs are these?" />
 
-<p class="muted">PROMPT: <span style="color: var(--text)">{room.theme}</span></p>
+<p class="muted">PROMPT: <span class="text">{room.theme}</span></p>
 
 <iframe title="Playlist" src={`https://open.spotify.com/embed/playlist/${room.playlist_id}?theme=0`} allow="encrypted-media" loading="lazy"></iframe>
 <Playlist />

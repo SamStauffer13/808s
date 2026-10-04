@@ -6,15 +6,16 @@ export type Room = {
   host_user_id: string
   theme: string
   songs_per_player: number
-  phase: 'lobby' | 'submit' | 'guess' | 'reveal' | 'done'
+  phase: 'submit' | 'guess' | 'reveal' | 'done'
   playlist_id: string | null
   playlist_url: string | null
   reveal_index: number
 }
-type Player ={ id: string; user_id: string; name: string }
+type Player = { id: string; user_id: string; name: string }
 export type Song = { id: string; pack: string | null; spotify_id: string; title: string; artist: string; art_url: string | null }
 export type Track = { id: string; title: string; artist: string; art: string | null }
-export type Guess ={ song_id: string; guesser_id: string; guessed_player_id: string }
+export type Guess = { song_id: string; guesser_id: string; guessed_player_id: string }
+export type Pack = { id: string; songs: Song[] }
 
 export const game = $state({
   userId: '',
@@ -42,20 +43,20 @@ export async function attempt<T>(fn: () => Promise<T>) {
 }
 
 // ignores a repeat call while the first is still running
-export function once(fn: () => Promise<unknown>) {
+export function once<A extends unknown[]>(fn: (...args: A) => Promise<unknown>) {
   let busy = false
-  return async () => {
+  return async (...args: A) => {
     if (busy) return
     busy = true
     try {
-      await fn()
+      await fn(...args)
     } finally {
       busy = false
     }
   }
 }
 
-export const savedName =() => localStorage.getItem('808s-name') ?? ''
+export const savedName = () => localStorage.getItem('808s-name') ?? ''
 export const saveName = (name: string) => localStorage.setItem('808s-name', name.trim())
 
 // returns the game code once joined
@@ -67,7 +68,7 @@ export const joinGame = (code: string, name: string) =>
   })
 
 // one pack per person: the songs they added, in playlist order
-export function packsOf(songs: Song[]) {
+export function packsOf(songs: Song[]): Pack[] {
   const packs = new Map<string, Song[]>()
   for (const s of songs) packs.set(s.pack!, [...(packs.get(s.pack!) ?? []), s])
   return [...packs].map(([id, list]) => ({ id, songs: list }))

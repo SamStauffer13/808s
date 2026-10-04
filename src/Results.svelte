@@ -34,11 +34,11 @@
 <div class="label">LEADERBOARD</div>
 <div class="stack">
   {#each scores as s, n}
-    <div class="split">
-      <span style="width: 18px">{String(n + 1).padStart(2, '0')}</span>
-      <span style="width: 70px; color: var(--text)">{s.name.toUpperCase()}</span>
+    <div class="score">
+      <span>{String(n + 1).padStart(2, '0')}</span>
+      <span class="text">{s.name.toUpperCase()}</span>
       <div class="bar" class:win={s.correct === top}><i style:width={`${(s.correct / (s.total || 1)) * 100}%`}></i></div>
-      <b style="width: 20px; text-align: right">{s.correct}</b>
+      <b>{s.correct}</b>
     </div>
   {/each}
 </div>

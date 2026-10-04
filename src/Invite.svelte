@@ -29,7 +29,7 @@
   {:else}
     <div class="panel framed">
       <div class="label">YOU'RE INVITED</div>
-      <div style="font-size: 18px">{preview.theme}</div>
+      <div class="big">{preview.theme}</div>
     </div>
     <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), join())}>
       <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
