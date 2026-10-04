@@ -11,7 +11,7 @@ Deno.serve(
   handler(async (req) => {
     const user = await currentUser(req)
     if (!user) throw new HttpError(401, 'sign in first')
-    const { passphrase, name, theme, songs_per_player, max_players } = await req.json()
+    const { passphrase, name, theme, songs_per_player } = await req.json()
 
     const expected = Deno.env.get('HOST_PASSPHRASE')
     if (!expected || !sameText(String(passphrase ?? ''), expected)) throw new HttpError(403, 'wrong host passphrase')
@@ -23,7 +23,7 @@ Deno.serve(
       p_name: name,
       p_theme: theme,
       p_songs: Number(songs_per_player) || 3,
-      p_max: Number(max_players) || 8,
+      p_max: 20,
     })
     if (error) throw new HttpError(400, error.message)
     return { room: data }
