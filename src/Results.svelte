@@ -26,9 +26,9 @@
 <Head step="FINAL RESULTS" />
 
 <div class="panel framed">
-  <div class="label good">{winners.length > 1 ? 'IT\'S A TIE' : 'WINNER'}</div>
+  <div class="label good">{winners.length > 1 ? 'IT\'S A TIE' : 'BEST EAR'}</div>
   <div class="logo name">{winners.map((w) => w.name.toUpperCase()).join(' + ')}</div>
-  <div class="muted"><span class="good">{top}</span> / {winners[0]?.total} CORRECT</div>
+  <div class="muted"><span class="good">{top}</span> / {winners[0]?.total} TRACED</div>
 </div>
 
 <div class="label">LEADERBOARD</div>
@@ -59,4 +59,4 @@
 <Playlist />
 
 <div class="grow"></div>
-<a class="btn" href="#/">NEW ROUND</a>
+<a class="btn" href="#/">NEW PLAYLIST</a>

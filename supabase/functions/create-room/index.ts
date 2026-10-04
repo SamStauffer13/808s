@@ -14,9 +14,9 @@ Deno.serve(
     const { passphrase, name, theme, songs_per_player } = await req.json()
 
     const expected = Deno.env.get('HOST_PASSPHRASE')
-    if (!expected || !sameText(String(passphrase ?? ''), expected)) throw new HttpError(403, 'wrong host passphrase')
+    if (!expected || !sameText(String(passphrase ?? ''), expected)) throw new HttpError(403, 'wrong host access code')
     if (!String(name ?? '').trim()) throw new HttpError(400, 'pick a name')
-    if (!String(theme ?? '').trim()) throw new HttpError(400, 'pick a theme')
+    if (!String(theme ?? '').trim()) throw new HttpError(400, 'pick a vibe')
 
     const { data, error } = await admin().rpc('create_room', {
       p_user: user.id,

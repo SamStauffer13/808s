@@ -27,7 +27,7 @@
         localStorage.setItem('808s-host', passphrase)
         location.hash = `/${room.code}`
       } catch (e) {
-        if ((e as Error).message.includes('passphrase')) {
+        if ((e as Error).message.includes('access code')) {
           localStorage.removeItem('808s-host')
           remembered = false
         }
@@ -62,7 +62,7 @@
     <button type="button" class="link" onclick={() => (editingSongs = true)}>{songs} SONGS EACH · CHANGE</button>
   {/if}
   {#if !remembered}
-    <label class="field"><span class="label">HOST PASSPHRASE</span><input class="secret" autocomplete="off" data-lpignore="true" bind:value={passphrase} required /></label>
+    <label class="field"><span class="label">HOST ACCESS CODE</span><input class="secret" autocomplete="off" data-lpignore="true" bind:value={passphrase} required /></label>
   {/if}
   <button class="btn">BUILD THE PLAYLIST</button>
 </form>

@@ -20,7 +20,7 @@
 
 <div class="form">
   {#if preview === undefined}
-    <p class="muted center">/// LOADING</p>
+    <p class="muted center">/// CONNECTING</p>
   {:else if preview === null}
     <p class="center">PLAYLIST NOT FOUND</p>
     <a class="btn ghost" href="#/">START YOUR OWN</a>
@@ -28,7 +28,7 @@
     <p class="center">GUESSING HAS ALREADY STARTED</p>
   {:else}
     <div class="panel framed">
-      <div class="label">YOU'RE INVITED</div>
+      <div class="label">INCOMING INVITE</div>
       <div class="big">{preview.theme}</div>
     </div>
     <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), join())}>

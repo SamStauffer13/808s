@@ -23,7 +23,7 @@
   const startGuessing = once(() => attempt(() => call('start-guess', { room_id: room.id })))
 </script>
 
-<Head step={`PICK ${mine.length} / ${room.songs_per_player}`} title="Add your songs" />
+<Head step={`LOADED ${mine.length} / ${room.songs_per_player}`} title="Add your songs" />
 
 <div class="panel"><div class="label">THE PLAYLIST VIBE</div><div class="good big">{room.theme}</div></div>
 
@@ -40,12 +40,12 @@
 {/each}
 
 {#if mine.length >= room.songs_per_player}
-  <p class="center good">ALL LOCKED IN · WAITING FOR THE OTHERS</p>
+  <p class="center good">TRACKS LOCKED · WAITING ON THE CREW</p>
 {/if}
 
-<p class="muted center">/// NOBODY SEES WHO ADDED WHAT. UNTIL THE REVEAL.</p>
+<p class="muted center">/// ALL SOURCES ENCRYPTED UNTIL THE REVEAL.</p>
 
-<div class="split"><span>FRIENDS</span><span class="good">{locked} / {game.players.length} DONE</span></div>
+<div class="split"><span>CREW</span><span class="good">{locked} / {game.players.length} DONE</span></div>
 <div class="stack">
   {#each game.players as p}
     <div class="row">
@@ -61,5 +61,5 @@
 <div class="grow"></div>
 
 {#if isHost()}
-  <button class="btn" disabled={total < 2} onclick={startGuessing}>START GUESSING · {total} SONGS</button>
+  <button class="btn" disabled={total < 2} onclick={startGuessing}>START LISTENING · {total} TRACKS</button>
 {/if}

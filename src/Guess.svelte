@@ -41,7 +41,7 @@
   const reveal = once(() => attempt(() => rpc('host_set_phase', { p_room: room.id, p_phase: 'reveal' })))
 </script>
 
-<Head step={`${done} OF ${todo.length} MATCHED`} title="Whose songs are these?" />
+<Head step={`${done} / ${todo.length} TRACED`} title="Trace the source" />
 
 <p class="muted">VIBE: <span class="text">{room.theme}</span></p>
 
@@ -49,11 +49,11 @@
 <Playlist />
 
 {#if todo.length}
-  <p class="muted center">/// MATCH EACH SET OF SONGS TO THE FRIEND WHO ADDED THEM</p>
+  <p class="muted center">/// LISTEN. THEN TRACE EACH SET TO ITS SOURCE.</p>
 {/if}
 
 {#if progress}
-  <div class="split"><span>FINISHED GUESSING</span><span class="good">{progress.finished} / {progress.total}</span></div>
+  <div class="split"><span>CREW FINISHED</span><span class="good">{progress.finished} / {progress.total}</span></div>
 {/if}
 
 {#each packs as pack}
@@ -68,7 +68,7 @@
         </a>
       {/each}
       <button class="row" class:on={guessFor(pack)} onclick={() => (open = open === pack.id ? null : pack.id)}>
-        <span class="grow">{guessFor(pack) ? nameOf(guessFor(pack)).toUpperCase() : 'WHO ADDED THESE?'}</span>
+        <span class="grow">{guessFor(pack) ? nameOf(guessFor(pack)).toUpperCase() : 'TRACE THE SOURCE'}</span>
         <span>{open === pack.id ? '▴' : '▾'}</span>
       </button>
       {#if open === pack.id}
@@ -85,7 +85,7 @@
 {/each}
 
 {#if todo.length && done === todo.length}
-  <p class="center good">ALL MATCHED · WAITING FOR THE REVEAL</p>
+  <p class="center good">ALL TRACED · AWAITING THE REVEAL</p>
 {:else if !todo.length}
   <p class="center good">NOTHING TO GUESS · THESE ARE ALL YOUR SONGS</p>
 {/if}
@@ -93,5 +93,5 @@
 <div class="grow"></div>
 
 {#if isHost()}
-  <button class="btn" onclick={reveal}>END GUESSING · REVEAL</button>
+  <button class="btn" onclick={reveal}>REVEAL THE SOURCES</button>
 {/if}

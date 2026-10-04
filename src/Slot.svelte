@@ -37,7 +37,7 @@
 </script>
 
 <div class="stack">
-  <label class="field"><span class="label">SONG {n}</span><input bind:value={q} autocomplete="off" placeholder="search for a song or artist" /></label>
+  <label class="field"><span class="label">TRACK {n}</span><input bind:value={q} autocomplete="off" placeholder="search tracks or artists" /></label>
   {#each results as t (t.id)}
     <button class="row" disabled={taken(t)} onclick={() => onpick(t)} in:fade={{ duration: 120 }}>
       <Art src={t.art} />

@@ -35,5 +35,5 @@
     <Results />
   {/if}
 {:else}
-  <p class="muted center">/// LOADING</p>
+  <p class="muted center">/// CONNECTING</p>
 {/if}

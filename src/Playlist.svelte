@@ -3,5 +3,5 @@
 </script>
 
 {#if game.room?.playlist_url}
-  <p class="center"><a class="link" href={game.room.playlist_url} target="_blank" rel="noopener">OPEN PLAYLIST IN SPOTIFY ↗</a></p>
+  <p class="center"><a class="link" href={game.room.playlist_url} target="_blank" rel="noopener">LISTEN ON SPOTIFY ↗</a></p>
 {/if}

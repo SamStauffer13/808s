@@ -33,12 +33,12 @@
   {/each}
 
   <div class="panel framed">
-    <div class="label">SUBMITTED BY</div>
+    <div class="label">SOURCE IDENTIFIED</div>
     <div class="avatar big">{nameOf(owner)[0]}</div>
     <div class="logo name">{nameOf(owner).toUpperCase()}</div>
     {#if guesses.length}
       <div class="good muted">
-        {right === guesses.length ? 'EVERYONE KNEW IT' : right ? `${right} OF ${guesses.length} GUESSED IT` : 'NOBODY GUESSED IT'}
+        {right === guesses.length ? 'EVERYONE TRACED IT' : right ? `${right} OF ${guesses.length} TRACED IT` : 'NOBODY TRACED IT'}
       </div>
     {/if}
   </div>
@@ -61,7 +61,7 @@
 <div class="grow"></div>
 
 {#if isHost()}
-  <button class="btn" onclick={next}>{room.reveal_index < last ? 'NEXT' : 'SEE RESULTS'}</button>
+  <button class="btn" onclick={next}>{room.reveal_index < last ? 'NEXT SOURCE' : 'SEE RESULTS'}</button>
 {:else}
   <p class="muted center">/// HOST CONTROLS THE REVEAL</p>
 {/if}

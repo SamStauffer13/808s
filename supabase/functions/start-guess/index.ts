@@ -15,7 +15,7 @@ Deno.serve(
     if (room.phase !== 'submit') throw new HttpError(400, 'not in the submit phase')
 
     const { data: songs } = await db.from('songs').select('id, spotify_id').eq('room_id', room_id)
-    if (!songs || songs.length < 2) throw new HttpError(400, 'need at least 2 songs')
+    if (!songs || songs.length < 2) throw new HttpError(400, 'need at least 2 tracks')
 
     for (let i = songs.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
