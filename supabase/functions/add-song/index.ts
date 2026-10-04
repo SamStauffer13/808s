@@ -10,7 +10,7 @@ Deno.serve(
 
     // re-read the track from Spotify so a client cannot make up titles
     const track = toTrack(await spotify(await appToken(), `/tracks/${spotify_id}`))
-    if (track.blocked) throw new HttpError(400, 'swift signal detected · the crew would trace you instantly')
+    if (track.blocked) throw new HttpError(400, 'have you tried developing a personality?')
 
     const { data, error } = await admin().rpc('add_song', {
       p_user: user.id,

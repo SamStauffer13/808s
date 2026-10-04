@@ -2,27 +2,27 @@
   import type { Track } from './lib/game.svelte'
 
   const cache = new Map<string, Track[]>()
-
-  // blocked tracks answer with an escalating scolding
-  const scoldings = [
-    'SWIFT SIGNAL DETECTED · THE CREW WOULD TRACE YOU IN 3 SECONDS',
-    'AGAIN? YOUR SOURCE IS NOT A MYSTERY',
-    "THIS INCIDENT HAS BEEN LOGGED. (IT HASN'T. BUT STILL.)",
-    'WE KNOW. YOU KNOW. THE CREW KNOWS. PICK ANOTHER TRACK',
-  ]
-  let strikes = 0
 </script>
 
 <script lang="ts">
   import { fade } from 'svelte/transition'
   import Art from './Art.svelte'
-  import { attempt, notify } from './lib/game.svelte'
+  import { attempt } from './lib/game.svelte'
   import { call } from './lib/supabase'
 
   let { n, taken, onpick }: { n: number; taken: (t: Track) => boolean; onpick: (t: Track) => void } = $props()
 
   let q = $state('')
   let results = $state<Track[]>([])
+  let scolds = $state(0)
+  let shaking = $state<string>()
+
+  // a blocked track shakes and gets a comment instead of being added
+  const pick = (t: Track) => {
+    if (!t.blocked) return onpick(t)
+    scolds++
+    shaking = t.id
+  }
 
   $effect(() => {
     const text = q.trim().toLowerCase()
@@ -46,9 +46,15 @@
 </script>
 
 <div class="stack">
-  <label class="field"><span class="label">TRACK {n}</span><input bind:value={q} autocomplete="off" placeholder="search tracks or artists" /></label>
+  <label class="field">
+    <span class="label">TRACK {n}</span>
+    <input bind:value={q} oninput={() => (scolds = 0)} autocomplete="off" placeholder="search tracks or artists" />
+  </label>
+  {#key scolds}
+    {#if scolds}<p class="scold" role="alert">HAVE YOU TRIED DEVELOPING A PERSONALITY?</p>{/if}
+  {/key}
   {#each results as t (t.id)}
-    <button class="row" class:blocked={t.blocked} disabled={taken(t)} onclick={() => (t.blocked ? notify(scoldings[Math.min(strikes++, scoldings.length - 1)]) : onpick(t))} in:fade={{ duration: 120 }}>
+    <button class="row" class:blocked={t.blocked} class:shake={shaking === t.id} disabled={taken(t)} onclick={() => pick(t)} onanimationend={() => (shaking = undefined)} in:fade={{ duration: 120 }}>
       <Art src={t.art} />
       <div class="grow-text"><div>{t.title}</div><div class="dim">{t.artist}</div></div>
       <span class="round" class:done={taken(t)}>{t.blocked ? '✗' : taken(t) ? '✓' : '+'}</span>

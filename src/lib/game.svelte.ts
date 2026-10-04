@@ -31,18 +31,14 @@ export const ui = $state({ error: '' })
 
 let dismiss: ReturnType<typeof setTimeout>
 
-export function notify(message: string) {
-  ui.error = message
-  clearTimeout(dismiss)
-  dismiss = setTimeout(() => (ui.error = ''), 5000)
-}
-
 export async function attempt<T>(fn: () => Promise<T>) {
   ui.error = ''
   try {
     return await fn()
   } catch (e) {
-    notify((e as Error).message)
+    ui.error = (e as Error).message
+    clearTimeout(dismiss)
+    dismiss = setTimeout(() => (ui.error = ''), 5000)
   }
 }
 
