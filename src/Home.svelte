@@ -5,7 +5,10 @@
   const tagline = ["YOU CAN FEEL PEOPLE'S VIBES?", "LET'S TEST THAT"]
 
   let name = $state(savedName())
-  let prompt = $state('')
+  const adjectives = ['sad', 'summer', 'guilty-pleasure', 'late-night', 'nostalgic', 'angry']
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)]
+
+  let vibe = $state('')
   let songs = $state(2)
   let editingSongs = $state(false)
   let passphrase = $state(localStorage.getItem('808s-host') ?? '')
@@ -17,7 +20,7 @@
         const { room } = await call<{ room: { code: string } }>('create-room', {
           passphrase,
           name,
-          theme: prompt,
+          theme: vibe,
           songs_per_player: songs,
         })
         saveName(name)
@@ -43,8 +46,8 @@
 <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), create())}>
   <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
   <label class="field">
-    <span class="label">THE PROMPT</span>
-    <input bind:value={prompt} maxlength="140" placeholder="e.g. songs that you'd go to war with" required />
+    <span class="label">THE PLAYLIST VIBE</span>
+    <input bind:value={vibe} maxlength="140" placeholder={`e.g. your favorite ${adjective} songs`} required />
   </label>
   {#if editingSongs}
     <div class="field">

@@ -25,7 +25,7 @@
 
 <Head step={`PICK ${mine.length} / ${room.songs_per_player}`} title="Add your songs" />
 
-<div class="panel"><div class="label">THE PROMPT</div><div class="good big">{room.theme}</div></div>
+<div class="panel"><div class="label">THE PLAYLIST VIBE</div><div class="good big">{room.theme}</div></div>
 
 {#each slots as s, i}
   {#if s}

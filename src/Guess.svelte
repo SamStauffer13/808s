@@ -43,7 +43,7 @@
 
 <Head step={`${done} OF ${todo.length} MATCHED`} title="Whose songs are these?" />
 
-<p class="muted">PROMPT: <span class="text">{room.theme}</span></p>
+<p class="muted">VIBE: <span class="text">{room.theme}</span></p>
 
 <iframe title="Playlist" src={`https://open.spotify.com/embed/playlist/${room.playlist_id}?theme=0`} allow="encrypted-media" loading="lazy"></iframe>
 <Playlist />
