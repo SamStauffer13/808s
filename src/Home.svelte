@@ -2,7 +2,7 @@
   import { attempt, once, saveName, savedName } from './lib/game.svelte'
   import { call } from './lib/supabase'
 
-  const tagline = ["YOU CAN FEEL PEOPLE'S VIBES?", "LET'S TEST THAT"]
+  const tagline = ["CAN YOU SENSE PEOPLE'S VIBES?", "LET'S TEST THAT"]
 
   let name = $state(savedName())
   const adjectives = ['sad', 'summer', 'guilty-pleasure', 'late-night', 'nostalgic', 'angry']
