@@ -69,5 +69,5 @@ Old Spotify playlists (`808s: <vibe>`) are not cleaned up automatically; delete 
 - Games hold up to 20 players and 1 to 5 songs each.
 - Blocked artists: `tooEasyToTrace` in `supabase/functions/_shared/spotify.ts`, with the comment in `src/Slot.svelte`.
 - The tagline lives at the top of `src/Home.svelte`. Colors and spacing are tokens at the top of `src/app.css`.
-- Not built yet: rejoining from a different browser or device (plan: warn in built-in browsers, a friendly
-  "name taken" screen, host approval).
+- Rejoin: typing a name that is already in the playlist takes that seat, in any phase, host included. It trusts
+  the crew, so anyone with the invite link could take a friend's seat. If that ever matters, require host approval.

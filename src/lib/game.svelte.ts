@@ -89,6 +89,7 @@ export async function refresh() {
     supabase.from('guesses').select('song_id, guesser_id, guessed_player_id').eq('room_id', id),
     submitting ? supabase.rpc('submission_counts', { p_room: id }) : { data: [] },
   ])
+  if (room.error?.code === 'PGRST116') return location.reload() // this seat was taken over elsewhere
   game.room = room.data
   game.players = players.data ?? []
   game.songs = songs.data ?? []

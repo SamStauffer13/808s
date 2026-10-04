@@ -24,13 +24,12 @@
   {:else if preview === null}
     <p class="center">PLAYLIST NOT FOUND</p>
     <a class="btn ghost" href="#/">START YOUR OWN</a>
-  {:else if preview.phase !== 'submit'}
-    <p class="center">GUESSING HAS ALREADY STARTED</p>
   {:else}
     <div class="panel framed">
       <div class="label">INCOMING INVITE</div>
       <div class="big">{preview.theme}</div>
     </div>
+    <p class="muted center">/// {preview.phase === 'submit' ? 'RETURNING? USE THE SAME NAME TO TAKE YOUR SEAT' : 'IN PROGRESS · ONLY THE CREW CAN REJOIN'}</p>
     <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), join())}>
       <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
       <button class="btn">JOIN THE PLAYLIST</button>
