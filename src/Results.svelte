@@ -1,0 +1,62 @@
+<script lang="ts">
+  import Head from './Head.svelte'
+  import Playlist from './Playlist.svelte'
+  import { game, me, nameOf } from './lib/game.svelte'
+  import { rpc } from './lib/supabase'
+
+  type Score = { player_id: string; name: string; correct: number; total: number }
+
+  const room = $derived(game.room!)
+  let scores = $state<Score[]>([])
+  $effect(() => {
+    rpc('room_scores', { p_room: room.id }).then((s) => (scores = s))
+  })
+
+  const top = $derived(scores[0]?.correct ?? 0)
+  const winners = $derived(scores.filter((s) => s.correct === top))
+  const mine = $derived(
+    game.songs.flatMap((s) => {
+      const g = game.guesses.find((g) => g.song_id === s.id && g.guesser_id === me()?.id)
+      return g ? [{ song: s, guess: g.guessed_player_id, owner: game.owners[s.id] }] : []
+    }),
+  )
+  const hits = $derived(mine.filter((m) => m.guess === m.owner).length)
+</script>
+
+<Head step="FINAL RESULTS" />
+
+<div class="panel framed">
+  <div class="label good">{winners.length > 1 ? 'IT\'S A TIE' : 'WINNER'}</div>
+  <div class="logo name">{winners.map((w) => w.name.toUpperCase()).join(' + ')}</div>
+  <div class="muted"><span class="good">{top}</span> / {winners[0]?.total} CORRECT</div>
+</div>
+
+<div class="label">LEADERBOARD</div>
+<div class="stack">
+  {#each scores as s, n}
+    <div class="split">
+      <span style="width: 18px">{String(n + 1).padStart(2, '0')}</span>
+      <span style="width: 70px; color: var(--text)">{s.name.toUpperCase()}</span>
+      <div class="bar" class:win={s.correct === top}><i style:width={`${(s.correct / (s.total || 1)) * 100}%`}></i></div>
+      <b style="width: 20px; text-align: right">{s.correct}</b>
+    </div>
+  {/each}
+</div>
+
+<div class="split"><span>YOUR GUESSES</span><span class="good">{hits} OF {mine.length} RIGHT</span></div>
+<div class="stack">
+  {#each mine as m}
+    <div class="row" class:hit={m.guess === m.owner}>
+      <div class="grow-text">
+        <div>{m.song.title}</div>
+        <div class="dim">YOU: {nameOf(m.guess).toUpperCase()}{m.guess === m.owner ? '' : ` · IT WAS ${nameOf(m.owner).toUpperCase()}`}</div>
+      </div>
+      <b class:good={m.guess === m.owner} class:bad={m.guess !== m.owner}>{m.guess === m.owner ? '✓' : '✗'}</b>
+    </div>
+  {/each}
+</div>
+
+<Playlist />
+
+<div class="grow"></div>
+<a class="btn" href="#/">NEW ROUND</a>

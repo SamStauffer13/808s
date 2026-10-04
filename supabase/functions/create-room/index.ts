@@ -1,0 +1,31 @@
+import { admin, currentUser, handler, HttpError } from '../_shared/http.ts'
+
+function sameText(a: string, b: string) {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
+}
+
+Deno.serve(
+  handler(async (req) => {
+    const user = await currentUser(req)
+    if (!user) throw new HttpError(401, 'sign in first')
+    const { passphrase, name, theme, songs_per_player, max_players } = await req.json()
+
+    const expected = Deno.env.get('HOST_PASSPHRASE')
+    if (!expected || !sameText(String(passphrase ?? ''), expected)) throw new HttpError(403, 'wrong host passphrase')
+    if (!String(name ?? '').trim()) throw new HttpError(400, 'pick a name')
+    if (!String(theme ?? '').trim()) throw new HttpError(400, 'pick a theme')
+
+    const { data, error } = await admin().rpc('create_room', {
+      p_user: user.id,
+      p_name: name,
+      p_theme: theme,
+      p_songs: Number(songs_per_player) || 3,
+      p_max: Number(max_players) || 8,
+    })
+    if (error) throw new HttpError(400, error.message)
+    return { room: data }
+  }),
+)

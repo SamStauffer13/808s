@@ -1,0 +1,65 @@
+<script lang="ts">
+  import { attempt, once, saveName, savedName } from './lib/game.svelte'
+  import { call } from './lib/supabase'
+
+  const tagline = ["YOU CAN FEEL PEOPLE'S VIBES?", "LET'S TEST THAT"]
+
+  let name = $state(savedName())
+  let prompt = $state('')
+  let songs = $state(2)
+  let editingSongs = $state(false)
+  let passphrase = $state(localStorage.getItem('808s-host') ?? '')
+  let remembered = $state(!!localStorage.getItem('808s-host'))
+
+  const create = once(() =>
+    attempt(async () => {
+      try {
+        const { room } = await call<{ room: { code: string } }>('create-room', {
+          passphrase,
+          name,
+          theme: prompt,
+          songs_per_player: songs,
+        })
+        saveName(name)
+        localStorage.setItem('808s-host', passphrase)
+        location.hash = `/${room.code}`
+      } catch (e) {
+        if ((e as Error).message.includes('passphrase')) {
+          localStorage.removeItem('808s-host')
+          remembered = false
+        }
+        throw e
+      }
+    }),
+  )
+</script>
+
+<div class="logo big">808<small>s</small></div>
+<p class="tagline">
+  <span>{tagline[0]}</span>
+  <span class="good">{tagline[1]}<i class="cursor"></i></span>
+</p>
+
+<form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), create())}>
+  <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
+  <label class="field">
+    <span class="label">THE PROMPT</span>
+    <input bind:value={prompt} maxlength="140" placeholder="e.g. songs that you'd go to war with" required />
+  </label>
+  {#if editingSongs}
+    <div class="field">
+      <span class="label">SONGS EACH</span>
+      <div class="pads" role="radiogroup" aria-label="Songs each">
+        {#each [1, 2, 3, 4, 5] as n}
+          <button type="button" role="radio" aria-checked={songs === n} class="pad" class:on={songs === n} onclick={() => ((songs = n), (editingSongs = false))}>{n}</button>
+        {/each}
+      </div>
+    </div>
+  {:else}
+    <button type="button" class="link" onclick={() => (editingSongs = true)}>{songs} SONGS EACH · CHANGE</button>
+  {/if}
+  {#if !remembered}
+    <label class="field"><span class="label">HOST PASSPHRASE</span><input class="secret" autocomplete="off" data-lpignore="true" bind:value={passphrase} required /></label>
+  {/if}
+  <button class="btn">START A GAME</button>
+</form>
