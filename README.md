@@ -42,7 +42,8 @@ If the build says "Cannot find native binding" on Windows: `npm install --no-sav
 - Nightly (04:00 UTC) pg_cron job `808s-cleanup` deletes games older than 28 days that never made a playlist, and
   the anonymous accounts left behind.
 - Starting a new playlist (`create-room`) first removes the Spotify playlists of games older than 28 days, then those
-  games. It needs the `user-library-modify` Spotify permission; if it is missing nothing is deleted and it retries next time.
+  games. It needs the `user-library-modify` Spotify permission (verified working); if it goes missing, nothing is deleted
+  and it retries next time. Fix: rerun `scripts/spotify-auth.mjs`.
 - `keepalive.yml` pings Supabase every 3 days so the free tier does not pause. GitHub disables scheduled
   workflows after 60 days without repo activity; run it once by hand if that happens.
 
@@ -83,8 +84,10 @@ Spotify only "deletes" a playlist by removing it from your library, which is wha
   playlists the app made, and the delete button removes one from Spotify and deletes its game. It can only touch
   playlists recorded for a game, never any other playlist on the account (`manage-playlists` function).
 
-## Todo
+## Ideas not built
 
-- **Confirm the playlist delete works.** It has never run against Spotify. Use the clean-up link on the home screen
-  once. If it fails with a 403, the `user-library-modify` permission is missing: rerun `scripts/spotify-auth.mjs`.
-  The automatic 4-week cleanup uses the same call, so this checks both.
+- Optional deadline line on the add-songs screen (informational, e.g. "submissions close Friday").
+- Sound effects, a guess countdown, glitch transitions between screens.
+- Use a separate throwaway Spotify account for the playlists instead of the personal one: add its email under
+  User management in the Spotify app, then rerun `scripts/spotify-auth.mjs` signed in as that account. Delete existing
+  playlists with the clean-up link first, since only the owning account can delete them.
