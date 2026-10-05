@@ -72,6 +72,8 @@ Spotify only "deletes" a playlist by removing it from your library, which is wha
 - Games hold up to 20 players and 1 to 5 songs each.
 - Blocked artists: `tooEasyToTrace` in `supabase/functions/_shared/spotify.ts`, with the comment in `src/Slot.svelte`.
 - The tagline lives at the top of `src/Home.svelte`. Colors and spacing are tokens at the top of `src/app.css`.
+- The vibe tells people what to submit and becomes the Spotify playlist's description. The optional playlist name
+  (`rooms.title`) is the Spotify playlist's name; with none, it is `808s: <vibe>`.
 - Notices show next to the control that caused them: `attempt(scope, fn)` stores the error under a scope and a
   `<Notice scope="...">` placed beside the button displays it. There is no global toast.
 - Rejoin: typing a name that is already in the playlist takes that seat, in any phase, host included. It trusts

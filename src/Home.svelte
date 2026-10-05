@@ -3,7 +3,7 @@
   import { attempt, once, saveName, savedName } from './lib/game.svelte'
   import { call } from './lib/supabase'
 
-  type Old = { id: string; theme: string; created_at: string; players: number }
+  type Old = { id: string; name: string; created_at: string; players: number }
 
   const tagline = ["CAN YOU SENSE PEOPLE'S VIBES?", "LET'S TEST THAT"]
 
@@ -12,6 +12,7 @@
   const adjective = adjectives[Math.floor(Math.random() * adjectives.length)]
 
   let vibe = $state('')
+  let title = $state('')
   let songs = $state(2)
   let editingSongs = $state(false)
   let passphrase = $state(localStorage.getItem('808s-host') ?? '')
@@ -24,6 +25,7 @@
           passphrase,
           name,
           theme: vibe,
+          title,
           songs_per_player: songs,
         })
         saveName(name)
@@ -69,6 +71,10 @@
     <span class="label">THE PLAYLIST VIBE</span>
     <input bind:value={vibe} maxlength="140" placeholder={`e.g. your favorite ${adjective} songs`} required />
   </label>
+  <label class="field">
+    <span class="label">PLAYLIST NAME · OPTIONAL</span>
+    <input bind:value={title} maxlength="100" placeholder="e.g. makeup is war paint" />
+  </label>
   {#if editingSongs}
     <div class="field">
       <span class="label">SONGS EACH</span>
@@ -94,7 +100,7 @@
   <div class="stack">
     {#each old as g (g.id)}
       <div class="row">
-        <div class="grow-text"><div>{g.theme}</div><div class="dim">{new Date(g.created_at).toLocaleDateString()} · {g.players} PLAYERS</div></div>
+        <div class="grow-text"><div>{g.name}</div><div class="dim">{new Date(g.created_at).toLocaleDateString()} · {g.players} PLAYERS</div></div>
         {#if confirming === g.id}
           <button class="chip on" onclick={() => remove(g.id)}>DELETE?</button>
         {:else}

@@ -18,10 +18,10 @@ Deno.serve(
     const dayAgo = new Date(Date.now() - 86_400_000).toISOString()
     const { data } = await db
       .from('rooms')
-      .select('id, theme, created_at, players(count)')
+      .select('id, title, theme, created_at, players(count)')
       .not('playlist_id', 'is', null)
       .or(`phase.eq.done,created_at.lt.${dayAgo}`)
       .order('created_at', { ascending: false })
-    return { playlists: (data ?? []).map((r) => ({ id: r.id, theme: r.theme, created_at: r.created_at, players: r.players[0].count })) }
+    return { playlists: (data ?? []).map((r) => ({ id: r.id, name: r.title ?? r.theme, created_at: r.created_at, players: r.players[0].count })) }
   }),
 )

@@ -26,7 +26,7 @@ Deno.serve(
     const playlist = await spotify(token, '/me/playlists', {
       method: 'POST',
       body: JSON.stringify({
-        name: `808s: ${room.theme}`.slice(0, 100),
+        name: (room.title ?? `808s: ${room.theme}`).slice(0, 100),
         description: `${room.theme}. Who added that? Guess in the 808s app.`.slice(0, 300),
         public: true,
       }),

@@ -5,7 +5,7 @@ Deno.serve(
   handler(async (req) => {
     const user = await currentUser(req)
     if (!user) throw new HttpError(401, 'sign in first')
-    const { passphrase, name, theme, songs_per_player } = await req.json()
+    const { passphrase, name, theme, title, songs_per_player } = await req.json()
 
     requireHostCode(passphrase)
     if (!String(name ?? '').trim()) throw new HttpError(400, 'pick a name')
@@ -15,6 +15,7 @@ Deno.serve(
       p_user: user.id,
       p_name: name,
       p_theme: theme,
+      p_title: title,
       p_songs: Number(songs_per_player) || 3,
       p_max: 20,
     })
