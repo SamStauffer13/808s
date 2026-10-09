@@ -43,7 +43,7 @@
   const reveal = once(() => attempt('reveal', () => rpc('host_set_phase', { p_room: room.id, p_phase: 'reveal' })))
 </script>
 
-<Head step={`${done} / ${todo.length} TRACED`} title="Trace the source" />
+<Head step={`${done} / ${todo.length} TRACED`} title="Who added what?" />
 
 <p class="muted">VIBE: <span class="text">{room.theme}</span></p>
 
@@ -53,7 +53,7 @@
 <Playlist />
 
 {#if todo.length}
-  <p class="muted center"><Eq />/// LISTEN. THEN TRACE EACH SET TO ITS SOURCE.</p>
+  <p class="muted center"><Eq />/// LISTEN, THEN PICK WHO ADDED EACH SET OF SONGS · EACH FRIEND MATCHES ONE SET</p>
 {/if}
 
 {#if progress}
@@ -74,7 +74,7 @@
         </a>
       {/each}
       <button class="row" class:on={guessFor(pack)} onclick={() => (open = open === pack.id ? null : pack.id)}>
-        <span class="grow">{guessFor(pack) ? nameOf(guessFor(pack)).toUpperCase() : 'TRACE THE SOURCE'}</span>
+        <span class="grow">{guessFor(pack) ? nameOf(guessFor(pack)).toUpperCase() : 'WHO ADDED THESE?'}</span>
         <span>{open === pack.id ? '▴' : '▾'}</span>
       </button>
       {#if open === pack.id}
@@ -93,6 +93,7 @@
 
 {#if todo.length && done === todo.length}
   <p class="center good">ALL TRACED · AWAITING THE REVEAL</p>
+  <p class="muted center">/// THE REVEAL OPENS WHEN EVERYONE IS DONE · COME BACK ANY TIME</p>
 {:else if !todo.length}
   <p class="center good">NOTHING TO GUESS · THESE ARE ALL YOUR SONGS</p>
 {/if}

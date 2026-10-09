@@ -55,7 +55,7 @@ a { color: var(--accent); }
 .text { color: var(--text); }
 .big { font-size: 16px; }
 .bad { color: var(--text-secondary); }
-.stamp { margin-top: 6px; font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: var(--accent); }
+.stamp { font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: var(--accent); }
 
 .tagline { text-align: center; font-size: 13px; line-height: 1.8; letter-spacing: 0.14em; color: var(--text-secondary); }
 .tagline span { display: block; }
@@ -208,6 +208,35 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .bar { height: 4px; background: var(--surface-raised); }
 .bar i { display: block; height: 100%; background: var(--text-secondary); }
 .bar.win i { background: var(--accent); }
+
+/* the reveal: one set per screen, built to fit a phone */
+.progress { display: flex; gap: 4px; }
+.progress i { flex: 1; height: 4px; background: var(--surface-raised); }
+.progress i.seen { background: var(--accent); }
+.verdict { text-align: center; font-size: 16px; letter-spacing: 0.1em; }
+.guesses { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.guess { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; letter-spacing: 0.06em; }
+.guess > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.guess.hit { border-color: var(--accent); }
+.guess.me { background: var(--accent-tint); }
+.guess .dim { font-size: 11px; color: var(--text-secondary); }
+.guess .tag { margin-left: 4px; font-size: 10px; color: var(--accent); }
+/* short phone screens: trim the source card so the result line stays above the buttons */
+@media (max-height: 640px) {
+  .panel.framed { gap: 4px; padding-block: 10px; }
+  .avatar.big { width: 44px; height: 44px; font-size: 20px; }
+}
+.veil { display: flex; flex-direction: column; gap: 12px; transition: opacity 200ms; }
+.veil.veiled { opacity: 0; pointer-events: none; }
+.dock { position: sticky; bottom: 0; display: flex; gap: 8px; padding: 14px 0 max(0px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 35%); }
+.dock .btn { flex: 1; width: auto; }
+.dock .prev { flex: none; width: 56px; }
+.split .link { margin-block: -16px; } /* a 44px touch area that adds no extra space */
+
+/* the demo's stage switcher (src/demo) */
+.demo-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-direction: column; gap: 8px; padding: 6px 0 10px; background: var(--bg); }
+.demo-bar .stages { display: flex; flex-wrap: wrap; gap: 8px; }
+.demo-bar .chip { display: inline-flex; align-items: center; height: 32px; padding: 0 10px; font-size: 11px; text-decoration: none; }
 
 iframe { width: 100%; height: 152px; border: 0; border-radius: var(--radius); color-scheme: dark; }
 .link { all: unset; display: inline-flex; align-items: center; min-height: 44px; cursor: pointer; font-size: 12px; letter-spacing: 0.1em; color: var(--text-secondary); }

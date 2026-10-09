@@ -2,6 +2,7 @@
   import Boot from './Boot.svelte'
   import Home from './Home.svelte'
   import Room from './Room.svelte'
+  import { isDemo } from './lib/game.svelte'
 
   const read = () => decodeURIComponent(location.hash.slice(2)).toUpperCase()
   let code = $state(read())
@@ -18,6 +19,8 @@
 
 {#if booting}
   <Boot done={booted} />
+{:else if isDemo(code)}
+  {#await import('./demo/Demo.svelte') then demo}<demo.default {code} />{/await}
 {:else if code}
   {#key code}<Room {code} />{/key}
 {:else}

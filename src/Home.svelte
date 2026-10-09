@@ -57,6 +57,7 @@
   <span>{tagline[0]}</span>
   <span class="good">{tagline[1]}<i class="cursor"></i></span>
 </p>
+<p class="muted center">/// ADD SONGS TO A SHARED PLAYLIST, THEN GUESS WHO ADDED WHAT</p>
 
 <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), spotifyName ? create() : connect())}>
   <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
@@ -83,6 +84,8 @@
   {#if spotifyName}
     <p class="muted">/// PLAYLIST GOES TO {spotifyName.toUpperCase()}'S SPOTIFY</p>
     <button type="button" class="link" onclick={disconnect}>NOT YOU? DISCONNECT</button>
+  {:else}
+    <p class="muted">/// YOU'LL LOG IN TO SPOTIFY SO THE PLAYLIST LANDS IN YOUR ACCOUNT · THIS FORM IS SAVED</p>
   {/if}
   <Notice scope="create" />
   <button class="btn">{spotifyName ? 'BUILD THE PLAYLIST' : 'CONNECT SPOTIFY'}</button>

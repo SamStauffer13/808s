@@ -1,17 +1,17 @@
-// A made-up finished 8-player game, so the reveal and results can be seen without real players or a server.
-// Open #/DEMO (the whole reveal) or #/DEMO-RESULTS (straight to the results), on the live site or in dev.
-// Only fetched when one of those two codes is opened.
-import { game, type Guess, type Song } from './lib/game.svelte'
-import { stampFor, stamps, statsOf } from './lib/stamps'
-import { fake } from './lib/supabase'
+// What the demo's fake game is made of: 8 players (beat-makers) and the 16 tracks of a public Spotify playlist.
+// Pure data, nothing here talks to a server.
+import type { Guess, Song } from '../lib/game.svelte'
 
 const names = ['DRE', 'DILLA', 'PHARRELL', 'TIMBALAND', 'METRO', 'MADLIB', 'KAYTRANADA', 'RZA']
-const players = names.map((name, i) => ({ id: `p${i}`, user_id: `u${i}`, name }))
+export const players = names.map((name, i) => ({ id: `p${i}`, user_id: `u${i}`, name }))
+export const me = players[0] // you are the host
 
-// A snapshot of 16 tracks from a public Spotify playlist (titles, artists, cover art), so the rows look like
-// real ones. Two songs per person; set i belongs to player i.
-const playlist = 'https://open.spotify.com/playlist/73MeoOPlro0bLPf2ScEvvZ'
-const tracks = [
+export const theme = 'songs that sound like a road trip at 2am'
+export const playlist = 'https://open.spotify.com/playlist/73MeoOPlro0bLPf2ScEvvZ'
+
+// A one-time snapshot (titles, artists, cover art) of that playlist, so rows look like real ones.
+// Two tracks per player: set i belongs to player i.
+export const tracks = [
   { id: '47oI62sCBPLsCVgcD2tr2z', title: 'Damaged Goods', artist: 'La Dispute', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02a33cf1cbd5cd623a7d3c8e56' },
   { id: '31Hx0pInhn2tSq5gdhWv0d', title: 'Such Small Hands', artist: 'La Dispute', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02a33cf1cbd5cd623a7d3c8e56' },
   { id: '6p4jnIWFWyLz0zUo2RD9iu', title: "Baby, You Wouldn't Last A Minute On The Creek", artist: 'Chiodos', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02565a166b9f44fc0250f5769e' },
@@ -30,8 +30,22 @@ const tracks = [
   { id: '46fyLy4W9HhAkcb67kLaAV', title: 'Tourniquet', artist: 'Evanescence', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e0225f49ab23f0ec6332efef432' },
 ]
 
-// the reveal order: which person's set comes up when
-const order = [3, 0, 5, 2, 1, 7, 4, 6]
+export const sets = players.map((_, i) => i)
+const packId =(set: number) => `pack-${set}`
+export const songId = (set: number, n: number) => `s${set}-${n}`
+
+// the playlist order: which person's set comes up when
+export const order = [3, 0, 5, 2, 1, 7, 4, 6]
+
+export const setSongs = (set: number): Song[] =>
+  [0, 1].map((n) => ({
+    id: songId(set, n),
+    pack: packId(set),
+    spotify_id: tracks[set * 2 + n].id,
+    title: tracks[set * 2 + n].title,
+    artist: tracks[set * 2 + n].artist,
+    art_url: tracks[set * 2 + n].art,
+  }))
 
 // What each guesser got wrong, as pairs of sets they swapped (a swap makes both sets wrong, and keeps every
 // guesser's picks valid: a friend can only be matched to one set). Everything else is guessed correctly.
@@ -47,36 +61,23 @@ const swaps: [number, number][][] = [
   [[6, 5]], // RZA
 ]
 
-const sets = Array.from({ length: names.length }, (_, s) => s)
-const pack = (set: number) => `pack-${set}`
-const songId = (set: number, n: number) => `s${set}-${n}`
-const songs: Song[] = order.flatMap((set) =>
-  [0, 1].map((n) => ({
-    id: songId(set, n),
-    pack: pack(set),
-    spotify_id: tracks[set * 2 + n].id,
-    title: tracks[set * 2 + n].title,
-    artist: tracks[set * 2 + n].artist,
-    art_url: tracks[set * 2 + n].art,
-  })),
-)
-
 // who guesser g says made set s
 function pick(g: number, s: number) {
   const pair = swaps[g].find((p) => p.includes(s))
   return pair ? pair[0] + pair[1] - s : s
 }
 
-// everyone guesses every set but their own, both songs of a set getting the same answer
-const guesses: Guess[] = players.flatMap((guesser, g) =>
-  sets
+// guesser g's guesses for the given sets (never their own)
+export const guessesBy = (g: number, among: number[]): Guess[] =>
+  among
     .filter((set) => set !== g)
-    .flatMap((set) => [0, 1].map((n) => ({ song_id: songId(set, n), guesser_id: guesser.id, guessed_player_id: players[pick(g, set)].id }))),
-)
+    .flatMap((set) =>
+      [0, 1].map((n) => ({ song_id: songId(set, n), guesser_id: players[g].id, guessed_player_id: players[pick(g, set)].id })),
+    )
 
 // like the real room_scores: a point for each set matched. Everyone guesses the same number of sets here,
 // so there is no fewest-guesses tie-break; ties fall back to name.
-function scores() {
+export function scores() {
   return players
     .map((p, g) => {
       const guessed = sets.filter((set) => set !== g)
@@ -85,34 +86,8 @@ function scores() {
     .sort((a, b) => b.correct - a.correct || a.name.localeCompare(b.name))
 }
 
-export function loadDemo() {
-  // a friend can only be matched to one set: catch a bad table here, not on screen
-  players.forEach((_, g) => {
-    const targets = new Set(sets.filter((set) => set !== g).map((set) => pick(g, set)))
-    if (targets.size !== names.length - 1 || targets.has(g)) throw new Error(`demo guesses for ${names[g]} match someone twice`)
-  })
-
-  // every stamp in lib/stamps.ts must show up somewhere in the demo: add a set that earns any new one
-  const earned = new Set(players.map((p, s) => stampFor(statsOf(guesses.filter((g) => g.song_id === songId(s, 0)), p.id))))
-  const missing = stamps.filter((tag) => !earned.has(tag))
-  if (missing.length) throw new Error(`the demo game has no set that earns: ${missing.join(', ')}`)
-
-  game.userId = 'u0'
-  game.room = {
-    id: 'demo',
-    code: 'DEMO',
-    host_user_id: 'u0',
-    theme: 'songs that sound like a road trip at 2am',
-    songs_per_player: 2,
-    phase: 'reveal',
-    playlist_id: playlist.split('/').pop()!,
-    playlist_url: playlist,
-  }
-  game.players = players
-  game.songs = songs
-  game.owners = Object.fromEntries(sets.flatMap((set) => [0, 1].map((n) => [songId(set, n), players[set].id])))
-  game.guesses = guesses
-  game.counts = {}
-  fake.room_scores = scores
-  return () => delete fake.room_scores
-}
+// a swap table that matches someone twice would make an impossible game: catch it here, not on screen
+players.forEach((_, g) => {
+  const picked = new Set(sets.filter((set) => set !== g).map((set) => pick(g, set)))
+  if (picked.size !== names.length - 1 || picked.has(g)) throw new Error(`demo guesses for ${names[g]} match someone twice`)
+})

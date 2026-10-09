@@ -23,15 +23,16 @@ npm run dev        # http://localhost:5173
 npm run check      # types
 ```
 
-## Preview the reveal and results
+## Demo: play a whole game with fake players
 
-A made-up finished 8-player game (`src/demo.ts`) shows the real reveal and results screens with no server:
+`/808s/demo` (or `/demo` in dev) runs the real screens against a fake 8-player game and a fake server (`src/demo/`),
+so you can see every stage without players. The bar at the top jumps between them: Home, Invite, Submit, Guess,
+Reveal, Results. Search, adding songs and guessing all work, and the last guess opens the reveal like the real game.
+A stage can also be opened directly, for example `/808s/#/DEMO-RESULTS`.
 
-- `/808s/demo` (or `/demo` in dev) goes straight to the results page.
-- `/808s/#/DEMO` walks through all 8 reveals, including each tag.
-
-Keep `src/demo.ts` in step when the game data or those screens change. `npm run check` catches a changed type,
-and the demo throws on load if a tag in `src/lib/stamps.ts` is never earned by any demo set.
+Keep it in step when the game data, the screens or the server calls they make change: `npm run check` catches a
+changed type, a new call needs a handler in `src/demo/backend.ts`, and the demo fails to load if a stamp in
+`src/lib/stamps.ts` is never earned by a demo set.
 
 If the build says "Cannot find native binding" on Windows: `npm install --no-save @rolldown/binding-win32-x64-msvc`.
 

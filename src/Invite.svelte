@@ -31,9 +31,15 @@
       <div class="label">INCOMING INVITE</div>
       <div class="big">{preview.theme}</div>
     </div>
-    <p class="muted center">/// {preview.phase === 'submit' ? 'RETURNING? USE THE SAME NAME TO TAKE YOUR SEAT' : 'IN PROGRESS · ONLY THE CREW CAN REJOIN'}</p>
+    {#if preview.phase === 'submit'}
+      <p class="muted center">/// ADD SONGS THAT FIT THE VIBE, THEN GUESS WHO ADDED WHAT</p>
+      <p class="muted center">/// RETURNING? USE THE SAME NAME TO TAKE YOUR SEAT</p>
+    {:else}
+      <p class="muted center">/// IN PROGRESS · ONLY THE CREW CAN REJOIN</p>
+    {/if}
     <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), join())}>
       <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
+      <p class="muted">/// USE THE NAME YOUR FRIENDS KNOW YOU BY</p>
       <Notice scope="join" />
       <button class="btn">JOIN THE PLAYLIST</button>
     </form>

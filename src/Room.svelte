@@ -26,7 +26,7 @@
   // they have seen, and past the last set means they are on the results.
   const key = $derived(`808s-reveal-${code}`)
   const read = () => {
-    if (isDemo(code)) return code === 'DEMO-RESULTS' ? Infinity : null
+    if (isDemo(code)) return code === 'DEMO-RESULTS' ? Infinity : null // the demo never saves a place
     try {
       const saved = localStorage.getItem(key)
       return saved === null ? null : Number(saved)
@@ -44,8 +44,6 @@
 
   const total = $derived(packsOf(game.songs).length)
 </script>
-
-{#if isDemo(code)}<p class="muted center">/// DEMO · FAKE DATA</p>{/if}
 
 {#if stranger}
   <Invite {code} onjoin={load} />

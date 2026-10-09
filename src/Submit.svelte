@@ -12,6 +12,8 @@
   const mine = $derived(game.songs.filter((s) => game.owners[s.id] === me()?.id))
   const slots = $derived(Array.from({ length: room.songs_per_player }, (_, i) => mine[i]))
   const total = $derived(Object.values(game.counts).reduce((a, b) => a + b, 0))
+  const left = $derived(room.songs_per_player - mine.length)
+  const alone = $derived(isHost() && game.players.length === 1) // the host, before anyone has joined
   const locked = $derived(game.players.filter((p) => (game.counts[p.id] ?? 0) >= room.songs_per_player).length)
 
   const taken = (t: Track) => mine.some((s) => s.spotify_id === t.id)
@@ -27,6 +29,12 @@
 <Head step={`LOADED ${mine.length} / ${room.songs_per_player}`} title="Add your songs" />
 
 <div class="panel"><div class="label">THE PLAYLIST VIBE</div><div class="good big">{room.theme}</div></div>
+
+{#if alone}
+  <p class="muted center">/// SEND THE INVITE LINK TO YOUR FRIENDS</p>
+  <Share />
+{/if}
+{#if left > 0}<p class="muted center">/// ADD {left} MORE SONG{left > 1 ? 'S' : ''} THAT FIT THE VIBE</p>{/if}
 
 {#each slots as s, i}
   {#if s}
@@ -45,7 +53,7 @@
   <p class="center good">TRACKS LOCKED · WAITING ON THE CREW</p>
 {/if}
 
-<p class="muted center">/// ALL SOURCES ENCRYPTED UNTIL THE REVEAL.</p>
+<p class="muted center">/// NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL</p>
 
 <div class="wave"></div>
 <div class="split"><span>CREW</span><span class="good">{locked} / {game.players.length} DONE</span></div>
@@ -59,11 +67,12 @@
   {/each}
 </div>
 
-<Share />
+{#if !alone}<Share />{/if}
 
 <div class="grow"></div>
 
 {#if isHost()}
   <Notice scope="start" />
+  <p class="muted center">/// {total < 2 ? 'NEEDS AT LEAST 2 TRACKS TO START' : "STARTING LOCKS EVERYONE'S SONGS AND BUILDS THE PLAYLIST"}</p>
   <button class="btn" disabled={total < 2} onclick={startGuessing}>START LISTENING · {total} TRACKS</button>
 {/if}
