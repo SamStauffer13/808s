@@ -72,6 +72,8 @@ a { color: var(--accent); }
   75% { text-shadow: none; transform: none; }
 }
 .logo.big small { font-size: 40px; }
+.logo.mark { font-size: 18px; opacity: 0.55; cursor: default; user-select: none; -webkit-tap-highlight-color: transparent; }
+.logo.mark small { font-size: 11px; }
 /* a name shrinks to fit its panel: --len is the longest name's letter count, each letter is about 0.92em wide */
 .logo.name { font-size: clamp(18px, calc(100cqw / (var(--len, 6) * 0.92)), 52px); letter-spacing: 0.04em; overflow-wrap: anywhere; }
 

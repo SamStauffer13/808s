@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Admin from './Admin.svelte'
   import Invite from './Invite.svelte'
   import Submit from './Submit.svelte'
   import Guess from './Guess.svelte'
@@ -43,11 +44,13 @@
   }
 
   const total = $derived(packsOf(game.songs).length)
+  const intro = $derived(game.room?.phase === 'reveal' && total > 0 && place === null) // has its own big logo
 </script>
 
 {#if stranger}
   <Invite {code} onjoin={load} />
 {:else if game.room}
+  {#if !intro}<Admin {code} />{/if}
   {#if game.room.phase === 'submit'}
     <Submit />
   {:else if game.room.phase === 'guess'}

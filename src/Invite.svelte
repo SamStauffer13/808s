@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Admin from './Admin.svelte'
   import Notice from './Notice.svelte'
   import { attempt, joinGame, savedName } from './lib/game.svelte'
   import { rpc } from './lib/supabase'
@@ -17,7 +18,7 @@
   }
 </script>
 
-<div class="logo big">808<small>s</small></div>
+<Admin big {code} />
 
 <div class="form">
   {#if preview === undefined}

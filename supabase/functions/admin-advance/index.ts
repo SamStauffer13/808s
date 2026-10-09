@@ -10,8 +10,8 @@ const same = (a: string, b: string) => {
   return diff === 0
 }
 
-// The owner's override: moves any room to its next phase, whether or not the host is around.
-// Needs the ADMIN_KEY secret, so only whoever holds it can use it. Without { code }, it only checks the key.
+// The owner's override: moves any room to its next phase without the host. Needs the ADMIN_KEY secret;
+// without a room code it only checks the key.
 Deno.serve(
   handler(async (req) => {
     const user = await currentUser(req)
