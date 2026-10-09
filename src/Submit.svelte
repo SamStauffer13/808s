@@ -5,7 +5,7 @@
   import Notice from './Notice.svelte'
   import Share from './Share.svelte'
   import Slot from './Slot.svelte'
-  import { attempt, game, isHost, me, once, refreshSoon, type Track } from './lib/game.svelte'
+  import { attempt, game, isHost, me, nameOf, once, refreshSoon, type Track } from './lib/game.svelte'
   import { call, rpc } from './lib/supabase'
 
   const room = $derived(game.room!)
@@ -15,6 +15,11 @@
   const left = $derived(room.songs_per_player - mine.length)
   const alone = $derived(isHost() && game.players.length === 1) // the host, before anyone has joined
   const locked = $derived(game.players.filter((p) => (game.counts[p.id] ?? 0) >= room.songs_per_player).length)
+  const everyoneIn = $derived(game.players.length > 1 && locked === game.players.length)
+  const hostName = $derived(nameOf(game.players.find((p) => p.user_id === room.host_user_id)?.id).toUpperCase())
+  const startHint = $derived(
+    total < 2 ? 'NEEDS AT LEAST 2 TRACKS TO START' : everyoneIn ? "EVERYONE'S IN · START WHEN YOU'RE READY" : "STARTING LOCKS EVERYONE'S SONGS AND BUILDS THE PLAYLIST",
+  )
 
   const taken = (t: Track) => mine.some((s) => s.spotify_id === t.id)
 
@@ -50,7 +55,8 @@
 <Notice scope="songs" />
 
 {#if mine.length >= room.songs_per_player}
-  <p class="center good">TRACKS LOCKED · WAITING ON THE CREW</p>
+  <p class="center good">{everyoneIn ? "EVERYONE'S IN" : 'TRACKS LOCKED · WAITING ON THE CREW'}</p>
+  {#if everyoneIn && !isHost()}<p class="muted center">/// WAITING ON {hostName} TO START LISTENING · GIVE THEM A NUDGE</p>{/if}
 {/if}
 
 <p class="muted center">/// NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL</p>
@@ -73,6 +79,6 @@
 
 {#if isHost()}
   <Notice scope="start" />
-  <p class="muted center">/// {total < 2 ? 'NEEDS AT LEAST 2 TRACKS TO START' : "STARTING LOCKS EVERYONE'S SONGS AND BUILDS THE PLAYLIST"}</p>
+  <p class="muted center">/// {startHint}</p>
   <button class="btn" disabled={total < 2} onclick={startGuessing}>START LISTENING · {total} TRACKS</button>
 {/if}
