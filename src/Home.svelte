@@ -3,32 +3,27 @@
   import { attempt, notify, once, saveName, savedName } from './lib/game.svelte'
   import { call } from './lib/supabase'
 
-  const tagline = ["CAN YOU SENSE PEOPLE'S VIBES?", "LET'S TEST THAT"]
-
-  let name = $state(savedName())
-  const adjectives = ['sad', 'summer', 'guilty-pleasure', 'late-night', 'nostalgic', 'angry']
-  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)]
-
-  let vibe = $state('')
-  let title = $state('')
-  let songs = $state(2)
-  let editingSongs = $state(false)
+  const tagline = ["OH, YOU CAN FEEL PEOPLE'S VIBES?", "LET'S TEST THAT"]
 
   // The playlist is made in the host's own Spotify account. Logging in leaves this page, so the form is kept
   // for the trip and comes back filled in.
-  let spotifyName = $state<string | null>(null)
   const draftKey = '808s-draft'
-
-  try {
-    const draft = JSON.parse(sessionStorage.getItem(draftKey) ?? 'null')
-    if (draft) {
-      name = draft.name ?? name
-      vibe = draft.vibe ?? ''
-      title = draft.title ?? ''
-      songs = draft.songs ?? songs
+  const draft = (() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(draftKey) ?? 'null')
       sessionStorage.removeItem(draftKey)
+      return saved
+    } catch {
+      return null
     }
-  } catch {}
+  })()
+
+  let name = $state(draft?.name ?? savedName())
+  let vibe = $state(draft?.vibe ?? '')
+  let title = $state(draft?.title ?? '')
+  let songs = $state(draft?.songs ?? 2)
+  let editingSongs = $state(false)
+  let spotifyName = $state<string | null>(null)
 
   const spotifyAccount = (body: object) => call<{ connected?: boolean; name?: string; url?: string }>('spotify-account', body)
 
@@ -67,7 +62,7 @@
   <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
   <label class="field">
     <span class="label">THE PLAYLIST VIBE</span>
-    <input bind:value={vibe} maxlength="140" placeholder={`e.g. your favorite ${adjective} songs`} required />
+    <input bind:value={vibe} maxlength="140" placeholder="e.g. your favorite angsty teenager songs" required />
   </label>
   <label class="field">
     <span class="label">PLAYLIST NAME · OPTIONAL</span>

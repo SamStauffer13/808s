@@ -4,7 +4,7 @@
   import Head from './Head.svelte'
   import Notice from './Notice.svelte'
   import Playlist from './Playlist.svelte'
-  import { attempt, game, isHost, me, nameOf, once, packsOf, refresh, type Pack } from './lib/game.svelte'
+  import { attempt, game, isHost, me, nameOf, once, packsOf, refreshSoon, type Pack } from './lib/game.svelte'
   import { rpc } from './lib/supabase'
 
   const room = $derived(game.room!)
@@ -19,9 +19,9 @@
   let open = $state<string | null>(null)
   let progress = $state<{ finished: number; total: number }>()
 
-  // other players' guesses are private, so their progress is polled instead of arriving live
+  // other players' guesses are private, so their progress is polled instead of arriving live (not while the tab is hidden)
   $effect(() => {
-    const load = () => rpc('guess_progress', { p_room: room.id }).then(([p]) => (progress = p)).catch(() => {})
+    const load = () => document.hidden || rpc('guess_progress', { p_room: room.id }).then(([p]) => (progress = p)).catch(() => {})
     load()
     const timer = setInterval(load, 5000)
     return () => clearInterval(timer)
@@ -37,7 +37,7 @@
       ...pack.songs.map((s) => ({ song_id: s.id, guesser_id: meId, guessed_player_id: playerId })),
     ]
     await attempt(pack.id, () => rpc('submit_guess', { p_pack: pack.id, p_guessed: playerId }))
-    await refresh()
+    refreshSoon()
   }
 
   const reveal = once(() => attempt('reveal', () => rpc('host_set_phase', { p_room: room.id, p_phase: 'reveal' })))

@@ -107,6 +107,15 @@ export async function refresh() {
   game.counts = Object.fromEntries((counts.data ?? []).map((c: { player_id: string; n: number }) => [c.player_id, c.n]))
 }
 
+// Several changes often land together, and a player's own write is followed by its realtime echo,
+// so reload once for the burst. Realtime cannot report deletes for filtered tables, so writes
+// call this too instead of relying on it.
+let refreshTimer: ReturnType<typeof setTimeout>
+export function refreshSoon() {
+  clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(refresh, 150)
+}
+
 // Loads the room, keeps it fresh through realtime, and returns a cleanup. Null if this
 // browser is not a member of the room.
 export async function open(code: string) {
@@ -117,21 +126,14 @@ export async function open(code: string) {
   game.room = data
   await refresh()
 
-  // several changes often land together, so reload once for the burst
-  let timer: ReturnType<typeof setTimeout>
-  const queue = () => {
-    clearTimeout(timer)
-    timer = setTimeout(refresh, 150)
-  }
-
   const channel = supabase.channel(`room-${data.id}`)
   for (const table of ['rooms', 'players', 'songs', 'guesses']) {
     const filter = table === 'rooms' ? `id=eq.${data.id}` : `room_id=eq.${data.id}`
-    channel.on('postgres_changes', { event: '*', schema: 'public', table, filter }, queue)
+    channel.on('postgres_changes', { event: '*', schema: 'public', table, filter }, refreshSoon)
   }
   channel.subscribe()
   return () => {
-    clearTimeout(timer)
+    clearTimeout(refreshTimer)
     supabase.removeChannel(channel)
   }
 }

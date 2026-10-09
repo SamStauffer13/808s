@@ -1,6 +1,6 @@
 <script lang="ts">
   import Notice from './Notice.svelte'
-  import { joinGame, savedName } from './lib/game.svelte'
+  import { attempt, joinGame, savedName } from './lib/game.svelte'
   import { rpc } from './lib/supabase'
 
   let { code, onjoin } = $props()
@@ -9,7 +9,7 @@
   let preview = $state<{ theme: string; phase: string } | null>()
 
   $effect(() => {
-    rpc('room_preview', { p_code: code }).then((r) => (preview = r[0] ?? null))
+    attempt('preview', async () => (preview = (await rpc('room_preview', { p_code: code }))[0] ?? null))
   })
 
   const join = async () => {
@@ -22,6 +22,7 @@
 <div class="form">
   {#if preview === undefined}
     <p class="muted center">/// CONNECTING</p>
+    <Notice scope="preview" />
   {:else if preview === null}
     <p class="center">PLAYLIST NOT FOUND</p>
     <a class="btn ghost" href="#/">START YOUR OWN</a>

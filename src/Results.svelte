@@ -1,7 +1,8 @@
 <script lang="ts">
   import Head from './Head.svelte'
+  import Notice from './Notice.svelte'
   import Playlist from './Playlist.svelte'
-  import { game, me, nameOf, packsOf } from './lib/game.svelte'
+  import { attempt, game, me, nameOf, packsOf } from './lib/game.svelte'
   import { rpc } from './lib/supabase'
 
   type Score = { player_id: string; name: string; correct: number; total: number }
@@ -9,7 +10,7 @@
   const room = $derived(game.room!)
   let scores = $state<Score[]>([])
   $effect(() => {
-    rpc('room_scores', { p_room: room.id }).then((s) => (scores = s))
+    attempt('scores', async () => (scores = await rpc('room_scores', { p_room: room.id })))
   })
 
   const top = $derived(scores[0]?.correct ?? 0)
@@ -33,6 +34,7 @@
 
 <div class="wave"></div>
 <div class="label">LEADERBOARD</div>
+<Notice scope="scores" />
 <div class="stack">
   {#each scores as s, n}
     <div class="score">

@@ -5,7 +5,7 @@
   import Notice from './Notice.svelte'
   import Share from './Share.svelte'
   import Slot from './Slot.svelte'
-  import { attempt, game, isHost, me, once, refresh, type Track } from './lib/game.svelte'
+  import { attempt, game, isHost, me, once, refreshSoon, type Track } from './lib/game.svelte'
   import { call, rpc } from './lib/supabase'
 
   const room = $derived(game.room!)
@@ -17,10 +17,10 @@
   const taken = (t: Track) => mine.some((s) => s.spotify_id === t.id)
 
   const add = once(async (t: Track, scope: string) => {
-    if (!taken(t)) await attempt(scope, async () => (await call('add-song', { room_id: room.id, spotify_id: t.id }), refresh()))
+    if (!taken(t)) await attempt(scope, async () => (await call('add-song', { room_id: room.id, spotify_id: t.id }), refreshSoon()))
   })
 
-  const remove = (id: string) => attempt('songs', async () => (await rpc('remove_song', { p_song: id }), refresh()))
+  const remove = (id: string) => attempt('songs', async () => (await rpc('remove_song', { p_song: id }), refreshSoon()))
   const startGuessing = once(() => attempt('start', () => call('start-guess', { room_id: room.id })))
 </script>
 

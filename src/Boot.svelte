@@ -5,16 +5,23 @@
   let shown = $state(1)
 
   $effect(() => {
+    let finish: ReturnType<typeof setTimeout>
     const timer = setInterval(() => {
       if (shown < lines.length) return shown++
       clearInterval(timer)
-      setTimeout(done, 300)
+      finish = setTimeout(done, 300)
     }, 350)
-    return () => clearInterval(timer)
+    return () => {
+      clearInterval(timer)
+      clearTimeout(finish)
+    }
   })
+
+  // pressing Shift or Ctrl on the way to something else should not skip the intro
+  const skip = (e: KeyboardEvent) => !['Shift', 'Control', 'Alt', 'Meta'].includes(e.key) && done()
 </script>
 
-<svelte:window onkeydown={done} />
+<svelte:window onkeydown={skip} />
 
 <button class="boot" onclick={done} aria-label="Skip intro">
   {#each lines.slice(0, shown) as line}<span>{line}</span>{/each}
