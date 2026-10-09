@@ -43,7 +43,9 @@
   <p class="muted center">/// SEND THE INVITE LINK TO YOUR FRIENDS</p>
   <Share />
 {/if}
-{#if left > 0}<p class="muted center">/// ADD {left} MORE SONG{left > 1 ? 'S' : ''} THAT FIT THE VIBE</p>{/if}
+{#if left > 0}
+  <p class="muted center">/// ADD {left} MORE SONG{left > 1 ? 'S' : ''} THAT FIT THE VIBE · NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL</p>
+{/if}
 
 {#each slots as s, i}
   {#if s}
@@ -60,10 +62,10 @@
 
 {#if mine.length >= room.songs_per_player}
   <p class="center good">{everyoneIn ? "EVERYONE'S IN" : waiting > 0 ? `TRACKS LOCKED · WAITING ON ${waiting} MORE` : 'TRACKS LOCKED'}</p>
-  {#if everyoneIn && !isHost()}<p class="muted center">/// WAITING ON {hostName} TO START LISTENING · GIVE THEM A NUDGE</p>{/if}
+  {#if !isHost()}
+    <p class="muted center">/// {everyoneIn ? `WAITING ON ${hostName} TO START LISTENING · GIVE THEM A NUDGE` : `${hostName} STARTS THE LISTENING ROUND, THEN YOU GUESS WHO ADDED WHAT`}</p>
+  {/if}
 {/if}
-
-<p class="muted center">/// NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL</p>
 
 <div class="wave"></div>
 <div class="split"><span>CREW</span><span class="good">{locked} / {game.players.length} DONE</span></div>

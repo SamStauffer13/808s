@@ -18,6 +18,7 @@
 
   let open = $state<string | null>(null)
   let progress = $state<{ finished: number; total: number }>()
+  const waiting = $derived(progress ? progress.total - progress.finished : 0)
 
   // other players' guesses are private, so their progress is polled instead of arriving live (not while the tab is hidden)
   $effect(() => {
@@ -47,14 +48,21 @@
 
 <p class="muted">VIBE: <span class="text">{room.theme}</span></p>
 
+{#if todo.length}
+  <p class="muted center"><Eq />/// LISTEN, THEN PICK WHO ADDED EACH SET · ONE FRIEND PER SET</p>
+{/if}
+
+{#if todo.length && done === todo.length}
+  <p class="center good">ALL TRACED · {waiting > 0 ? `WAITING ON ${waiting} MORE PLAYER${waiting > 1 ? 'S' : ''}` : 'OPENING THE REVEAL'}</p>
+  <p class="muted center">/// THE REVEAL OPENS WHEN EVERYONE IS DONE · COME BACK ANY TIME</p>
+{:else if !todo.length}
+  <p class="center good">NOTHING TO GUESS · THESE ARE ALL YOUR SONGS</p>
+{/if}
+
 <div class="framed">
   <iframe title="Playlist" src={`https://open.spotify.com/embed/playlist/${room.playlist_id}?theme=0`} allow="encrypted-media" loading="lazy"></iframe>
 </div>
 <Playlist />
-
-{#if todo.length}
-  <p class="muted center"><Eq />/// LISTEN, THEN PICK WHO ADDED EACH SET · ONE FRIEND PER SET</p>
-{/if}
 
 {#if progress}
   <div class="split"><span><i class="rec"></i>CREW FINISHED</span><span class="good">{progress.finished} / {progress.total}</span></div>
@@ -91,17 +99,10 @@
   {/if}
 {/each}
 
-{#if todo.length && done === todo.length}
-  <p class="center good">ALL TRACED · AWAITING THE REVEAL</p>
-  <p class="muted center">/// THE REVEAL OPENS WHEN EVERYONE IS DONE · COME BACK ANY TIME</p>
-{:else if !todo.length}
-  <p class="center good">NOTHING TO GUESS · THESE ARE ALL YOUR SONGS</p>
-{/if}
-
 <div class="grow"></div>
 
 {#if isHost()}
   <Notice scope="reveal" />
-  <p class="muted center">/// THE REVEAL OPENS ON ITS OWN WHEN EVERYONE HAS TRACED</p>
+  <p class="muted center">/// THE REVEAL OPENS ON ITS OWN WHEN EVERYONE HAS TRACED · OPENING IT EARLY SKIPS ANYONE STILL GUESSING</p>
   <button class="btn ghost" onclick={reveal}>OPEN THE REVEAL NOW</button>
 {/if}
