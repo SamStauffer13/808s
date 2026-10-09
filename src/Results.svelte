@@ -5,7 +5,9 @@
   import { attempt, game, me, nameOf, packsOf } from './lib/game.svelte'
   import { rpc } from './lib/supabase'
 
-  type Score = { player_id: string; name: string; correct: number; total: number }
+  let { replay }: { replay: () => void } = $props()
+
+  type Score ={ player_id: string; name: string; correct: number; total: number }
 
   const room = $derived(game.room!)
   let scores = $state<Score[]>([])
@@ -62,4 +64,5 @@
 <Playlist />
 
 <div class="grow"></div>
+<button class="btn ghost" onclick={replay}>REPLAY THE REVEAL</button>
 <a class="btn" href="#/">NEW PLAYLIST</a>

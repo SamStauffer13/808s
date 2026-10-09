@@ -9,7 +9,6 @@ export type Room = {
   phase: 'submit' | 'guess' | 'reveal' | 'done'
   playlist_id: string | null
   playlist_url: string | null
-  reveal_index: number
 }
 type Player = { id: string; user_id: string; name: string }
 export type Song = { id: string; pack: string | null; spotify_id: string; title: string; artist: string; art_url: string | null }

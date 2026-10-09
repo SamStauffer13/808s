@@ -1,36 +1,28 @@
 <script lang="ts">
   import Art from './Art.svelte'
   import Head from './Head.svelte'
-  import Notice from './Notice.svelte'
   import Playlist from './Playlist.svelte'
   import { fade } from 'svelte/transition'
   import { decrypt } from './lib/decrypt'
-  import { attempt, game, isHost, me, nameOf, once, packsOf } from './lib/game.svelte'
-  import { rpc } from './lib/supabase'
+  import { game, me, nameOf, packsOf } from './lib/game.svelte'
+  import { statsOf, stampFor } from './lib/stamps'
 
-  const room = $derived(game.room!)
-  const packs = $derived(packsOf(game.songs))
-  const last = $derived(packs.length - 1)
-  const pack = $derived(packs[Math.min(room.reveal_index, last)])
+  // index is the set being shown; go moves this player (and only this player) to another one
+  let { index, total, go }: { index: number; total: number; go: (to: number) => void } = $props()
+
+  const pack = $derived(packsOf(game.songs)[index])
   const owner = $derived(game.owners[pack?.songs[0].id])
   const guesses = $derived(game.guesses.filter((g) => g.song_id === pack?.songs[0].id))
   const right = $derived(guesses.filter((g) => g.guessed_player_id === owner).length)
+  const stamp = $derived(stampFor(statsOf(guesses, owner)))
 
   const source = $derived(nameOf(owner).toUpperCase())
   let name = $state('')
   const solved = $derived(name === source)
   $effect(() => decrypt(source, (shown) => (name = shown)))
-
-  const next = once(() =>
-    attempt('next', () =>
-      room.reveal_index < last
-        ? rpc('host_set_reveal_index', { p_room: room.id, p_index: room.reveal_index + 1 })
-        : rpc('host_set_phase', { p_room: room.id, p_phase: 'done' }),
-    ),
-  )
 </script>
 
-<Head step={`${room.reveal_index + 1} OF ${packs.length}`} />
+<Head step={`${index + 1} OF ${total}`} />
 
 {#if pack}
   {#each pack.songs as song}
@@ -48,6 +40,7 @@
       <div class="good muted" in:fade={{ duration: 150 }}>
         {right === guesses.length ? 'EVERYONE TRACED IT' : right ? `${right} OF ${guesses.length} TRACED IT` : 'NOBODY TRACED IT'}
       </div>
+      {#if stamp}<div class="stamp" in:fade={{ duration: 150 }}>[ {stamp} ]</div>{/if}
     {/if}
   </div>
 
@@ -70,9 +63,5 @@
 
 <div class="grow"></div>
 
-{#if isHost()}
-  <Notice scope="next" />
-  <button class="btn" onclick={next}>{room.reveal_index < last ? 'NEXT SOURCE' : 'SEE RESULTS'}</button>
-{:else}
-  <p class="muted center">/// HOST CONTROLS THE REVEAL</p>
-{/if}
+{#if index > 0}<button class="btn ghost plain" onclick={() => go(index - 1)}>← PREVIOUS SOURCE</button>{/if}
+<button class="btn" onclick={() => go(index + 1)}>{index < total - 1 ? 'NEXT SOURCE' : 'SEE RESULTS'}</button>

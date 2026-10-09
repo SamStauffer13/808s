@@ -101,5 +101,6 @@
 
 {#if isHost()}
   <Notice scope="reveal" />
-  <button class="btn" onclick={reveal}>REVEAL THE SOURCES</button>
+  <p class="muted center">/// THE REVEAL OPENS ON ITS OWN WHEN EVERYONE HAS TRACED</p>
+  <button class="btn ghost" onclick={reveal}>OPEN THE REVEAL NOW</button>
 {/if}
