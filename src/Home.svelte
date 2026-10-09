@@ -3,7 +3,7 @@
   import { attempt, notify, once, saveName, savedName } from './lib/game.svelte'
   import { call } from './lib/supabase'
 
-  const tagline = ["OH, YOU CAN FEEL PEOPLE'S VIBES?", "LET'S TEST THAT"]
+  const tagline = ["CAN YOU FEEL PEOPLE'S VIBES?", "LET'S TEST THAT"]
 
   // The playlist is made in the host's own Spotify account. Logging in leaves this page, so the form is kept
   // for the trip and comes back filled in.
