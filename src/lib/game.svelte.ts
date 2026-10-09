@@ -140,7 +140,14 @@ export async function open(code: string) {
     channel.on('postgres_changes', { event: '*', schema: 'public', table, filter }, refreshSoon)
   }
   channel.subscribe()
+
+  // a phone suspends a backgrounded tab and its realtime connection, so catch up as soon as the player is back
+  const comeBack = () => document.hidden || refreshSoon()
+  document.addEventListener('visibilitychange', comeBack)
+  window.addEventListener('pageshow', comeBack)
   return () => {
+    document.removeEventListener('visibilitychange', comeBack)
+    window.removeEventListener('pageshow', comeBack)
     clearTimeout(refreshTimer)
     supabase.removeChannel(channel)
   }
