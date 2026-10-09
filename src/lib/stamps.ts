@@ -21,7 +21,7 @@ export function statsOf(guesses: Guess[], owner: string | undefined): SetStats {
 // To add a stamp, add a line; to drop one, delete its line.
 const rules: { tag: string; when: (s: SetStats) => boolean }[] = [
   { tag: 'DOXXED', when: (s) => s.right === s.guessers },
-  { tag: 'UNTRACEABLE', when: (s) => s.right === 0 },
+  { tag: 'UNCRACKABLE', when: (s) => s.right === 0 },
   { tag: 'PROXIED', when: (s) => s.topWrong > s.right },
 ]
 

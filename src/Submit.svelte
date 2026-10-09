@@ -20,7 +20,7 @@
   const waiting = $derived(game.players.length - locked) // players still adding songs
   const startHint = $derived.by(() => {
     if (total < 2) return 'NEEDS AT LEAST 2 TRACKS TO START'
-    if (everyoneIn) return "EVERYONE'S WAITING ON YOU · HIT START GUESSING"
+    if (everyoneIn) return "CREW STANDING BY · BEGIN THE EXPERIMENT"
     if (waiting > 0) return `${waiting} STILL ADDING · STARTING LOCKS EVERYONE'S SONGS`
     return 'STARTING LOCKS YOUR SONGS AND BUILDS THE PLAYLIST'
   })
@@ -61,9 +61,9 @@
 <Notice scope="songs" />
 
 {#if mine.length >= room.songs_per_player}
-  <p class="center good">{everyoneIn ? (isHost() ? "EVERYONE'S IN · THE CREW IS WAITING ON YOU" : "EVERYONE'S IN") : waiting > 0 ? `TRACKS LOCKED · WAITING ON ${waiting} MORE` : 'TRACKS LOCKED'}</p>
+  <p class="center good">{everyoneIn ? (isHost() ? "EVERYONE'S IN · CREW STANDING BY FOR YOUR AUTH" : "EVERYONE'S IN") : waiting > 0 ? `TRACKS LOCKED · WAITING ON ${waiting} MORE` : 'TRACKS LOCKED'}</p>
   {#if !isHost()}
-    <p class="muted center">/// {everyoneIn ? `WAITING ON ${hostName} TO HIT START GUESSING · GIVE THEM A NUDGE` : `${hostName} HITS START GUESSING, THEN YOU GUESS WHO ADDED WHAT`}</p>
+    <p class="muted center">/// {everyoneIn ? `WAITING ON ${hostName} TO BEGIN THE EXPERIMENT` : `${hostName} HOLDS THE KEY · THE EXPERIMENT BEGINS ON THEIR COMMAND`}</p>
   {/if}
 {/if}
 
@@ -86,5 +86,5 @@
 {#if isHost()}
   <Notice scope="start" />
   <p class="muted center">/// {startHint}</p>
-  <button class="btn" disabled={total < 2} onclick={startGuessing}>START GUESSING · {total} TRACKS</button>
+  <button class="btn" disabled={total < 2} onclick={startGuessing}>BEGIN THE EXPERIMENT · {total} TRACKS</button>
 {/if}

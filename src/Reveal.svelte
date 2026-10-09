@@ -65,13 +65,13 @@
       {:else if !mine}
         <p class="verdict muted">YOU DIDN'T GUESS THIS ONE</p>
       {:else if mine.guessed_player_id === owner}
-        <p class="verdict good">✓ YOU TRACED IT</p>
+        <p class="verdict good">✓ YOU CRACKED IT</p>
       {:else}
         <p class="verdict">✗ YOU SAID {nameOf(mine.guessed_player_id).toUpperCase()}</p>
       {/if}
 
       <div class="split">
-        <span class="good">{right === guesses.length ? 'EVERYONE' : right ? `${right} OF ${guesses.length}` : 'NOBODY'} TRACED IT</span>
+        <span class="good">{right === guesses.length ? 'EVERYONE' : right ? `${right} OF ${guesses.length}` : 'NOBODY'} CRACKED IT</span>
         {#if stamp}<span class="stamp">[ {stamp} ]</span>{/if}
       </div>
 

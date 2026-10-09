@@ -44,7 +44,7 @@
   const reveal = once(() => attempt('reveal', () => rpc('host_set_phase', { p_room: room.id, p_phase: 'reveal' })))
 </script>
 
-<Head step={`${done} / ${todo.length} TRACED`} title="Who added what?" />
+<Head step={`THE EXPERIMENT · ${done} / ${todo.length} CRACKED`} title="Who added what?" />
 
 <p class="muted">VIBE: <span class="text">{room.theme}</span></p>
 
@@ -53,7 +53,7 @@
 {/if}
 
 {#if todo.length && done === todo.length}
-  <p class="center good">ALL TRACED · {waiting > 0 ? `WAITING ON ${waiting} MORE PLAYER${waiting > 1 ? 'S' : ''}` : 'OPENING THE REVEAL'}</p>
+  <p class="center good">ALL CRACKED · {waiting > 0 ? `WAITING ON ${waiting} MORE PLAYER${waiting > 1 ? 'S' : ''}` : 'OPENING THE REVEAL'}</p>
   <p class="muted center">/// THE REVEAL OPENS WHEN EVERYONE IS DONE · COME BACK ANY TIME</p>
 {:else if !todo.length}
   <p class="center good">NOTHING TO GUESS · THESE ARE ALL YOUR SONGS</p>
@@ -103,6 +103,6 @@
 
 {#if isHost()}
   <Notice scope="reveal" />
-  <p class="muted center">/// THE REVEAL OPENS ON ITS OWN WHEN EVERYONE HAS TRACED · OPENING IT EARLY SKIPS ANYONE STILL GUESSING</p>
+  <p class="muted center">/// THE REVEAL OPENS ON ITS OWN WHEN EVERYONE HAS GUESSED · OPENING IT EARLY SKIPS ANYONE STILL GUESSING</p>
   <button class="btn ghost" onclick={reveal}>OPEN THE REVEAL NOW</button>
 {/if}

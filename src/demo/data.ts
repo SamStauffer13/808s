@@ -49,7 +49,7 @@ export const setSongs = (set: number): Song[] =>
 
 // What each guesser got wrong, as pairs of sets they swapped (a swap makes both sets wrong, and keeps every
 // guesser's picks valid: a friend can only be matched to one set). Everything else is guessed correctly.
-// This spread gives the reveal a DOXXED set (1), an UNTRACEABLE one (6) and a PROXIED one (7).
+// This spread gives the reveal a DOXXED set (1), an UNCRACKABLE one (6) and a PROXIED one (7).
 const swaps: [number, number][][] = [
   [[6, 7], [3, 4]], // DRE
   [[6, 7], [2, 3]], // DILLA
