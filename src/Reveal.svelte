@@ -35,7 +35,7 @@
   <div class="panel framed">
     <div class="label">{solved ? 'SOURCE IDENTIFIED' : 'DECRYPTING…'}</div>
     <div class="avatar big">{name[0]}</div>
-    <div class="logo name">{name}</div>
+    <div class="logo name" style:--len={source.length}>{name}</div>
     {#if solved && guesses.length}
       <div class="good muted" in:fade={{ duration: 150 }}>
         {right === guesses.length ? 'EVERYONE TRACED IT' : right ? `${right} OF ${guesses.length} TRACED IT` : 'NOBODY TRACED IT'}

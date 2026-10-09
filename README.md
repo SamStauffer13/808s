@@ -47,6 +47,17 @@ If the build says "Cannot find native binding" on Windows: `npm install --no-sav
   `git@github-808s:SamStauffer13/808s.git`. The `github-808s` alias in `~/.ssh/config` uses the deploy key
   `~/.ssh/808s_deploy`, which is added to the repo with write access.
 
+## How a game flows
+
+1. **Create:** the host connects Spotify and sets a vibe.
+2. **Submit:** friends join by link and add songs. Who added what stays hidden.
+3. **Listen:** the host presses `START LISTENING`, which builds a shuffled playlist in their Spotify.
+4. **Guess:** each player matches every other player's songs to whoever added them.
+5. **Reveal:** it opens by itself when the last guess is in (the host can open it early). After that each player steps
+   through it at their own pace, any time; their place is saved on their device.
+
+Each revealed set can get a stamp (`DOXXED`, `UNTRACEABLE`, `PROXIED`). The rules are one short table in `src/lib/stamps.ts`.
+
 ## Runs by itself
 
 - Nightly (04:00 UTC) pg_cron job `808s-cleanup` deletes games older than 28 days that never made a playlist, and
