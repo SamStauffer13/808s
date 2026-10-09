@@ -1,5 +1,5 @@
 import { admin, currentUser, handler, HttpError } from '../_shared/http.ts'
-import { hostToken, spotify } from '../_shared/spotify.ts'
+import { spotify, userToken } from '../_shared/spotify.ts'
 
 // The playlist is built only now, all at once and shuffled, so nobody can learn who added
 // what by watching songs appear in it during the submit phase.
@@ -22,7 +22,7 @@ Deno.serve(
       ;[songs[i], songs[j]] = [songs[j], songs[i]]
     }
 
-    const token = await hostToken()
+    const token = await userToken(room.host_user_id)
     const playlist = await spotify(token, '/me/playlists', {
       method: 'POST',
       body: JSON.stringify({

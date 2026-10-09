@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-const origins = ['https://samstauffer.net', 'http://localhost:5173']
+export const origins = ['https://samstauffer.net', 'http://localhost:5173']
 
 // browsers from other sites are refused: they only ever get our own origin back
 const corsFor = (req: Request) => {
@@ -27,15 +27,6 @@ export class HttpError extends Error {
   constructor(public status: number, message: string) {
     super(message)
   }
-}
-
-// whoever has the host access code can start playlists and clean them up
-export function requireHostCode(code: unknown) {
-  const expected = Deno.env.get('HOST_PASSPHRASE') ?? ''
-  const given = String(code ?? '')
-  let diff = given.length ^ expected.length
-  for (let i = 0; i < expected.length; i++) diff |= (given.charCodeAt(i) || 0) ^ expected.charCodeAt(i)
-  if (!expected || diff) throw new HttpError(403, 'wrong host access code')
 }
 
 export function handler(fn: (req: Request) => Promise<unknown>) {

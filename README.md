@@ -8,12 +8,12 @@ each set of songs back to its source. Live at https://samstauffer.net/808s/
 | Part | Where |
 |---|---|
 | Website | GitHub Pages, repo `SamStauffer13/808s`. A push to `main` builds and deploys it. |
-| Backend | Supabase project `808s` (ref `yvvcqkuszlcxyvpimavs`): Postgres, realtime, anonymous auth, 5 Edge Functions |
-| Spotify | Developer dashboard app `808s` (owner needs Premium). Players never log in to Spotify. |
+| Backend | Supabase project `808s` (ref `yvvcqkuszlcxyvpimavs`): Postgres, realtime, anonymous auth, Edge Functions |
+| Spotify | Developer dashboard app `808s`. Only the host logs in to Spotify (their playlist is made in their own account); players never do. |
 | Frontend | Svelte 5 + Vite + TypeScript. Only `svelte` and `@supabase/supabase-js` at runtime. |
 
 Secrets live only in Supabase (`npx supabase secrets list`): `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`,
-`SPOTIFY_REFRESH_TOKEN`, `HOST_PASSPHRASE`. `.env` holds the Supabase URL and publishable key, which are public.
+(`SPOTIFY_REFRESH_TOKEN` is no longer used and can be removed.) `.env` holds the Supabase URL and publishable key, which are public.
 
 ## Run it
 
@@ -41,9 +41,6 @@ If the build says "Cannot find native binding" on Windows: `npm install --no-sav
 
 - Nightly (04:00 UTC) pg_cron job `808s-cleanup` deletes games older than 28 days that never made a playlist, and
   the anonymous accounts left behind.
-- Starting a new playlist (`create-room`) first removes the Spotify playlists of games older than 28 days, then those
-  games. It needs the `user-library-modify` Spotify permission (verified working); if it goes missing, nothing is deleted
-  and it retries next time. Fix: rerun `scripts/spotify-auth.mjs`.
 - `keepalive.yml` pings Supabase every 3 days so the free tier does not pause. GitHub disables scheduled
   workflows after 60 days without repo activity; run it once by hand if that happens.
 
@@ -51,13 +48,11 @@ If the build says "Cannot find native binding" on Windows: `npm install --no-sav
 
 | Symptom | Fix |
 |---|---|
-| Starting the listen step fails, or playlists stop appearing | The Spotify login went stale: `node scripts/spotify-auth.mjs <spotify-client-id>` (needs `npx supabase login` first) |
+| Starting the listen step fails | The host's Spotify connection went stale: they press `NOT YOU? DISCONNECT`, then connect again |
 | Everything errors after a quiet spell | Supabase paused the project. Restore it in the dashboard. |
-| Hosts cannot start a playlist | `npx supabase secrets set HOST_PASSPHRASE="..."` |
+| Host login fails with "INVALID_CLIENT" or a 403 | Their Spotify email is not under User management in the Spotify app (development mode allows only 5 people, and extended quota needs a business with 250k monthly users) |
 | Deploy fails with "multiple artifacts" | Never "Re-run" a deploy. Actions, Deploy to GitHub Pages, **Run workflow**. |
 | First deploy returns 404 | Repo Settings, Pages, Source must be **GitHub Actions**. |
-
-Spotify only "deletes" a playlist by removing it from your library, which is what the cleanup does.
 
 ## Rules that keep it fair
 
@@ -80,14 +75,12 @@ Spotify only "deletes" a playlist by removing it from your library, which is wha
 - Rejoin: typing a name that is already in the playlist takes that seat, in any phase, host included. It trusts
   the crew, so anyone with the invite link could take a friend's seat. If that ever matters, require host approval.
 
-- Cleaning up playlists: on the home screen, `/// CLEAN UP OLD PLAYLISTS` (needs the host access code) lists finished
-  playlists the app made, and the delete button removes one from Spotify and deletes its game. It can only touch
-  playlists recorded for a game, never any other playlist on the account (`manage-playlists` function).
+- Host login: the home screen's `CONNECT SPOTIFY` sends the host through Spotify's login (`spotify-account` builds the
+  link, `spotify-callback` receives the result and stores their refresh token in `spotify_accounts`, which only Edge Functions can read).
+  The Spotify app's redirect URI must be exactly `https://yvvcqkuszlcxyvpimavs.supabase.co/functions/v1/spotify-callback`.
+  Only the `playlist-modify-public` permission is requested. Playlists belong to their hosts; the app never deletes them.
 
 ## Ideas not built
 
 - Optional deadline line on the add-songs screen (informational, e.g. "submissions close Friday").
 - Sound effects, a guess countdown, glitch transitions between screens.
-- Use a separate throwaway Spotify account for the playlists instead of the personal one: add its email under
-  User management in the Spotify app, then rerun `scripts/spotify-auth.mjs` signed in as that account. Delete existing
-  playlists with the clean-up link first, since only the owning account can delete them.

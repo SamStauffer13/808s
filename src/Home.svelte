@@ -1,9 +1,7 @@
 <script lang="ts">
   import Notice from './Notice.svelte'
-  import { attempt, once, saveName, savedName } from './lib/game.svelte'
+  import { attempt, notify, once, saveName, savedName } from './lib/game.svelte'
   import { call } from './lib/supabase'
-
-  type Old = { id: string; name: string; created_at: string; players: number }
 
   const tagline = ["CAN YOU SENSE PEOPLE'S VIBES?", "LET'S TEST THAT"]
 
@@ -15,48 +13,48 @@
   let title = $state('')
   let songs = $state(2)
   let editingSongs = $state(false)
-  let passphrase = $state(localStorage.getItem('808s-host') ?? '')
-  let remembered = $state(!!localStorage.getItem('808s-host'))
+
+  // The playlist is made in the host's own Spotify account. Logging in leaves this page, so the form is kept
+  // for the trip and comes back filled in.
+  let spotifyName = $state<string | null>(null)
+  const draftKey = '808s-draft'
+
+  try {
+    const draft = JSON.parse(sessionStorage.getItem(draftKey) ?? 'null')
+    if (draft) {
+      name = draft.name ?? name
+      vibe = draft.vibe ?? ''
+      title = draft.title ?? ''
+      songs = draft.songs ?? songs
+      sessionStorage.removeItem(draftKey)
+    }
+  } catch {}
+
+  const spotifyAccount = (body: object) => call<{ connected?: boolean; name?: string; url?: string }>('spotify-account', body)
+
+  const result = new URLSearchParams(location.search).get('spotify')
+  if (result) {
+    history.replaceState(null, '', location.pathname + location.hash)
+    if (result !== 'connected') notify('create', result === 'denied' ? 'Spotify login was cancelled' : 'Spotify login failed, try again')
+  }
+  attempt('create', async () => (spotifyName = (await spotifyAccount({ action: 'status' })).name ?? null))
+
+  const connect = () =>
+    attempt('create', async () => {
+      sessionStorage.setItem(draftKey, JSON.stringify({ name, vibe, title, songs }))
+      const { url } = await spotifyAccount({ action: 'login', return_to: location.origin + import.meta.env.BASE_URL })
+      location.href = url!
+    })
+
+  const disconnect = () => attempt('create', async () => (await spotifyAccount({ action: 'disconnect' }), (spotifyName = null)))
 
   const create = once(() =>
     attempt('create', async () => {
-      try {
-        const { room } = await call<{ room: { code: string } }>('create-room', {
-          passphrase,
-          name,
-          theme: vibe,
-          title,
-          songs_per_player: songs,
-        })
-        saveName(name)
-        localStorage.setItem('808s-host', passphrase)
-        location.hash = `/${room.code}`
-      } catch (e) {
-        if ((e as Error).message.includes('access code')) {
-          localStorage.removeItem('808s-host')
-          remembered = false
-        }
-        throw e
-      }
+      const { room } = await call<{ room: { code: string } }>('create-room', { name, theme: vibe, title, songs_per_player: songs })
+      saveName(name)
+      location.hash = `/${room.code}`
     }),
   )
-
-  // finished playlists the app made, which anyone with the access code can remove from Spotify
-  let old = $state<Old[]>()
-  let confirming = $state<string>()
-
-  const manage = (body: object) => call<{ playlists: Old[] }>('manage-playlists', { passphrase, ...body })
-  const cleanup = () => attempt('cleanup', async () => (old = (await manage({ action: 'list' })).playlists))
-  const remove = (id: string) =>
-    attempt('cleanup', async () => {
-      if (confirming !== id) {
-        confirming = id
-        return
-      }
-      await manage({ action: 'delete', room_id: id })
-      old = old!.filter((g) => g.id !== id)
-      confirming = undefined
-    })
 </script>
 
 <div class="logo big">808<small>s</small></div>
@@ -65,7 +63,7 @@
   <span class="good">{tagline[1]}<i class="cursor"></i></span>
 </p>
 
-<form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), create())}>
+<form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), spotifyName ? create() : connect())}>
   <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
   <label class="field">
     <span class="label">THE PLAYLIST VIBE</span>
@@ -87,28 +85,10 @@
   {:else}
     <button type="button" class="link" onclick={() => (editingSongs = true)}>{songs} SONGS EACH · CHANGE</button>
   {/if}
-  {#if !remembered}
-    <label class="field"><span class="label">HOST ACCESS CODE</span><input class="secret" autocomplete="off" data-lpignore="true" bind:value={passphrase} required /></label>
+  {#if spotifyName}
+    <p class="muted">/// PLAYLIST GOES TO {spotifyName.toUpperCase()}'S SPOTIFY</p>
+    <button type="button" class="link" onclick={disconnect}>NOT YOU? DISCONNECT</button>
   {/if}
   <Notice scope="create" />
-  <button class="btn">BUILD THE PLAYLIST</button>
+  <button class="btn">{spotifyName ? 'BUILD THE PLAYLIST' : 'CONNECT SPOTIFY'}</button>
 </form>
-
-<p class="center"><button type="button" class="link" onclick={cleanup}>/// CLEAN UP OLD PLAYLISTS</button></p>
-<Notice scope="cleanup" />
-{#if old}
-  <div class="stack">
-    {#each old as g (g.id)}
-      <div class="row">
-        <div class="grow-text"><div>{g.name}</div><div class="dim">{new Date(g.created_at).toLocaleDateString()} · {g.players} PLAYERS</div></div>
-        {#if confirming === g.id}
-          <button class="chip on" onclick={() => remove(g.id)}>DELETE?</button>
-        {:else}
-          <button class="round" onclick={() => remove(g.id)} aria-label="Delete playlist">×</button>
-        {/if}
-      </div>
-    {:else}
-      <p class="muted center">/// NOTHING TO CLEAN UP</p>
-    {/each}
-  </div>
-{/if}
