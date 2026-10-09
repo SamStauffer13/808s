@@ -53,7 +53,7 @@
 <Playlist />
 
 {#if todo.length}
-  <p class="muted center"><Eq />/// LISTEN, THEN PICK WHO ADDED EACH SET OF SONGS · EACH FRIEND MATCHES ONE SET</p>
+  <p class="muted center"><Eq />/// LISTEN, THEN PICK WHO ADDED EACH SET · ONE FRIEND PER SET</p>
 {/if}
 
 {#if progress}

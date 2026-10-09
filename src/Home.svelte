@@ -85,7 +85,7 @@
     <p class="muted">/// PLAYLIST GOES TO {spotifyName.toUpperCase()}'S SPOTIFY</p>
     <button type="button" class="link" onclick={disconnect}>NOT YOU? DISCONNECT</button>
   {:else}
-    <p class="muted">/// YOU'LL LOG IN TO SPOTIFY SO THE PLAYLIST LANDS IN YOUR ACCOUNT · THIS FORM IS SAVED</p>
+    <p class="muted">/// SPOTIFY LOGIN BUILDS THE PLAYLIST IN YOUR ACCOUNT · FORM IS SAVED</p>
   {/if}
   <Notice scope="create" />
   <button class="btn">{spotifyName ? 'BUILD THE PLAYLIST' : 'CONNECT SPOTIFY'}</button>

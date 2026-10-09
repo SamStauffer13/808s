@@ -17,9 +17,13 @@
   const locked = $derived(game.players.filter((p) => (game.counts[p.id] ?? 0) >= room.songs_per_player).length)
   const everyoneIn = $derived(game.players.length > 1 && locked === game.players.length)
   const hostName = $derived(nameOf(game.players.find((p) => p.user_id === room.host_user_id)?.id).toUpperCase())
-  const startHint = $derived(
-    total < 2 ? 'NEEDS AT LEAST 2 TRACKS TO START' : everyoneIn ? "EVERYONE'S IN · START WHEN YOU'RE READY" : "STARTING LOCKS EVERYONE'S SONGS AND BUILDS THE PLAYLIST",
-  )
+  const waiting = $derived(game.players.length - locked) // players still adding songs
+  const startHint = $derived.by(() => {
+    if (total < 2) return 'NEEDS AT LEAST 2 TRACKS TO START'
+    if (everyoneIn) return "EVERYONE'S IN · START WHEN YOU'RE READY"
+    if (waiting > 0) return `${waiting} STILL ADDING · STARTING LOCKS EVERYONE'S SONGS`
+    return 'STARTING LOCKS YOUR SONGS AND BUILDS THE PLAYLIST'
+  })
 
   const taken = (t: Track) => mine.some((s) => s.spotify_id === t.id)
 
@@ -55,7 +59,7 @@
 <Notice scope="songs" />
 
 {#if mine.length >= room.songs_per_player}
-  <p class="center good">{everyoneIn ? "EVERYONE'S IN" : 'TRACKS LOCKED · WAITING ON THE CREW'}</p>
+  <p class="center good">{everyoneIn ? "EVERYONE'S IN" : waiting > 0 ? `TRACKS LOCKED · WAITING ON ${waiting} MORE` : 'TRACKS LOCKED'}</p>
   {#if everyoneIn && !isHost()}<p class="muted center">/// WAITING ON {hostName} TO START LISTENING · GIVE THEM A NUDGE</p>{/if}
 {/if}
 

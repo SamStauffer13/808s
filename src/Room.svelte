@@ -57,7 +57,7 @@
   {:else if place === null}
     <div class="logo big">808<small>s</small></div>
     <div class="panel framed">
-      <div class="label good">ALL TRACED</div>
+      <div class="label good">ACCESS GRANTED</div>
       <div class="big">THE SOURCES ARE READY</div>
     </div>
     <p class="muted center">/// {total} SETS · GO AT YOUR OWN PACE · COME BACK ANY TIME</p>
