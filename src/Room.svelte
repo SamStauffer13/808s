@@ -4,7 +4,7 @@
   import Guess from './Guess.svelte'
   import Reveal from './Reveal.svelte'
   import Results from './Results.svelte'
-  import { game, open, packsOf } from './lib/game.svelte'
+  import { game, isDemo, open, packsOf } from './lib/game.svelte'
 
   let { code } = $props()
   let stranger = $state(false)
@@ -26,6 +26,7 @@
   // they have seen, and past the last set means they are on the results.
   const key = $derived(`808s-reveal-${code}`)
   const read = () => {
+    if (isDemo(code)) return code === 'DEMO-RESULTS' ? Infinity : null
     try {
       const saved = localStorage.getItem(key)
       return saved === null ? null : Number(saved)
@@ -43,6 +44,8 @@
 
   const total = $derived(packsOf(game.songs).length)
 </script>
+
+{#if isDemo(code)}<p class="muted center">/// DEMO · FAKE DATA</p>{/if}
 
 {#if stranger}
   <Invite {code} onjoin={load} />

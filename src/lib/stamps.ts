@@ -25,6 +25,8 @@ const rules: { tag: string; when: (s: SetStats) => boolean }[] = [
   { tag: 'PROXIED', when: (s) => s.topWrong > s.right },
 ]
 
+export const stamps = rules.map((r) => r.tag)
+
 // with only a couple of guessers, "everyone" and "nobody" are just luck
 const minGuessers = 3
 

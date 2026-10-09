@@ -23,6 +23,16 @@ npm run dev        # http://localhost:5173
 npm run check      # types
 ```
 
+## Preview the reveal and results
+
+A made-up finished 8-player game (`src/demo.ts`) shows the real reveal and results screens with no server:
+
+- `/808s/demo` (or `/demo` in dev) goes straight to the results page.
+- `/808s/#/DEMO` walks through all 8 reveals, including each tag.
+
+Keep `src/demo.ts` in step when the game data or those screens change. `npm run check` catches a changed type,
+and the demo throws on load if a tag in `src/lib/stamps.ts` is never earned by any demo set.
+
 If the build says "Cannot find native binding" on Windows: `npm install --no-save @rolldown/binding-win32-x64-msvc`.
 
 ## Change it and ship it

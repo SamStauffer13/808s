@@ -11,7 +11,11 @@ export async function signIn() {
   return anon.user!
 }
 
+// lets the demo game (src/demo.ts) answer server calls without a server; empty unless the demo is open
+export const fake: Record<string, (args: object) => unknown> = {}
+
 export async function rpc(name: string, args: object = {}) {
+  if (fake[name]) return fake[name](args)
   await signIn()
   const { data, error } = await supabase.rpc(name, args)
   if (error) throw new Error(error.message)

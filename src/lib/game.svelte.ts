@@ -117,7 +117,11 @@ export function refreshSoon() {
 
 // Loads the room, keeps it fresh through realtime, and returns a cleanup. Null if this
 // browser is not a member of the room.
+// Two codes show a made-up finished game (src/demo.ts) instead of a real room. Real codes look like AB-1234.
+export const isDemo = (code: string) => code === 'DEMO' || code === 'DEMO-RESULTS'
+
 export async function open(code: string) {
+  if (isDemo(code)) return (await import('../demo')).loadDemo()
   game.userId = (await signIn()).id
   game.room = null
   const { data } = await supabase.from('rooms').select('*').eq('code', code).maybeSingle()
