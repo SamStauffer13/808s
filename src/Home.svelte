@@ -41,6 +41,48 @@
       location.href = url!
     })
 
+  // Owner override: five taps on the logo asks for the admin key, which is kept on this device only. The server
+  // checks it every time, so a panel on someone else's screen would do nothing.
+  const adminStore = '808s-admin'
+  const stored = () => {
+    try {
+      return localStorage.getItem(adminStore)
+    } catch {
+      return null
+    }
+  }
+  let adminKey = $state(stored())
+  let adminCode = $state('')
+  let taps = 0
+
+  const logoTap = () => {
+    if (adminKey || ++taps < 5) return
+    taps = 0
+    const key = prompt('ADMIN KEY')
+    if (!key) return
+    attempt('admin', async () => {
+      await call('admin-advance', { key })
+      try {
+        localStorage.setItem(adminStore, key)
+      } catch {}
+      adminKey = key
+    })
+  }
+
+  const forget = () => {
+    try {
+      localStorage.removeItem(adminStore)
+    } catch {}
+    adminKey = null
+  }
+
+  const advance = once(() =>
+    attempt('admin', async () => {
+      const { phase } = await call<{ phase: string }>('admin-advance', { key: adminKey, code: adminCode })
+      notify('admin', `${adminCode.trim().toUpperCase()} MOVED TO ${phase.toUpperCase()}`)
+    }),
+  )
+
   const disconnect = () => attempt('create', async () => (await spotifyAccount({ action: 'disconnect' }), (spotifyName = null)))
 
   const create = once(() =>
@@ -52,7 +94,8 @@
   )
 </script>
 
-<div class="logo big">808<small>s</small></div>
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+<div class="logo big" onclick={logoTap}>808<small>s</small></div>
 <p class="tagline">
   <span>{tagline[0]}</span>
   <span class="good">{tagline[1]}<i class="cursor"></i></span>
@@ -90,3 +133,12 @@
   <Notice scope="create" />
   <button class="btn">{spotifyName ? 'BUILD THE PLAYLIST' : 'CONNECT SPOTIFY'}</button>
 </form>
+
+<Notice scope="admin" />
+{#if adminKey}
+  <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), advance())}>
+    <label class="field"><span class="label">ADMIN · ROOM CODE</span><input bind:value={adminCode} placeholder="e.g. AB-1234" required /></label>
+    <button class="btn ghost">FORCE NEXT PHASE</button>
+    <button type="button" class="link" onclick={forget}>FORGET ADMIN KEY</button>
+  </form>
+{/if}
