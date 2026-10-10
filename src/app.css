@@ -239,6 +239,7 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .demo-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-direction: column; gap: 8px; padding: 6px 0 10px; background: var(--bg); }
 .demo-bar .stages { display: flex; flex-wrap: wrap; gap: 8px; }
 .demo-bar .chip { display: inline-flex; align-items: center; height: 32px; padding: 0 10px; font-size: 11px; text-decoration: none; }
+@media (max-width: 600px) { .demo-bar .jump { display: none; } } /* phones just step with BACK and NEXT STEP */
 
 iframe { width: 100%; height: 152px; border: 0; border-radius: var(--radius); color-scheme: dark; }
 .link { all: unset; display: inline-flex; align-items: center; min-height: 44px; cursor: pointer; font-size: 12px; letter-spacing: 0.1em; color: var(--text-secondary); }

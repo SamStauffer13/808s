@@ -25,14 +25,21 @@ npm run check      # types
 
 ## Demo: play a whole game with fake players
 
-`/808s/demo` (or `/demo` in dev) runs the real screens against a fake 8-player game and a fake server (`src/demo/`),
-so you can see every stage without players. The bar at the top jumps between them: Home, Invite, Submit, Guess,
-Reveal, Results. Search, adding songs and guessing all work, and the last guess opens the reveal like the real game.
+`/808s/demo` (or `/demo` in dev) is the practice round for new players, linked from Home and the invite page. It runs the
+real screens against a fake 8-player game and a fake server (`src/demo/`), so you can see every stage without players.
+The bar at the top explains each step in a caption, steps with BACK and NEXT STEP, and jumps between stages: Home,
+Invite, Submit, Guess, Reveal, Results. Search, adding songs and guessing all work, and the last guess opens the reveal like the real game.
 A stage can also be opened directly, for example `/808s/#/DEMO-RESULTS`.
 
 Keep it in step when the game data, the screens or the server calls they make change: `npm run check` catches a
 changed type, a new call needs a handler in `src/demo/backend.ts`, and the demo fails to load if a stamp in
 `src/lib/stamps.ts` is never earned by a demo set.
+
+The demo checks the screens, not the server: a broken Edge Function or permission rule will not show up in it. Before
+a big release, play one real game with two browsers (normal and incognito) as two players, one connected to Spotify as
+host: create a room, join from the invite link, add songs in both, begin the experiment, guess in both, and check the
+reveal opens by itself and the results and playlist look right. Also try `FORCE NEXT PHASE` (see below) on a
+throwaway room.
 
 If the build says "Cannot find native binding" on Windows: `npm install --no-save @rolldown/binding-win32-x64-msvc`.
 

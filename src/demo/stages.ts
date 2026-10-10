@@ -10,6 +10,16 @@ export type Stage = (typeof stages)[number]
 export const codeOf = (stage: Stage) => (stage === 'home' ? 'DEMO' : `DEMO-${stage.toUpperCase()}`)
 export const stageOf = (code: string): Stage => stages.find((stage) => codeOf(stage) === code) ?? 'home'
 
+// what each step of the practice round tells a new player
+export const captions: Record<Stage, string> = {
+  home: 'THE HOST SETS A VIBE AND CONNECTS SPOTIFY, THEN SENDS FRIENDS A LINK',
+  invite: 'FRIENDS OPEN THE LINK AND JOIN WITH JUST A NAME',
+  submit: 'EVERYONE ADDS SONGS THAT FIT THE VIBE · NOBODY SEES WHO ADDED WHAT',
+  guess: 'THE HOST BEGINS THE EXPERIMENT · LISTEN, THEN MATCH EACH SET TO THE FRIEND WHO ADDED IT',
+  reveal: 'THE SOURCES DECRYPT ONE SET AT A TIME · SEE WHO GOT FOOLED',
+  results: 'MOST SETS CRACKED WINS THE L33T TITLE',
+}
+
 const room = (phase: Room['phase']): Room => ({
   id: 'demo',
   code: 'DEMO',

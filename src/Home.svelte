@@ -1,7 +1,7 @@
 <script lang="ts">
   import Admin from './Admin.svelte'
   import Notice from './Notice.svelte'
-  import { attempt, notify, once, saveName, savedName } from './lib/game.svelte'
+  import { attempt, isDemo, notify, once, saveName, savedName } from './lib/game.svelte'
   import { call } from './lib/supabase'
 
   const tagline = ["CAN YOU FEEL PEOPLE'S VIBES?", "LET'S TEST THAT"]
@@ -91,3 +91,4 @@
   <Notice scope="create" />
   <button class="btn">{spotifyName ? 'INITIALIZE THE EXPERIMENT' : 'CONNECT SPOTIFY'}</button>
 </form>
+{#if !isDemo(location.hash.slice(2).toUpperCase())}<a class="link center" href="#/DEMO">NEW HERE? SEE HOW IT WORKS</a>{/if}
