@@ -54,9 +54,9 @@ const handlers: Fake = {
   // the host moves the game along
   'start-guess': () => goStage('guess'),
 
-  // guessing: the screen has already recorded your pick; the last one opens the reveal, like the real server
+  // guessing: the screen has already recorded your pick; the last one opens the scoreboard, like the real server
   submit_guess: () => {
-    if (finished()) goStage('reveal')
+    if (finished()) goStage('results')
   },
   guess_progress: () => [{ finished: finished() ? 6 : 5, total: 6 }],
 

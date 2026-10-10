@@ -8,26 +8,16 @@ export const titles: Record<Stage, string> = {
   invite: 'FRIENDS JOIN',
   submit: 'ADD SONGS',
   guess: 'GUESS',
-  reveal: 'THE REVEAL',
   results: 'RESULTS',
 }
 
 // Each prompt is one friendly sentence in order (First, Next, Then, Finally) saying what its thing is for. A text box is done when NEXT (or Return) is pressed with something typed in it; anything else, when it is tapped.
 // `look`: something to read, not use: the card has a GOT IT button, and the thing itself can still be played with
-// `stage`: which stage the card names, when it is not the one the screen is in (the reveal runs on into the results)
 // `final`: the last prompt of practice; finishing it opens the YOU'RE READY card
 // `again`: after this prompt is done, go back to prompt number `to` while something matching `while` is still on the screen
-// `gone`: the prompt is done when its target leaves the screen (the reveal turns into the results on the same screen)
 // `when`: the prompt is done as soon as something matching this shows up (search results appear while you type)
 // `required`: practice will not let the form go on until this box is filled, even if the real one allows it
-export type Prompt = { target: string; text: string; stage?: Stage; look?: boolean; final?: boolean; again?: { to: number; while: string }; gone?: boolean; when?: string; required?: boolean }
-
-const results: Prompt[] = [
-  { target: '.panel.framed', text: "HERE'S WHO WON, BASED ON THE MOST RIGHT GUESSES.", look: true },
-  { target: '.chart', text: 'THIS SHOWS HOW MANY PEOPLE GOT EACH SONG RIGHT.', look: true },
-  { target: '.pager .btn:last-child', text: 'NEXT, STEP THROUGH EVERY SONG TO SEE WHO GUESSED RIGHT.' },
-  { target: 'a.btn', text: 'FINALLY, START A REAL GAME OF YOUR OWN.', final: true },
-].map((prompt) => ({ ...prompt, stage: 'results' as const }))
+export type Prompt = { target: string; text: string; look?: boolean; final?: boolean; again?: { to: number; while: string }; when?: string; required?: boolean }
 
 export const tour: Record<Stage, Prompt[]> = {
   home: [
@@ -51,11 +41,10 @@ export const tour: Record<Stage, Prompt[]> = {
     { target: '.panel button.row:not(.on)', text: 'NEXT, PICK A SONG TO GUESS WHICH FRIEND ADDED IT.' },
     { target: '.chips', text: 'THEN, CHOOSE THE FRIEND YOU THINK ADDED IT.', again: { to: 1, while: '.panel button.row:not(.on)' } },
   ],
-  reveal: [
-    { target: '.panel.framed', text: "HERE'S WHO REALLY ADDED THAT SONG.", look: true },
-    { target: '.guesses', text: "AND HERE'S HOW EVERYONE GUESSED, ✓ RIGHT AND ✗ WRONG.", look: true },
-    { target: '.dock .btn:last-child', text: 'NEXT, MOVE ON TO THE REVEAL FOR THE NEXT SONG.', gone: true },
-    ...results, // finishing the reveal opens the results without leaving this screen
+  results: [
+    { target: '.panel.framed', text: "HERE'S WHO WON, BASED ON THE MOST RIGHT GUESSES.", look: true },
+    { target: '.chart', text: 'THIS SHOWS HOW MANY PEOPLE GOT EACH SONG RIGHT.', look: true },
+    { target: '.pager .btn:last-child', text: 'NEXT, STEP THROUGH EVERY SONG TO SEE WHO ADDED IT AND HOW EVERYONE GUESSED.' },
+    { target: 'a.btn', text: 'FINALLY, START A REAL GAME OF YOUR OWN.', final: true },
   ],
-  results,
 }

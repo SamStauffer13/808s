@@ -7,7 +7,6 @@
   const i = $derived(Math.min(practice.step, steps.length - 1))
   const step = $derived(steps[i])
 
-  const where = $derived(step.stage ?? practice.stage)
   let done = $state(false)
   const advance = () => {
     const again = step.again
@@ -26,7 +25,7 @@
   $effect(() => {
     const touched = (e: Event) => {
       const el = document.querySelector(step.target)
-      if (!el || step.look || step.when || step.gone || !(e.target instanceof Element) || !el.contains(e.target) || e.target.matches(fields)) return
+      if (!el || step.look || step.when || !(e.target instanceof Element) || !el.contains(e.target) || e.target.matches(fields)) return
       const at = i
       setTimeout(() => i === at && advance()) // after the screen has reacted
     }
@@ -54,7 +53,6 @@
     let frame = 0
     let scrolledFor = -1
     let seenFor = -1
-    let goneAt = 0
     let last = ''
     const follow = () => {
       // boxes practice insists on are required from the start, so the form cannot be sent without them
@@ -68,15 +66,6 @@
         // a box that already has something in it is not asked for again
         if (!step.when && el instanceof HTMLInputElement && el.value.trim()) advance()
         else if (el instanceof HTMLInputElement) el.focus({ preventScroll: true }) // the cursor is already in the box
-      }
-      // it was there and has been gone for a moment (not just remounting between two reveal sets): the user did it
-      if (el) goneAt = 0
-      else if (step.gone && seenFor === i) {
-        goneAt ||= Date.now()
-        if (Date.now() - goneAt > 400) {
-          goneAt = 0
-          advance()
-        }
       }
       if (step.when && document.querySelector(step.when)) advance()
       if (el) {
@@ -151,7 +140,7 @@
   <div class="practice-spot" style:top="{hole.top}px" style:left="{hole.left}px" style:width="{hole.width}px" style:height="{hole.height}px"></div>
   {#if card}
     <div class="practice-card {card.side}" bind:clientHeight={cardHeight} style:top="{card.top}px" style:--arrow="{card.arrow}px">
-      <div class="meta"><span>STEP {i + 1} OF {steps.length}</span><span>{titles[where]}</span></div>
+      <div class="meta"><span>STEP {i + 1} OF {steps.length}</span><span>{titles[practice.stage]}</span></div>
       <p class="say" aria-live="polite">{step.text}</p>
       {#if step.look}
         <button type="button" class="btn" onclick={advance}>GOT IT</button>
@@ -161,7 +150,7 @@
         <p class="muted">TAP THE LIT SPOT</p>
       {/if}
       <div class="dots" aria-hidden="true">
-        {#each stages as s}<i class:on={s === where}></i>{/each}
+        {#each stages as s}<i class:on={s === practice.stage}></i>{/each}
       </div>
     </div>
   {/if}

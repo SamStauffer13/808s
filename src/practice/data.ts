@@ -59,7 +59,7 @@ const swaps: [number, number][][] = [
   [[5, 3]], // Shilo
   [[5, 1]], // Dalton
   [[5, 2]], // Matt
-  [[4, 1]], // Cole
+  [], // Cole: a perfect ear, so there is one clear winner
 ]
 
 // who guesser g says made set s

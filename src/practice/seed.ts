@@ -33,7 +33,6 @@ const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
   }),
   // everyone else has guessed everything; you have matched 3 of your 5, and only the right two friends are left to pick
   guess: () => ({ room: room('guess'), songs: songsInOrder, owners: ownersOf([0]), guesses: guessesBy(0, [3, 5, 2]) }),
-  reveal: finished,
   results: finished,
 }
 

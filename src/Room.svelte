@@ -23,17 +23,17 @@
     return () => stop?.()
   })
 
-  // The reveal opens for everyone once the last guess is in, and each player walks through it on their own,
-  // whenever they like. Their place is kept on this device: how many sets they have seen (the first one until
-  // they move), and past the last set means they are on the results.
+  // The scoreboard opens for everyone once the last guess is in. REPLAY THE FINDINGS on it walks through the reveal
+  // song by song, at the player's own pace. Their place is kept on this device: how many sets they have seen,
+  // and past the last set (the default) means they are on the scoreboard.
   const key = $derived(`808s-reveal-${code}`)
   const read = () => {
-    if (practice.on) return practice.stage === 'results' ? Infinity : 0 // practice never saves a place
+    if (practice.on) return Infinity // practice never saves a place
     try {
       const saved = localStorage.getItem(key)
-      return saved === null ? 0 : Number(saved)
+      return saved === null ? Infinity : Number(saved)
     } catch {
-      return 0
+      return Infinity
     }
   }
   let place = $state(read())

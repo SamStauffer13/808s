@@ -28,11 +28,11 @@ npm run check      # types
 The "NEW HERE? TRY THE TUTORIAL" link on Home and on the invite page starts it. There is no separate page: the real screens run on a
 fake game (you plus Cierra, Shilo, Dalton, Matt and Cole, one song each) and a fake server, with a wizard on top (`src/practice/`,
 switched on by `src/lib/practice.svelte.ts`). The screen dims except for the one thing to touch, and a card says in one sentence what
-to do. There is no skip button: doing what the card says (adding a song, pressing BEGIN THE EXPERIMENT, guessing every song,
-stepping through the reveal) moves the game to the next stage. The stages are Home, Invite, Submit, Guess, Reveal, Results.
+it is for. There is no skip button: doing what the card says (adding a song, pressing BEGIN THE EXPERIMENT, guessing every song)
+moves the game to the next stage. The stages are Home, Invite, Submit, Guess, Results. The last guess opens the scoreboard, like a real game.
 EXIT (top of the screen) reloads the page back to where practice was started from, which throws all of it away.
 
-To test one screen after a change, open `/?practice` (or `/?practice=submit`, `guess`, `reveal`, `results`, `invite`) in dev.
+To test one screen after a change, open `/?practice` (or `/?practice=invite`, `submit`, `guess`, `results`) in dev.
 An old `/808s/demo` link starts practice too.
 
 Keep it in step when the game data, the screens or the server calls they make change:
@@ -45,7 +45,7 @@ Keep it in step when the game data, the screens or the server calls they make ch
 Practice checks the screens, not the server: a broken Edge Function or permission rule will not show up in it. Before
 a big release, play one real game with two browsers (normal and incognito) as two players, one connected to Spotify as
 host: create a room, join from the invite link, add songs in both, begin the experiment, guess in both, and check the
-reveal opens by itself and the results and playlist look right. Also try `FORCE NEXT PHASE` (see below) on a
+scoreboard opens by itself for both and the song-by-song results and playlist look right. Also try `FORCE NEXT PHASE` (see below) on a
 throwaway room.
 
 If the build says "Cannot find native binding" on Windows: `npm install --no-save @rolldown/binding-win32-x64-msvc`.
@@ -80,8 +80,9 @@ In the app the guessing round is called "the Experiment", and the host begins it
 2. **Submit:** friends join by link and add songs. Who added what stays hidden.
 3. **Experiment:** the host presses `BEGIN THE EXPERIMENT`, which builds a shuffled playlist in their Spotify.
 4. **Guess:** each player matches every other player's songs to whoever added them.
-5. **Reveal:** it opens by itself when the last guess is in (only the admin override can open it early). After that each player steps
-   through it at their own pace, any time; their place is saved on their device.
+5. **Reveal:** it opens by itself when the last guess is in (only the admin override can open it early), and everyone lands on the
+   scoreboard first: the winner, how the room did, and each song with who added it and who guessed what. REPLAY THE FINDINGS
+   walks through the dramatic song-by-song reveal at the player's own pace; their place is saved on their device.
 
 Each revealed set can get a stamp (`DOXXED`, `UNCRACKABLE`, `PROXIED`). The rules are one short table in `src/lib/stamps.ts`.
 
