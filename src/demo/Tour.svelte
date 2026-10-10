@@ -31,19 +31,32 @@
   // A prompt is done when its thing has been used: a text box once it has been filled in and left, anything else
   // once it is tapped. (Tapping into a box does not count; the point is to type something.)
   const fields = 'input, textarea, select'
+  // finishing a text box moves the cursor to the next empty one, so the form fills in top to bottom
+  let focusNext = false
   $effect(() => {
     const touched = (e: Event) => {
       const el = document.querySelector(step.target)
       if (!el || step.when || step.gone || !(e.target instanceof Element) || !el.contains(e.target)) return
       if (e.type === 'change' ? !e.target.matches(fields) : e.target.matches(fields)) return
+      if (e.type === 'change') focusNext = true
       const at = i
       setTimeout(() => i === at && advance()) // after the screen has reacted
     }
+    // Enter finishes a box too. When another box is next it moves there instead of submitting a half-filled form.
+    const enter = (e: KeyboardEvent) => {
+      const el = document.querySelector(step.target)
+      const next = document.querySelector(steps[i + 1]?.target ?? '')
+      if (e.key !== 'Enter' || !(e.target instanceof HTMLInputElement) || !el?.contains(e.target) || step.when || !next?.matches('input')) return
+      e.preventDefault()
+      e.target.blur() // leaving the box is what finishes it
+    }
     document.addEventListener('click', touched, true)
     document.addEventListener('change', touched, true)
+    document.addEventListener('keydown', enter, true)
     return () => {
       document.removeEventListener('click', touched, true)
       document.removeEventListener('change', touched, true)
+      document.removeEventListener('keydown', enter, true)
     }
   })
 
@@ -82,6 +95,8 @@
         seenFor = i
         // a box that already has something in it is not asked for again
         if (!step.when && el instanceof HTMLInputElement && el.value.trim()) advance()
+        else if (focusNext && el instanceof HTMLInputElement) el.focus({ preventScroll: true })
+        focusNext = false
       }
       // it was there and has been gone for a moment (not just remounting between two reveal sets): the user did it
       if (el) goneAt = 0

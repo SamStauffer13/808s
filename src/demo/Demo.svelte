@@ -5,7 +5,7 @@
   import { fake } from '../lib/supabase'
   import { handlers } from './backend'
   import Tour from './Tour.svelte'
-  import { codeOf, stageOf, stages, tourKey } from './stages'
+  import { codeOf, stageOf, stages, titles, tourKey } from './stages'
 
   let { code }: { code: string } = $props()
   const stage = $derived(stageOf(code))
@@ -23,7 +23,7 @@
 </script>
 
 <nav class="demo-bar" aria-label="Practice round">
-  <span class="label">PRACTICE {at + 1}/{stages.length}</span>
+  <span class="label">PRACTICE · {titles[stage]}</span>
   <span class="actions">
     {#if at > 0}<a class="chip" href={link(stages[at - 1])} onclick={fresh}>← BACK</a>{/if}
     <a class="link" href="#/" onclick={fresh}>EXIT</a>

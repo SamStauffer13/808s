@@ -7,6 +7,16 @@ import { guessesBy, me, order, players, playlist, sets, setSongs, songId, theme 
 export const stages = ['home', 'invite', 'submit', 'guess', 'reveal', 'results'] as const
 export type Stage = (typeof stages)[number]
 
+// what the bar calls each stage (the order is not a count: a real game has many more taps than six)
+export const titles: Record<Stage, string> = {
+  home: 'START A GAME',
+  invite: 'FRIENDS JOIN',
+  submit: 'ADD SONGS',
+  guess: 'GUESS',
+  reveal: 'THE REVEAL',
+  results: 'RESULTS',
+}
+
 export const codeOf = (stage: Stage) => (stage === 'home' ? 'demo' : `demo-${stage}`)
 export const stageOf = (code: string): Stage => stages.find((stage) => codeOf(stage) === code) ?? 'home'
 
@@ -22,36 +32,37 @@ export const tourKey = '808s-tour'
 export type Prompt = { target: string; text: string; why: string; again?: { to: number; while: string }; gone?: boolean; when?: string }
 
 const results: Prompt[] = [
-  { target: '.panel.framed', text: 'THE WINNER', why: 'THE MOST RIGHT GUESSES WINS THE L33T TITLE.' },
-  { target: '.chart', text: 'HOW THE ROOM DID', why: 'ONE BAR PER BOX OF SONGS. TAP A BAR TO OPEN IT.' },
+  { target: '.panel.framed', text: 'THE WINNER', why: 'THE MOST RIGHT GUESSES WINS THE L33T TITLE. TIES SHARE IT. TAP HERE TO CONTINUE.' },
+  { target: '.chart', text: 'HOW THE ROOM DID', why: 'ONE BAR PER BOX OF SONGS: HOW MANY PEOPLE GOT IT RIGHT. TAP A BAR TO OPEN THAT BOX BELOW.' },
   { target: '.pager .btn:last-child', text: 'STEP THROUGH EVERY SONG', why: 'SEE WHO GUESSED RIGHT OR WRONG ON EACH ONE.' },
-  { target: 'a.btn', text: 'START YOUR OWN GAME', why: "THAT'S THE WHOLE GAME. GO PLAY IT WITH FRIENDS." },
+  { target: 'a.btn', text: 'START YOUR OWN GAME', why: "THAT'S THE LOOP: EVERYONE ADDS SONGS, THEN GUESSES WHO ADDED WHAT, THEN THE REVEAL. START A REAL GAME AND SEND YOUR FRIENDS THE LINK." },
 ]
 
 export const tour: Record<Stage, Prompt[]> = {
   home: [
     { target: 'form label.field:nth-of-type(1) input', text: 'TYPE YOUR NAME', why: 'THIS IS HOW YOUR FRIENDS SEE YOU IN THE CREW LIST. A FIRST NAME OR NICKNAME IS PERFECT. THEN TAP THE NEXT BOX.' },
     { target: 'form label.field:nth-of-type(2) input', text: 'TYPE A VIBE', why: 'IT TELLS EVERYONE WHAT KIND OF SONGS TO ADD. TRY: SONGS THAT SOUND LIKE A ROAD TRIP AT 2AM. THEN TAP AWAY.' },
-    { target: 'form .btn', text: 'TAP THE GREEN BUTTON', why: "THE PLAYLIST IS MADE IN THE HOST'S SPOTIFY, SO THE HOST CONNECTS FIRST AND TAPS AGAIN TO CREATE THE GAME. FRIENDS NEED NO ACCOUNT." },
+    { target: 'form .btn', text: 'TAP THE GREEN BUTTON', why: 'THE FIRST TAP CONNECTS YOUR SPOTIFY, WHERE THE PLAYLIST GETS MADE. THEN TAP IT AGAIN TO CREATE THE GAME.' },
   ],
   invite: [
-    { target: 'form input', text: 'TYPE YOUR NAME', why: "THE NAME YOUR FRIENDS KNOW YOU BY. YOU JOINED FROM THE HOST'S LINK, SO NO SPOTIFY ACCOUNT IS NEEDED. THEN TAP AWAY." },
+    { target: '.panel.framed', text: 'THIS IS WHAT YOUR FRIENDS SEE', why: 'THEY OPEN THE LINK YOU SHARE AND SEE THE VIBE YOU PICKED. EVERY SONG THEY ADD SHOULD FIT IT. TAP HERE TO TRY IT AS ONE OF THEM.' },
+    { target: 'form input', text: 'TYPE YOUR NAME', why: 'JUST A NAME, NO SPOTIFY ACCOUNT NEEDED. USE WHAT YOUR FRIENDS CALL YOU. THEN TAP AWAY.' },
     { target: 'form .btn', text: 'TAP JOIN', why: "YOU'LL LAND ON THE SONG PICKER." },
   ],
   submit: [
     { target: 'label.field input', text: 'SEARCH FOR A SONG', why: 'TYPE A TITLE OR ARTIST THAT FITS THE VIBE ABOVE. IN THIS PRACTICE ROUND ANY WORD WORKS.', when: 'button.row:not([disabled])' },
     { target: 'button.row:not([disabled])', text: 'TAP A SONG TO ADD IT', why: 'NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL.' },
-    { target: 'button.btn:not(.ghost):not([disabled])', text: 'TAP BEGIN THE EXPERIMENT', why: 'EVERYONE IS IN. THE HOST STARTS THE GUESSING ROUND.' },
+    { target: 'button.btn:not(.ghost):not([disabled])', text: 'TAP BEGIN THE EXPERIMENT', why: 'IT UNLOCKED BECAUSE EVERYONE HAS ADDED THEIR SONGS. UNTIL THEN IT STAYS LOCKED. THE HOST TAPS IT TO START THE GUESSING ROUND.' },
   ],
   guess: [
-    { target: '.framed', text: 'LISTEN TO THE PLAYLIST', why: "IT'S EVERYONE'S SONGS, SHUFFLED, IN THE HOST'S SPOTIFY." },
-    { target: '.panel button.row:not(.on)', text: 'WHO ADDED THESE?', why: 'EACH BOX OF SONGS WAS ADDED BY ONE FRIEND. TAP TO CHOOSE.' },
-    { target: '.chips', text: 'PICK A FRIEND', why: 'EACH FRIEND MATCHES ONE BOX. THE LAST GUESS OPENS THE REVEAL.', again: { to: 1, while: '.panel button.row:not(.on)' } },
+    { target: '.framed', text: 'LISTEN TO THE PLAYLIST', why: "EVERYONE'S SONGS, SHUFFLED TOGETHER IN THE HOST'S PLAYLIST. PLAY IT HERE (NO SPOTIFY ACCOUNT? YOU STILL GET PREVIEWS) OR TAP LISTEN ON SPOTIFY. TAP HERE WHEN READY." },
+    { target: '.panel button.row:not(.on)', text: 'WHO ADDED THESE?', why: 'EACH BOX OF SONGS WAS ADDED BY ONE FRIEND. YOUR OWN SONGS ARE LEFT OUT. TAP TO PICK WHO YOU THINK IT WAS.' },
+    { target: '.chips', text: 'PICK A FRIEND', why: 'GO WITH YOUR GUT. A DIMMED NAME IS ALREADY USED ON ANOTHER BOX. NOBODY SEES YOUR GUESSES UNTIL THE REVEAL, WHICH OPENS AFTER THE LAST ONE.', again: { to: 1, while: '.panel button.row:not(.on)' } },
   ],
   reveal: [
-    { target: '.panel.framed', text: 'THE ADDER IS DECRYPTED', why: 'THIS IS WHO REALLY ADDED THE SONGS ABOVE.' },
-    { target: '.guesses', text: 'WHO GUESSED WHAT', why: '✓ GOT IT RIGHT · ✗ GOT IT WRONG, WITH THEIR PICK.' },
-    { target: '.dock .btn:last-child', text: 'NEXT SOURCE', why: 'KEEP GOING THROUGH EVERY BOX. SWIPE SIDEWAYS OR SKIP TO RESULTS IF YOU LIKE.', gone: true },
+    { target: '.panel.framed', text: 'THE ADDER IS DECRYPTED', why: 'THIS IS WHO REALLY ADDED THE SONGS ABOVE. TAP HERE TO CONTINUE.' },
+    { target: '.guesses', text: 'WHO GUESSED WHAT', why: 'EVERY PLAYER, SO YOU CAN SEE WHO GOT FOOLED. ✓ MEANS RIGHT, ✗ MEANS WRONG, WITH WHO THEY PICKED. YOURS IS MARKED YOU. TAP HERE TO CONTINUE.' },
+    { target: '.dock .btn:last-child', text: 'NEXT SOURCE', why: 'KEEP TAPPING THROUGH EVERY BOX (THE BARS SHOW HOW FAR YOU ARE). BOXES CAN EARN A STAMP: DOXXED MEANS EVERYONE GOT IT, UNCRACKABLE MEANS NOBODY DID.', gone: true },
     ...results, // finishing the reveal opens the results without leaving this address
   ],
   results,
