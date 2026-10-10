@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import Notice from './Notice.svelte'
   import { attempt, notify, once } from './lib/game.svelte'
   import { call } from './lib/supabase'
@@ -23,6 +24,7 @@
   let open = $state(false)
   let typed = $state('')
   let entry = $state('')
+  let connect = $state(false) // the playlist needs a Spotify account and none is connected
   let taps = 0
   let idle: ReturnType<typeof setTimeout>
 
@@ -47,12 +49,37 @@
 
   const forget = () => (keep(null), (key = null))
 
-  const advance = once(() =>
-    attempt('admin', async () => {
+  const advance = once(async () => {
+    try {
       const { phase } = await call<{ phase: string }>('admin-advance', { key, code: room })
+      connect = false
       notify('admin', `${room} MOVED TO ${phase === 'guess' ? 'THE EXPERIMENT' : 'THE REVEAL'}`)
+    } catch (e) {
+      const message = (e as Error).message
+      if (/connect/i.test(message)) connect = true
+      else notify('admin', message)
+    }
+  })
+
+  // Spotify's login leaves the page. The room comes back with ?spotify=..., and the move carries on by itself.
+  const resume = '808s-admin-resume'
+  const login = once(() =>
+    attempt('admin', async () => {
+      sessionStorage.setItem(resume, room)
+      const { url } = await call<{ url: string }>('spotify-account', { action: 'login', return_to: location.href })
+      location.href = url
     }),
   )
+
+  onMount(() => {
+    const back = new URLSearchParams(location.search).get('spotify')
+    if (!back || !code || sessionStorage.getItem(resume) !== code) return
+    sessionStorage.removeItem(resume)
+    history.replaceState(null, '', location.pathname + location.hash)
+    open = true
+    if (back === 'connected' && key) advance()
+    else notify('admin', back === 'denied' ? 'Spotify login was cancelled' : 'Spotify login failed, try again')
+  })
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
@@ -71,7 +98,12 @@
     {:else}
       <label class="field"><span class="label">ADMIN · ROOM CODE</span><input bind:value={typed} placeholder="e.g. AB-1234" required /></label>
     {/if}
-    <button class="btn ghost">FORCE NEXT PHASE</button>
+    {#if connect}
+      <p class="muted center">/// SPOTIFY NEEDS CONNECTING TO BUILD THE PLAYLIST · YOURS WILL BE USED</p>
+      <button type="button" class="btn" onclick={login}>CONNECT SPOTIFY</button>
+    {:else}
+      <button class="btn ghost">FORCE NEXT PHASE</button>
+    {/if}
     <button type="button" class="link" onclick={forget}>FORGET ADMIN KEY</button>
   </form>
 {/if}
