@@ -55,7 +55,7 @@ export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
       },
     ],
     submit: [
-      { target: '.panel.stack', text: 'AFTER YOU CREATE AN EXPERIMENT, SEND THE INVITE LINK TO YOUR CREW AND WATCH THIS CHECKLIST FILL IN.', look: true },
+      { target: '.btn.ghost.plain', text: 'SHARE THIS INVITE LINK WITH YOUR CREW SO THEY CAN JOIN.', look: true },
       search('FIRST, SEARCH FOR THE SONG YOU WANT TO ADD TO THE EXPERIMENT.'),
       addSong,
       { target: 'button.btn:not(.ghost):not([disabled])', text: 'ONCE EVERYONE YOU SHARED THE LINK WITH HAS ADDED THEIR SONGS, CLICK THIS BUTTON TO BEGIN THE EXPERIMENT.' },

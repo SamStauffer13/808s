@@ -54,10 +54,8 @@
 
 <div class="panel"><div class="label">THE PLAYLIST VIBE</div><div class="good big">{room.theme}</div></div>
 
-{#if alone}
-  <p class="muted center">/// SEND THE INVITE LINK TO YOUR CREW</p>
-  <Share />
-{/if}
+{#if alone}<p class="muted center">/// SEND THE INVITE LINK TO YOUR CREW</p>{/if}
+<Share />
 {#if left > 0}
   <p class="muted center">/// ADD {left} MORE SONG{left > 1 ? 'S' : ''} THAT FIT THE VIBE · NOBODY SEES WHO ADDED WHAT UNTIL THE RESULTS</p>
 {/if}
@@ -93,8 +91,6 @@
     </div>
   {/each}
 </div>
-
-{#if !alone}<Share />{/if}
 
 <div class="grow"></div>
 
