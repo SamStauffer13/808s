@@ -5,7 +5,6 @@ import type { Stage } from '../lib/practice.svelte'
 // what the card calls each stage (the order is not a count: a real game has many more taps than six)
 export const titles: Record<Stage, string> = {
   home: 'START A GAME',
-  invite: 'CREW JOINS',
   submit: 'ADD SONGS',
   guess: 'GUESS',
   results: 'RESULTS',
@@ -26,12 +25,8 @@ export const tour: Record<Stage, Prompt[]> = {
     { target: 'form label.field:nth-of-type(3) input', text: 'NEXT, GIVE THE PLAYLIST A DOPE NAME BASED OFF THAT THEME.', required: true },
     { target: 'form .btn', text: "FINALLY, AS A HOST YOU NEED TO AUTHENTICATE WITH SPOTIFY TO CREATE THE PLAYLIST (DON'T WORRY, IT'S SAFER THAN ANYTHING YOU'VE DONE LATELY)." },
   ],
-  invite: [
-    { target: '.panel.framed', text: 'THIS IS THE INVITE YOUR CREW SEES WHEN THEY OPEN YOUR LINK.', look: true },
-    { target: 'form input', text: 'FIRST, ENTER YOUR NAME SO THE REST OF THE CREW KNOWS WHO YOU ARE.' },
-    { target: 'form .btn', text: 'THEN, JOIN THE GAME SO YOU CAN ADD YOUR SONG.' },
-  ],
   submit: [
+    { target: '.panel.stack', text: 'AFTER YOU CREATE A GAME, SEND THE INVITE LINK TO YOUR CREW AND WATCH THIS CHECKLIST FILL IN.', look: true },
     { target: 'label.field input', text: 'FIRST, SEARCH FOR THE SONG YOU WANT TO ADD TO THE GAME.', when: 'button.row:not([disabled])' },
     { target: 'button.row:not([disabled])', text: 'NEXT, TAP YOUR SONG TO ADD IT; NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL.' },
     { target: 'button.btn:not(.ghost):not([disabled])', text: 'ONCE EVERYONE YOU SHARED THE LINK WITH HAS ADDED THEIR SONGS, CLICK THIS BUTTON TO BEGIN THE EXPERIMENT.' },

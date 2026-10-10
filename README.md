@@ -25,14 +25,14 @@ npm run check      # types
 
 ## Practice round: play a whole game with fake players
 
-The "NEW HERE? TRY THE TUTORIAL" link on Home and on the invite page starts it. There is no separate page: the real screens run on a
+The "NEW HERE? TRY THE TUTORIAL" link on Home starts it. There is no separate page: the real screens run on a
 fake game (you plus Cierra, Shilo, Dalton, Matt and Cole, one song each) and a fake server, with a wizard on top (`src/practice/`,
 switched on by `src/lib/practice.svelte.ts`). The screen dims except for the one thing to touch, and a card says in one sentence what
 it is for. There is no skip button: doing what the card says (adding a song, pressing BEGIN THE EXPERIMENT, guessing every song)
-moves the game to the next stage. The stages are Home, Invite, Submit, Guess, Results. The last guess opens the scoreboard, like a real game.
+moves the game to the next stage. The stages are Home, Submit, Guess, Results: the host's journey (a crew member's invite page is not part of it yet). The last guess opens the scoreboard, like a real game.
 EXIT (top of the screen) reloads the page back to where practice was started from, which throws all of it away.
 
-To test one screen after a change, open `/?practice` (or `/?practice=invite`, `submit`, `guess`, `results`) in dev.
+To test one screen after a change, open `/?practice` (or `/?practice=submit`, `guess`, `results`) in dev.
 An old `/808s/demo` link starts practice too.
 
 Keep it in step when the game data, the screens or the server calls they make change:

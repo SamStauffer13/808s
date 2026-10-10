@@ -2,7 +2,6 @@
   import Admin from './Admin.svelte'
   import Notice from './Notice.svelte'
   import { attempt, joinGame, savedName } from './lib/game.svelte'
-  import { practice, startPractice } from './lib/practice.svelte'
   import { rpc } from './lib/supabase'
 
   let { code, onjoin } = $props()
@@ -34,7 +33,13 @@
       <div class="big">{preview.theme}</div>
     </div>
     {#if preview.phase === 'submit'}
-      <p class="muted center">/// 1 ADD YOUR SONGS · 2 LISTEN AND GUESS WHO ADDED WHAT · 3 SEE THE REVEAL</p>
+      <div class="panel stack">
+        <div class="label">HOW IT WORKS</div>
+        <div class="line"><b class="good">1</b><span>ENTER YOUR NAME BELOW AND JOIN</span></div>
+        <div class="line"><b class="good">2</b><span>ADD YOUR SONGS THAT FIT THE THEME</span></div>
+        <div class="line"><b class="good">3</b><span>ONCE THE CREW IS IN, LISTEN TO THE PLAYLIST AND GUESS WHO ADDED WHAT</span></div>
+        <div class="line"><b class="good">4</b><span>SEE WHO WON</span></div>
+      </div>
       <p class="muted center">/// RETURNING? USE THE SAME NAME TO TAKE YOUR SEAT</p>
     {:else}
       <p class="muted center">/// IN PROGRESS · ONLY THE CREW CAN REJOIN</p>
@@ -45,6 +50,5 @@
       <Notice scope="join" />
       <button class="btn">JOIN THE EXPERIMENT</button>
     </form>
-    {#if !practice.on}<button type="button" class="link center" onclick={() => startPractice('invite')}>NEW HERE? TRY THE TUTORIAL →</button>{/if}
   {/if}
 </div>

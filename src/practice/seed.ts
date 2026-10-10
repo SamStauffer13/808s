@@ -36,13 +36,11 @@ const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
   results: finished,
 }
 
-// Returns what a room cleanup returns, or null when this browser is not in the room yet (the invite stage),
-// just like a real room you have not joined.
+// Returns what a room cleanup returns.
 export function seed(stage: Stage) {
   players[0].name = savedName() || me.name // you are whoever you said you were
   game.userId = me.user_id
   Object.assign(game, { room: null, players: [], songs: [], owners: {}, guesses: [], counts: {} })
-  if (stage === 'invite') return null
   Object.assign(game, { players }, seeds[stage]?.())
   return () => {}
 }

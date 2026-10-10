@@ -1,6 +1,6 @@
 // Practice mode: the real screens, run on a fake game and a fake server (src/practice) while a wizard walks the
 // player through them. One flag turns it on; leaving reloads the page, which throws all of it away.
-export const stages = ['home', 'invite', 'submit', 'guess', 'results'] as const
+export const stages = ['home', 'submit', 'guess', 'results'] as const
 export type Stage = (typeof stages)[number]
 
 // the one room in practice mode; real codes look like AB-1234, so it can never match one
