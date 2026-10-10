@@ -44,7 +44,7 @@ export const tour: Record<Stage, Prompt[]> = {
   submit: [
     { target: 'label.field input', text: 'FIRST, SEARCH FOR THE SONG YOU WANT TO ADD TO THE GAME.', when: 'button.row:not([disabled])' },
     { target: 'button.row:not([disabled])', text: 'NEXT, TAP YOUR SONG TO ADD IT; NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL.' },
-    { target: 'button.btn:not(.ghost):not([disabled])', text: 'FINALLY, BEGIN THE EXPERIMENT TO START THE GUESSING ONCE EVERYONE HAS ADDED THEIR SONG.' },
+    { target: 'button.btn:not(.ghost):not([disabled])', text: 'FINALLY, WAIT UNTIL EVERYONE YOU SHARED THE LINK WITH HAS ADDED THEIR SONGS, THEN BEGIN THE EXPERIMENT TO START THE GUESSING.' },
   ],
   guess: [
     { target: '.framed', text: "FIRST, LISTEN TO EVERYONE'S SONGS, SHUFFLED TOGETHER.", look: true },
