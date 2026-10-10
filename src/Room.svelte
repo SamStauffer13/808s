@@ -23,19 +23,19 @@
   })
 
   // The reveal opens for everyone once the last guess is in, and each player walks through it on their own,
-  // whenever they like. Their place is kept on this device: nothing until they start, then how many sets
-  // they have seen, and past the last set means they are on the results.
+  // whenever they like. Their place is kept on this device: how many sets they have seen (the first one until
+  // they move), and past the last set means they are on the results.
   const key = $derived(`808s-reveal-${code}`)
   const read = () => {
-    if (isDemo(code)) return code === 'DEMO-RESULTS' ? Infinity : null // the demo never saves a place
+    if (isDemo(code)) return code === 'DEMO-RESULTS' ? Infinity : 0 // the demo never saves a place
     try {
       const saved = localStorage.getItem(key)
-      return saved === null ? null : Number(saved)
+      return saved === null ? 0 : Number(saved)
     } catch {
-      return null
+      return 0
     }
   }
-  let place = $state<number | null>(read())
+  let place = $state(read())
   const go = (to: number) => {
     place = to
     try {
@@ -44,31 +44,19 @@
   }
 
   const total = $derived(packsOf(game.songs).length)
-  const intro = $derived(game.room?.phase === 'reveal' && total > 0 && place === null) // has its own big logo
 </script>
 
 {#if stranger}
   <Invite {code} onjoin={load} />
 {:else if game.room}
-  {#if !intro}
-    <Admin {code} />
-    <p class="muted center">EXPERIMENT {code}</p>
-  {/if}
+  <Admin {code} />
+  <p class="muted center">EXPERIMENT {code}</p>
   {#if game.room.phase === 'submit'}
     <Submit />
   {:else if game.room.phase === 'guess'}
     <Guess />
   {:else if !total}
     <p class="muted center">/// ESTABLISHING LINK</p>
-  {:else if place === null}
-    <div class="logo big">808<small>s</small></div>
-    <div class="panel framed">
-      <div class="label good">ACCESS GRANTED</div>
-      <div class="big">THE SOURCES ARE READY</div>
-    </div>
-    <p class="muted center">/// SEE WHO ADDED EACH BOX OF SONGS · {total} IN ALL · GO AT YOUR OWN PACE · COME BACK ANY TIME</p>
-    <div class="grow"></div>
-    <button class="btn" onclick={() => go(0)}>DECRYPT THE SOURCES</button>
   {:else if place < total}
     <Reveal index={place} {total} {go} />
   {:else}
