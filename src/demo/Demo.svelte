@@ -9,6 +9,7 @@
   let { code }: { code: string } = $props()
   const stage = $derived(stageOf(code))
   const at = $derived(stages.indexOf(stage))
+  const link = (s: (typeof stages)[number]) => `#/${codeOf(s).toLowerCase()}` // the address bar shows lowercase; the router reads either
 
   // the real screens call the fake server only while the demo is open
   Object.assign(fake, handlers)
@@ -20,11 +21,11 @@
   <p class="muted">STEP {at + 1} OF {stages.length} · {captions[stage].what}</p>
   <p class="try"><b class="good">TRY IT:</b> {captions[stage].tryIt}</p>
   <div class="stages">
-    {#if at > 0}<a class="chip" href={`#/${codeOf(stages[at - 1])}`}>← BACK</a>{/if}
+    {#if at > 0}<a class="chip" href={link(stages[at - 1])}>← BACK</a>{/if}
     {#each stages as s}
-      <a class="chip jump" class:on={s === stage} href={`#/${codeOf(s)}`}>{s.toUpperCase()}</a>
+      <a class="chip jump" class:on={s === stage} href={link(s)}>{s.toUpperCase()}</a>
     {/each}
-    <a class="chip on" href={at < stages.length - 1 ? `#/${codeOf(stages[at + 1])}` : '#/'}>{at < stages.length - 1 ? 'NEXT STEP →' : 'START YOUR OWN'}</a>
+    <a class="chip on" href={at < stages.length - 1 ? link(stages[at + 1]) : '#/'}>{at < stages.length - 1 ? 'NEXT STEP →' : 'START YOUR OWN'}</a>
   </div>
 </nav>
 

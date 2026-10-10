@@ -29,7 +29,7 @@ npm run check      # types
 real screens against a fake 8-player game and a fake server (`src/demo/`), so you can see every stage without players.
 The bar at the top explains each step in a caption, steps with BACK and NEXT STEP, and jumps between stages: Home,
 Invite, Submit, Guess, Reveal, Results. Search, adding songs and guessing all work, and the last guess opens the reveal like the real game.
-A stage can also be opened directly, for example `/808s/#/DEMO-RESULTS`.
+A stage can also be opened directly, for example `/808s/#/demo-results`.
 
 Keep it in step when the game data, the screens or the server calls they make change: `npm run check` catches a
 changed type, a new call needs a handler in `src/demo/backend.ts`, and the demo fails to load if a stamp in

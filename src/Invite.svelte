@@ -44,6 +44,6 @@
       <Notice scope="join" />
       <button class="btn">JOIN THE EXPERIMENT</button>
     </form>
-    {#if !isDemo(code)}<a class="link center" href="#/DEMO">NEW HERE? SEE HOW IT WORKS</a>{/if}
+    {#if !isDemo(code)}<a class="link center" href="#/demo">NEW HERE? SEE HOW IT WORKS</a>{/if}
   {/if}
 </div>
