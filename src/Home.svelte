@@ -59,6 +59,7 @@
   <span class="good">{tagline[1]}<i class="cursor"></i></span>
 </p>
 <p class="muted center">/// A SOCIAL EXPERIMENT · ADD SONGS, THEN GUESS WHO ADDED WHAT</p>
+{#if !isDemo(location.hash.slice(2).toUpperCase())}<a class="link center" href="#/DEMO">NEW HERE? SEE HOW IT WORKS</a>{/if}
 
 <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), spotifyName ? create() : connect())}>
   <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
@@ -86,9 +87,8 @@
     <p class="muted">/// PLAYLIST GOES TO {spotifyName.toUpperCase()}'S SPOTIFY</p>
     <button type="button" class="link" onclick={disconnect}>NOT YOU? DISCONNECT</button>
   {:else}
-    <p class="muted">/// SPOTIFY LOGIN BUILDS THE PLAYLIST IN YOUR ACCOUNT · FORM IS SAVED</p>
+    <p class="muted">/// YOU'LL LOG IN TO SPOTIFY SO THE PLAYLIST CAN BE MADE IN YOUR ACCOUNT, THEN COME BACK HERE · YOUR FORM IS SAVED</p>
   {/if}
   <Notice scope="create" />
   <button class="btn">{spotifyName ? 'INITIALIZE THE EXPERIMENT' : 'CONNECT SPOTIFY'}</button>
 </form>
-{#if !isDemo(location.hash.slice(2).toUpperCase())}<a class="link center" href="#/DEMO">NEW HERE? SEE HOW IT WORKS</a>{/if}

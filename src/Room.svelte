@@ -66,7 +66,7 @@
       <div class="label good">ACCESS GRANTED</div>
       <div class="big">THE SOURCES ARE READY</div>
     </div>
-    <p class="muted center">/// {total} SETS · GO AT YOUR OWN PACE · COME BACK ANY TIME</p>
+    <p class="muted center">/// SEE WHO ADDED EACH BOX OF SONGS · {total} IN ALL · GO AT YOUR OWN PACE · COME BACK ANY TIME</p>
     <div class="grow"></div>
     <button class="btn" onclick={() => go(0)}>DECRYPT THE SOURCES</button>
   {:else if place < total}

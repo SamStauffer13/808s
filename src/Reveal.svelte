@@ -2,7 +2,7 @@
   import Art from './Art.svelte'
   import { decrypt } from './lib/decrypt'
   import { game, me, nameOf, packsOf } from './lib/game.svelte'
-  import { statsOf, stampFor } from './lib/stamps'
+  import { noteOf, statsOf, stampFor } from './lib/stamps'
 
   // index is the set being shown; go moves this player (and only this player) to another one
   let { index, total, go }: { index: number; total: number; go: (to: number) => void } = $props()
@@ -74,6 +74,7 @@
         <span class="good">{right === guesses.length ? 'EVERYONE' : right ? `${right} OF ${guesses.length}` : 'NOBODY'} CRACKED IT</span>
         {#if stamp}<span class="stamp">[ {stamp} ]</span>{/if}
       </div>
+      {#if stamp}<p class="muted">{noteOf(stamp)}</p>{/if}
 
       <div class="guesses">
         {#each guesses as g}

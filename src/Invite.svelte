@@ -33,7 +33,7 @@
       <div class="big">{preview.theme}</div>
     </div>
     {#if preview.phase === 'submit'}
-      <p class="muted center">/// ADD SONGS THAT FIT THE VIBE, THEN GUESS WHO ADDED WHAT</p>
+      <p class="muted center">/// 1 ADD YOUR SONGS · 2 LISTEN AND GUESS WHO ADDED WHAT · 3 SEE THE REVEAL</p>
       <p class="muted center">/// RETURNING? USE THE SAME NAME TO TAKE YOUR SEAT</p>
     {:else}
       <p class="muted center">/// IN PROGRESS · ONLY THE CREW CAN REJOIN</p>

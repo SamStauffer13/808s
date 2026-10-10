@@ -41,7 +41,7 @@
   const startGuessing = once(() => attempt('start', () => call('start-guess', { room_id: room.id })))
 </script>
 
-<Head step={`LOADED ${mine.length} / ${room.songs_per_player}`} title="Add your songs" />
+<Head step={`SONGS ADDED ${mine.length} / ${room.songs_per_player}`} title="Add your songs" />
 
 {#if isHost()}
   <div class="panel stack">
@@ -76,9 +76,9 @@
 <Notice scope="songs" />
 
 {#if mine.length >= room.songs_per_player}
-  <p class="center good">{everyoneIn ? (isHost() ? "EVERYONE'S IN · CREW STANDING BY FOR YOUR AUTH" : "EVERYONE'S IN") : waiting > 0 ? `TRACKS LOCKED · WAITING ON ${waiting} MORE` : 'TRACKS LOCKED'}</p>
+  <p class="center good">{everyoneIn ? (isHost() ? "EVERYONE'S IN · PRESS BEGIN THE EXPERIMENT BELOW" : "EVERYONE'S IN") : waiting > 0 ? `SONGS ADDED · WAITING ON ${waiting} MORE PLAYER${waiting > 1 ? 'S' : ''}` : 'SONGS ADDED'}</p>
   {#if !isHost()}
-    <p class="muted center">/// {everyoneIn ? `WAITING ON ${hostName} TO BEGIN THE EXPERIMENT` : `${hostName} HOLDS THE KEY · THE EXPERIMENT BEGINS ON THEIR COMMAND`}</p>
+    <p class="muted center">/// {everyoneIn ? `WAITING ON ${hostName} TO BEGIN THE EXPERIMENT` : `WHEN EVERYONE'S DONE, ${hostName} BEGINS THE EXPERIMENT`} · THE ROUND WHERE YOU GUESS WHO ADDED WHAT</p>
   {/if}
 {/if}
 

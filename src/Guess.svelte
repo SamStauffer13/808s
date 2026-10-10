@@ -44,7 +44,7 @@
   const allIn = $derived(!todo.length || done === todo.length) // this player has matched every set they can
 </script>
 
-<Head step={`THE EXPERIMENT · ${done} / ${todo.length} CRACKED`} title="Who added what?" />
+<Head step={`THE EXPERIMENT · ${done} / ${todo.length} GUESSED`} title="Who added what?" />
 
 <p class="muted">VIBE: <span class="text">{room.theme}</span></p>
 
@@ -58,11 +58,11 @@
 {/if}
 
 {#if todo.length}
-  <p class="muted center"><Eq />/// LISTEN, THEN PICK WHO ADDED EACH SET · ONE FRIEND PER SET</p>
+  <p class="muted center"><Eq />/// LISTEN TO THE PLAYLIST, THEN FOR EACH BOX OF SONGS PICK THE FRIEND WHO ADDED THEM · EACH FRIEND MATCHES ONE BOX</p>
 {/if}
 
 {#if todo.length && done === todo.length}
-  <p class="center good">ALL CRACKED · {waiting > 0 ? `WAITING ON ${waiting} MORE PLAYER${waiting > 1 ? 'S' : ''}` : 'OPENING THE REVEAL'}</p>
+  <p class="center good">ALL GUESSED · {waiting > 0 ? `WAITING ON ${waiting} MORE PLAYER${waiting > 1 ? 'S' : ''}` : 'OPENING THE REVEAL'}</p>
   <p class="muted center">/// THE REVEAL OPENS WHEN EVERYONE IS DONE · COME BACK ANY TIME</p>
 {:else if !todo.length}
   <p class="center good">NOTHING TO GUESS · THESE ARE ALL YOUR SONGS</p>

@@ -29,13 +29,13 @@
 <Head step="EXPERIMENT COMPLETE" />
 
 <div class="panel framed">
-  <div class="label good">{winners.length > 1 ? 'IT\'S A TIE' : 'L33T'}</div>
+  <div class="label good">{winners.length > 1 ? 'IT\'S A TIE' : 'L33T · TOP SCORER'}</div>
   <div class="logo name" style:--len={Math.max(1, ...winners.map((w) => w.name.length))}>{winners.map((w) => w.name.toUpperCase()).join(' + ')}</div>
-  <div class="muted"><span class="good">{top}</span> / {winners[0]?.total} CRACKED</div>
+  <div class="muted"><span class="good">{top}</span> / {winners[0]?.total} RIGHT</div>
 </div>
 
 <div class="wave"></div>
-<div class="label">LEADERBOARD</div>
+<div class="label">LEADERBOARD · BOXES GUESSED RIGHT</div>
 <Notice scope="scores" />
 <div class="stack">
   {#each scores as s, n}
