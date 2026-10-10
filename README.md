@@ -12,7 +12,7 @@ each set of songs: who added it? Live at https://samstauffer.net/808s/
 | Spotify | Developer dashboard app `808s`. Only the host logs in to Spotify (their playlist is made in their own account); players never do. |
 | Frontend | Svelte 5 + Vite + TypeScript. Only `svelte` and `@supabase/supabase-js` at runtime. |
 
-Secrets live only in Supabase (`npx supabase secrets list`): `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`,
+Secrets live only in Supabase (`npx supabase secrets list`): `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `ADMIN_KEY`,
 (`SPOTIFY_REFRESH_TOKEN` is no longer used and can be removed.) `.env` holds the Supabase URL and publishable key, which are public.
 
 ## Run it
@@ -47,6 +47,16 @@ If the build says "Cannot find native binding" on Windows: `npm install --no-sav
 - **Pushing:** this machine's default GitHub login is the work account, so the repo remote is
   `git@github-808s:SamStauffer13/808s.git`. The `github-808s` alias in `~/.ssh/config` uses the deploy key
   `~/.ssh/808s_deploy`, which is added to the repo with write access.
+
+## Admin override: moving a stuck game along
+
+When the host is away, the owner can move any room to its next phase. In the room (or on the invite page, or Home
+with a room code), tap the small 808s logo five times, enter the key once (it is kept on that device only), then press
+`FORCE NEXT PHASE`. The `admin-advance` Edge Function checks the key against the `ADMIN_KEY` secret every time:
+`npx supabase secrets set ADMIN_KEY=...`. Change it before a wide release.
+
+Submit to guess builds the playlist in the host's Spotify; if the host never connected one, it uses the admin's, and
+the panel offers a `CONNECT SPOTIFY` button that returns to the room and carries on. Guess to reveal needs nothing.
 
 ## How a game flows
 
