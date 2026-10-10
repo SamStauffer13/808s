@@ -90,6 +90,16 @@ export const nameOf = (playerId?: string) => game.players.find((p) => p.id === p
 // Real room codes look like AB-1234, so they can never match.
 export const isDemo = (code: string) => code === 'DEMO' || code.startsWith('DEMO-')
 
+const countsOf = (rows: { player_id: string; n: number }[]) => Object.fromEntries(rows.map((c) => [c.player_id, c.n]))
+
+// Other players' songs are hidden until the guess phase, so their adds never arrive through realtime.
+// While songs are being added, the screen asks for the counts on a timer instead.
+export async function refreshCounts() {
+  if (isDemo(game.room!.code)) return
+  const { data } = await supabase.rpc('submission_counts', { p_room: game.room!.id })
+  game.counts = countsOf(data ?? [])
+}
+
 export async function refresh() {
   if (isDemo(game.room!.code)) return // the demo has no server to reload from
   const id = game.room!.id
@@ -108,7 +118,7 @@ export async function refresh() {
   game.songs = songs.data ?? []
   game.owners = Object.fromEntries((owners.data ?? []).map((o) => [o.song_id, o.player_id]))
   game.guesses = guesses.data ?? []
-  game.counts = Object.fromEntries((counts.data ?? []).map((c: { player_id: string; n: number }) => [c.player_id, c.n]))
+  game.counts = countsOf(counts.data ?? [])
 }
 
 // Several changes often land together, and a player's own write is followed by its realtime echo,

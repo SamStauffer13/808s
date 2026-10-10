@@ -5,7 +5,7 @@
   import Notice from './Notice.svelte'
   import Share from './Share.svelte'
   import Slot from './Slot.svelte'
-  import { attempt, game, isHost, me, nameOf, once, refreshSoon, type Track } from './lib/game.svelte'
+  import { attempt, game, isHost, me, nameOf, once, refreshCounts, refreshSoon, type Track } from './lib/game.svelte'
   import { call, rpc } from './lib/supabase'
 
   const room = $derived(game.room!)
@@ -23,6 +23,12 @@
     if (everyoneIn) return "CREW STANDING BY · BEGIN THE EXPERIMENT"
     if (waiting > 0) return `${waiting} STILL ADDING · STARTING LOCKS EVERYONE'S SONGS`
     return 'STARTING LOCKS YOUR SONGS AND BUILDS THE PLAYLIST'
+  })
+
+  // everyone's progress, a few seconds behind at most (not while the tab is hidden)
+  $effect(() => {
+    const timer = setInterval(() => document.hidden || refreshCounts().catch(() => {}), 5000)
+    return () => clearInterval(timer)
   })
 
   const taken = (t: Track) => mine.some((s) => s.spotify_id === t.id)
