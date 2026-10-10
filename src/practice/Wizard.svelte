@@ -147,7 +147,7 @@
   {#if card}
     <div class="practice-card {card.side}" bind:clientHeight={cardHeight} style:top="{card.top}px" style:--arrow="{card.arrow}px">
       <div class="meta"><span>STEP {i + 1} OF {steps.length}</span><span>{titles[practice.stage]}</span></div>
-      <p class="say" aria-live="polite">{step.text}</p>
+      <p class="say" aria-live="polite">{typeof step.text === 'function' ? step.text() : step.text}</p>
       {#if step.look}
         <button type="button" class="btn" onclick={advance}>GOT IT</button>
       {:else if asksText}

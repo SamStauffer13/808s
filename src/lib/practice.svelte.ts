@@ -8,6 +8,9 @@ export const journeys: Record<Role, readonly Stage[]> = {
   guest: ['invite', 'submit', 'guess', 'results'],
 }
 
+// "logged in to Spotify" lasts for the tab, so the round trip through Spotify looks like the real one
+export const spotifyKey = '808s-practice-spotify'
+
 // the one room in practice mode; real codes look like AB-1234, so it can never match one
 export const practiceCode = 'PRACTICE'
 

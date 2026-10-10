@@ -1,7 +1,7 @@
 // The wizard's script: for each journey and stage, the things to touch in order, one sentence each. `target` is a CSS
 // selector for the real element on that screen (Wizard.svelte lights it up), so a screen that changes its markup must
 // update it here.
-import type { Role, Stage } from '../lib/practice.svelte'
+import { spotifyKey, type Role, type Stage } from '../lib/practice.svelte'
 
 // what the card calls each stage (the order is not a count: a real game has many more taps than five)
 export const titles: Record<Stage, string> = {
@@ -14,13 +14,14 @@ export const titles: Record<Stage, string> = {
 
 // Each prompt is one friendly sentence in order (First, Next, Then, Finally) saying what its thing is for. A text box is
 // done when NEXT (or Return) is pressed with something typed in it; anything else, when it is tapped.
+// `text` can be a function when what to say depends on where the player is (it is read as the card appears)
 // `look`: something to read, not use: the card has a GOT IT button, and the thing itself can still be played with
 // `skipTo`: finishing this prompt jumps to that stage (a crew member waits for the host, so the tutorial skips ahead)
 // `final`: the last prompt of practice; finishing it opens the YOU'RE READY card
 // `again`: after this prompt is done, go back to prompt number `to` while something matching `while` is still on the screen
 // `when`: the prompt is done as soon as something matching this shows up (search results appear while you type)
 // `required`: practice will not let the form go on until this box is filled, even if the real one allows it
-export type Prompt = { target: string; text: string; look?: boolean; skipTo?: Stage; final?: boolean; again?: { to: number; while: string }; when?: string; required?: boolean }
+export type Prompt = { target: string; text: string | (() => string); look?: boolean; skipTo?: Stage; final?: boolean; again?: { to: number; while: string }; when?: string; required?: boolean }
 
 const search = (text: string): Prompt => ({ target: 'label.field input', text, when: 'button.row:not([disabled])' })
 const addSong: Prompt = { target: 'button.row:not([disabled])', text: 'NEXT, TAP YOUR SONG TO ADD IT; NOBODY SEES WHO ADDED WHAT UNTIL THE RESULTS.' }
@@ -44,7 +45,14 @@ export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
       { target: 'form label.field:nth-of-type(1) input', text: 'ENTER YOUR NAME SO YOUR CREW KNOWS WHO YOU ARE.' },
       { target: 'form label.field:nth-of-type(2) input', text: 'FIRST, ENTER A THEME FOR WHAT KINDS OF SONGS YOU WANT.' },
       { target: 'form label.field:nth-of-type(3) input', text: 'NEXT, GIVE THE PLAYLIST A DOPE NAME BASED OFF THAT THEME.', required: true },
-      { target: 'form .btn', text: "FINALLY, AS A HOST YOU NEED TO AUTHENTICATE WITH SPOTIFY TO CREATE THE PLAYLIST (DON'T WORRY, IT'S SAFER THAN ANYTHING YOU'VE DONE LATELY)." },
+      {
+        target: 'form .btn',
+        // the same button connects Spotify first, then publishes the playlist
+        text: () =>
+          sessionStorage.getItem(spotifyKey) !== null
+            ? 'ONCE AUTHENTICATED, CLICK THIS BUTTON TO PUBLISH THE PLAYLIST SO PEOPLE CAN SUBMIT SONGS.'
+            : "FINALLY, AS A HOST YOU NEED TO AUTHENTICATE WITH SPOTIFY TO CREATE THE PLAYLIST (DON'T WORRY, IT'S SAFER THAN ANYTHING YOU'VE DONE LATELY).",
+      },
     ],
     submit: [
       { target: '.panel.stack', text: 'AFTER YOU CREATE AN EXPERIMENT, SEND THE INVITE LINK TO YOUR CREW AND WATCH THIS CHECKLIST FILL IN.', look: true },

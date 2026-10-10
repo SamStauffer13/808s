@@ -2,12 +2,9 @@
 // name, so the real screens work end to end without a network. Each handler does what the real server would,
 // including moving to the next stage when the real game would move on.
 import { game, packsOf, savedName, type Song } from '../lib/game.svelte'
-import { goStage, practiceCode } from '../lib/practice.svelte'
+import { goStage, practiceCode, spotifyKey } from '../lib/practice.svelte'
 import { fake, type Fake } from '../lib/supabase'
 import { chosen, me, scores, searchable, theme, tracks } from './data'
-
-// "logged in to Spotify" lasts for the tab, so the round trip through Spotify looks like the real one
-const spotifyKey = '808s-practice-spotify'
 
 // have you matched every set that is not yours?
 const finished = () =>
