@@ -1,13 +1,13 @@
 // Fills the game state for a stage, with only what a player may see at that point: songs stay anonymous until the reveal.
 import { game, savedName, type Room } from '../lib/game.svelte'
-import { practiceCode, type Stage } from '../lib/practice.svelte'
+import { practice, practiceCode, type Stage } from '../lib/practice.svelte'
 import { stampFor, stamps, statsOf } from '../lib/stamps'
 import { guessesBy, me, order, players, playlist, sets, setSongs, songId, theme } from './data'
 
 const room = (phase: Room['phase']): Room => ({
   id: 'practice',
   code: practiceCode,
-  host_user_id: me.user_id,
+  host_user_id: players[practice.role === 'guest' ? 1 : 0].user_id, // a crew member's host is Cierra
   theme,
   songs_per_player: 1,
   phase,
@@ -36,11 +36,13 @@ const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
   results: finished,
 }
 
-// Returns what a room cleanup returns.
+// Returns what a room cleanup returns, or null when this browser is not in the room yet (the invite stage),
+// just like a real room you have not joined.
 export function seed(stage: Stage) {
   players[0].name = savedName() || me.name // you are whoever you said you were
   game.userId = me.user_id
   Object.assign(game, { room: null, players: [], songs: [], owners: {}, guesses: [], counts: {} })
+  if (stage === 'invite') return null
   Object.assign(game, { players }, seeds[stage]?.())
   return () => {}
 }

@@ -25,18 +25,18 @@ npm run check      # types
 
 ## Practice round: play a whole game with fake players
 
-The "NEW HERE? TRY THE TUTORIAL" link on Home starts it. There is no separate page: the real screens run on a
+The "NEW HERE? TRY THE TUTORIAL" link starts it, on Home for a host and on the invite page for a crew member. There is no separate page: the real screens run on a
 fake game (you plus Cierra, Shilo, Dalton, Matt and Cole, one song each) and a fake server, with a wizard on top (`src/practice/`,
 switched on by `src/lib/practice.svelte.ts`). The screen dims except for the one thing to touch, and a card says in one sentence what
 it is for. There is no skip button: doing what the card says (adding a song, pressing BEGIN THE EXPERIMENT, guessing every song)
-moves the game to the next stage. The stages are Home, Submit, Guess, Results: the host's journey (a crew member's invite page is not part of it yet). The last guess opens the scoreboard, like a real game.
+moves the game to the next stage. There are two journeys: the host's (Home, Add Songs, Guess, Results) and a crew member's from an invite link (Join, Add Songs, Guess, Results, with Cierra as the host and a skip past waiting for them). The last guess opens the scoreboard, like a real game.
 EXIT (top of the screen) reloads the page back to where practice was started from, which throws all of it away.
 
-To test one screen after a change, open `/?practice` (or `/?practice=submit`, `guess`, `results`) in dev.
+To test one screen after a change, open `/?practice` for the host (or `/?practice=submit`, `guess`, `results`), or `/?practice=guest` for the crew member (`guest-submit`, `guest-guess`, `guest-results` jump to a stage) in dev.
 An old `/808s/demo` link starts practice too.
 
 Keep it in step when the game data, the screens or the server calls they make change:
-- `src/practice/steps.ts` has the prompts and the CSS selectors they point at: update them when a screen's markup changes.
+- `src/practice/steps.ts` has the prompts for each journey and the CSS selectors they point at: update them when a screen's markup changes.
 - `src/practice/backend.ts` answers the server calls. A call it has no answer for throws "not available in the practice
   round" and never reaches the real server, so a new call needs a handler there.
 - `src/practice/data.ts` has the fake game; `seed.ts` fails to load if a stamp in `src/lib/stamps.ts` is never earned by a set.

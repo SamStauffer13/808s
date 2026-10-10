@@ -2,6 +2,7 @@
   import Admin from './Admin.svelte'
   import Notice from './Notice.svelte'
   import { attempt, joinGame, savedName } from './lib/game.svelte'
+  import { practice, startPractice } from './lib/practice.svelte'
   import { rpc } from './lib/supabase'
 
   let { code, onjoin } = $props()
@@ -50,5 +51,6 @@
       <Notice scope="join" />
       <button class="btn">JOIN THE EXPERIMENT</button>
     </form>
+    {#if !practice.on}<button type="button" class="link center" onclick={() => startPractice('guest')}>NEW HERE? TRY THE TUTORIAL →</button>{/if}
   {/if}
 </div>

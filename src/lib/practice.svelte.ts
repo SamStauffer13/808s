@@ -1,14 +1,19 @@
 // Practice mode: the real screens, run on a fake game and a fake server (src/practice) while a wizard walks the
 // player through them. One flag turns it on; leaving reloads the page, which throws all of it away.
-export const stages = ['home', 'submit', 'guess', 'results'] as const
-export type Stage = (typeof stages)[number]
+// There are two journeys: the host's (start a game) and a crew member's (join one from an invite link).
+export type Role = 'host' | 'guest'
+export type Stage = 'home' | 'invite' | 'submit' | 'guess' | 'results'
+export const journeys: Record<Role, readonly Stage[]> = {
+  host: ['home', 'submit', 'guess', 'results'],
+  guest: ['invite', 'submit', 'guess', 'results'],
+}
 
 // the one room in practice mode; real codes look like AB-1234, so it can never match one
 export const practiceCode = 'PRACTICE'
 
 // kept for the tab, so a reload (or the trip through the fake Spotify login) lands on the same step
 const key = '808s-practice'
-type Saved = { stage: Stage; step: number; returnTo: string }
+type Saved = { role: Role; stage: Stage; step: number; returnTo: string }
 
 const saved = (): Partial<Saved> => {
   try {
@@ -18,12 +23,13 @@ const saved = (): Partial<Saved> => {
   }
 }
 const start = saved()
+const role = start.role ?? 'host'
 
-export const practice = $state({ on: !!start.returnTo, stage: start.stage ?? 'home', step: start.step ?? 0, returnTo: start.returnTo ?? '' })
+export const practice = $state({ on: !!start.returnTo, role, stage: start.stage ?? journeys[role][0], step: start.step ?? 0, returnTo: start.returnTo ?? '' })
 
 const save = () => {
   try {
-    sessionStorage.setItem(key, JSON.stringify({ stage: practice.stage, step: practice.step, returnTo: practice.returnTo }))
+    sessionStorage.setItem(key, JSON.stringify({ role: practice.role, stage: practice.stage, step: practice.step, returnTo: practice.returnTo }))
   } catch {}
 }
 
@@ -31,8 +37,8 @@ const save = () => {
 let installed: Promise<void> | undefined
 export const installPractice = () => (installed ??= import('../practice/backend').then((m) => m.install()))
 
-export function startPractice(stage: Stage = 'home', returnTo = location.href) {
-  Object.assign(practice, { on: true, stage, step: 0, returnTo })
+export function startPractice(role: Role = 'host', stage: Stage = journeys[role][0], returnTo = location.href) {
+  Object.assign(practice, { on: true, role, stage, step: 0, returnTo })
   save()
 }
 
@@ -56,12 +62,15 @@ export function exitPractice() {
   location.reload()
 }
 
-// /?practice and /?practice=guess open practice (so does an old #/demo link); handy for testing one screen
+// /?practice opens the host's journey and /?practice=guest the crew member's; /?practice=guess or =guest-guess jumps
+// to one stage (so does an old #/demo link). Handy for testing one screen.
 export function startFromAddress() {
   const asked = new URLSearchParams(location.search).get('practice')
   const old = /^#\/demo(?:-(\w+))?$/.exec(location.hash)
   if (asked === null && !old) return
-  const stage = [asked, old?.[1]].find((s): s is Stage => stages.includes(s as Stage))
+  const [, guest, name] = /^(guest-?)?(\w*)$/.exec(asked ?? old?.[1] ?? '') ?? []
+  const role: Role = guest || name === 'invite' ? 'guest' : 'host'
+  const stage = journeys[role].find((s) => s === name)
   history.replaceState(null, '', location.pathname)
-  startPractice(stage, location.origin + location.pathname)
+  startPractice(role, stage, location.origin + location.pathname)
 }

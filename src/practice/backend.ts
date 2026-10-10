@@ -4,7 +4,7 @@
 import { game, packsOf, savedName, type Song } from '../lib/game.svelte'
 import { goStage, practiceCode } from '../lib/practice.svelte'
 import { fake, type Fake } from '../lib/supabase'
-import { chosen, me, scores, searchable, tracks } from './data'
+import { chosen, me, scores, searchable, theme, tracks } from './data'
 
 // "logged in to Spotify" lasts for the tab, so the round trip through Spotify looks like the real one
 const spotifyKey = '808s-practice-spotify'
@@ -25,6 +25,10 @@ const handlers: Fake = {
     return { connected, name: connected ? savedName() || me.name : null }
   },
   'create-room': () => (goStage('submit'), { room: { code: practiceCode } }), // next you add songs, as the host
+
+  // invite (a crew member's journey)
+  room_preview: () => [{ theme, phase: 'submit' }],
+  join_room: () => (goStage('submit'), { code: practiceCode }),
 
   // adding songs
   'spotify-search': ({ q }) => {

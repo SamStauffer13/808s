@@ -1,22 +1,23 @@
 <script lang="ts">
-  import { exitPractice, goStage, practice, setStep, stages } from '../lib/practice.svelte'
+  import { exitPractice, goStage, journeys, practice, setStep } from '../lib/practice.svelte'
   import { tour, titles } from './steps'
 
   // there is no skip button: the way forward is doing what the card says, which moves the real game along
-  const steps = $derived(tour[practice.stage])
+  const steps = $derived(tour[practice.role][practice.stage] ?? [])
   const i = $derived(Math.min(practice.step, steps.length - 1))
   const step = $derived(steps[i])
 
   let done = $state(false)
   const advance = () => {
     const again = step.again
-    if (again && document.querySelector(again.while)) setStep(again.to)
+    if (step.skipTo) goStage(step.skipTo)
+    else if (again && document.querySelector(again.while)) setStep(again.to)
     else if (i < steps.length - 1) setStep(i + 1)
     else if (step.final) done = true
   }
   const replay = () => {
     done = false
-    goStage('home')
+    goStage(journeys[practice.role][0])
   }
 
   // A prompt is done when its thing has been used: a button or panel once it is tapped, a text box once NEXT (or
@@ -128,8 +129,13 @@
   <div class="practice-veil"></div>
   <div class="practice-card done" role="dialog" aria-label="Practice finished">
     <p class="say">YOU'RE READY.</p>
-    <p class="muted">THAT'S EVERY STEP. START A REAL GAME AND SEND YOUR CREW THE LINK.</p>
-    <button type="button" class="btn" onclick={exitPractice}>START A REAL GAME</button>
+    {#if practice.role === 'host'}
+      <p class="muted">THAT'S EVERY STEP. START A REAL GAME AND SEND YOUR CREW THE LINK.</p>
+      <button type="button" class="btn" onclick={exitPractice}>START A REAL GAME</button>
+    {:else}
+      <p class="muted">THAT'S EVERY STEP. HEAD BACK TO YOUR INVITE AND JOIN THE REAL GAME.</p>
+      <button type="button" class="btn" onclick={exitPractice}>BACK TO MY INVITE</button>
+    {/if}
     <button type="button" class="btn ghost plain" onclick={replay}>PLAY IT AGAIN</button>
   </div>
 {:else if hole}
@@ -150,7 +156,7 @@
         <p class="muted">TAP THE LIT SPOT</p>
       {/if}
       <div class="dots" aria-hidden="true">
-        {#each stages as s}<i class:on={s === practice.stage}></i>{/each}
+        {#each journeys[practice.role] as s}<i class:on={s === practice.stage}></i>{/each}
       </div>
     </div>
   {/if}
