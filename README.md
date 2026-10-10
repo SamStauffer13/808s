@@ -73,7 +73,7 @@ In the app the guessing round is called "the Experiment", and the host begins it
 2. **Submit:** friends join by link and add songs. Who added what stays hidden.
 3. **Experiment:** the host presses `BEGIN THE EXPERIMENT`, which builds a shuffled playlist in their Spotify.
 4. **Guess:** each player matches every other player's songs to whoever added them.
-5. **Reveal:** it opens by itself when the last guess is in (the host can open it early). After that each player steps
+5. **Reveal:** it opens by itself when the last guess is in (only the admin override can open it early). After that each player steps
    through it at their own pace, any time; their place is saved on their device.
 
 Each revealed set can get a stamp (`DOXXED`, `UNCRACKABLE`, `PROXIED`). The rules are one short table in `src/lib/stamps.ts`.

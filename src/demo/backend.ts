@@ -53,7 +53,6 @@ export const handlers: Fake = {
 
   // the host moves the game along
   'start-guess': () => go('guess'),
-  host_set_phase: () => go('reveal'),
   'admin-advance': ({ code }) => (code === undefined ? { ok: true } : { phase: 'guess' }), // the owner's override, from Home
 
   // guessing: the screen has already recorded your pick; the last one opens the reveal, like the real server

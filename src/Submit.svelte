@@ -25,14 +25,6 @@
     { text: 'BEGIN THE EXPERIMENT', done: false },
   ])
 
-  // starting early locks out anyone still adding, so it takes a second tap
-  let sure = $state(false)
-  $effect(() => {
-    if (!sure) return
-    const timer = setTimeout(() => (sure = false), 5000)
-    return () => clearTimeout(timer)
-  })
-
   // everyone's progress, a few seconds behind at most (not while the tab is hidden)
   $effect(() => {
     const timer = setInterval(() => document.hidden || refreshCounts().catch(() => {}), 5000)
@@ -113,10 +105,5 @@
     <button class="btn" onclick={startGuessing}>BEGIN THE EXPERIMENT</button>
   {:else}
     <button class="btn" disabled>{alone ? 'WAITING FOR FRIENDS TO JOIN' : `WAITING ON ${waiting} TO ADD SONGS`}</button>
-    {#if !alone && total >= 2}
-      <button class="link center" onclick={() => (sure ? startGuessing() : (sure = true))}>
-        {sure ? `TAP AGAIN · ${waiting} PLAYER${waiting > 1 ? 'S' : ''} WILL MISS OUT` : 'START WITHOUT THEM'}
-      </button>
-    {/if}
   {/if}
 {/if}
