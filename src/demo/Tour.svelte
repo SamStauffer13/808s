@@ -69,7 +69,6 @@
   const count = part('span', 'n')
   const say = part('span', 'say')
   part('i', 'cursor')
-  const why = part('span', 'why')
   // a prompt about something you can only look at (the playlist, a result) is dismissed by tapping it; one about
   // something you can use is not, so nobody skips past the thing they were meant to try
   line.onclick = () => {
@@ -80,7 +79,6 @@
   $effect(() => {
     count.textContent = `${i + 1}/${steps.length}`
     say.textContent = `> ${step.text}`
-    why.textContent = step.why
   })
 
   // keep the line next to its target as screens change; a target that is not there yet shows nothing

@@ -27,8 +27,8 @@ npm run check      # types
 
 `/808s/demo` (or `/demo` in dev) is the practice round for new players, linked from Home and the invite page. It runs the
 real screens against a fake 8-player game and a fake server (`src/demo/`), so you can see every stage without players.
-A slim bar at the top has BACK and EXIT, and a blinking prompt line walks new players through each stage: it sits above
-the next thing to touch and says what it does. There is no skip button: doing what the last prompt says (adding a song, pressing
+A slim bar at the top has BACK and EXIT, and a blinking prompt walks new players through each stage: it sits above
+the next thing to touch and says in one sentence what to do with it. There is no skip button: doing what the last prompt says (adding a song, pressing
 BEGIN THE EXPERIMENT, guessing every box, stepping through the reveal) moves the game to the next stage (`src/demo/Tour.svelte`; the prompts and the CSS selectors they point at are in
 `src/demo/stages.ts`, so update them when a screen's markup changes). The stages are Home, Invite, Submit, Guess, Reveal, Results. Search, adding songs and guessing all work, and the last guess opens the reveal like the real game.
 A stage can also be opened directly, for example `/808s/#/demo-results`.

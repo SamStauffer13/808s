@@ -30,41 +30,41 @@ export const tourKey = '808s-tour'
 // `when`: the prompt is done as soon as something matching this shows up (search results appear while you type)
 // `required`: the practice round will not let the form go on until this box is filled, even if the real one allows it
 // A prompt on a text box is done when the box has been filled in and left; on anything else, when it is tapped.
-export type Prompt = { target: string; text: string; why: string; again?: { to: number; while: string }; gone?: boolean; when?: string; required?: boolean }
+export type Prompt = { target: string; text: string; again?: { to: number; while: string }; gone?: boolean; when?: string; required?: boolean }
 
 const results: Prompt[] = [
-  { target: '.panel.framed', text: 'THE WINNER', why: 'THE MOST RIGHT GUESSES WINS THE L33T TITLE. TIES SHARE IT. TAP HERE TO CONTINUE.' },
-  { target: '.chart', text: 'HOW THE ROOM DID', why: 'ONE BAR PER BOX OF SONGS: HOW MANY PEOPLE GOT IT RIGHT. TAP A BAR TO OPEN THAT BOX BELOW.' },
-  { target: '.pager .btn:last-child', text: 'STEP THROUGH EVERY SONG', why: 'SEE WHO GUESSED RIGHT OR WRONG ON EACH ONE.' },
-  { target: 'a.btn', text: 'START YOUR OWN GAME', why: "THAT'S THE LOOP: EVERYONE ADDS SONGS, THEN GUESSES WHO ADDED WHAT, THEN THE REVEAL. START A REAL GAME AND SEND YOUR FRIENDS THE LINK." },
+  { target: '.panel.framed', text: 'SEE WHO WON, THEN TAP HERE.' },
+  { target: '.chart', text: 'TAP A BAR TO OPEN THAT BOX OF SONGS.' },
+  { target: '.pager .btn:last-child', text: 'TAP NEXT TO STEP THROUGH EVERY SONG.' },
+  { target: 'a.btn', text: 'TAP HERE TO START YOUR OWN GAME.' },
 ]
 
 export const tour: Record<Stage, Prompt[]> = {
   home: [
-    { target: 'form label.field:nth-of-type(1) input', text: 'TYPE YOUR NAME', why: 'THIS IS HOW YOUR FRIENDS SEE YOU IN THE CREW LIST. A FIRST NAME OR NICKNAME IS PERFECT. THEN TAP THE NEXT BOX.' },
-    { target: 'form label.field:nth-of-type(2) input', text: 'TYPE A VIBE', why: 'IT TELLS EVERYONE WHAT KIND OF SONGS TO ADD. TRY: SONGS THAT SOUND LIKE A ROAD TRIP AT 2AM. THEN TAP AWAY.' },
-    { target: 'form label.field:nth-of-type(3) input', text: 'NAME THE PLAYLIST', why: 'THIS BECOMES THE TITLE OF THE SPOTIFY PLAYLIST. IN A REAL GAME YOU CAN LEAVE IT BLANK AND IT USES YOUR VIBE, BUT TRY ONE HERE, LIKE MAKEUP IS WAR PAINT. THEN TAP AWAY.', required: true },
-    { target: 'form .btn', text: 'TAP THE GREEN BUTTON', why: 'THE FIRST TAP CONNECTS YOUR SPOTIFY, WHERE THE PLAYLIST GETS MADE. THEN TAP IT AGAIN TO CREATE THE GAME.' },
+    { target: 'form label.field:nth-of-type(1) input', text: 'TYPE YOUR NAME, THEN TAP THE NEXT BOX.' },
+    { target: 'form label.field:nth-of-type(2) input', text: 'TYPE A VIBE FOR THE SONGS, LIKE A ROAD TRIP AT 2AM, THEN TAP AWAY.' },
+    { target: 'form label.field:nth-of-type(3) input', text: 'NAME YOUR PLAYLIST, LIKE MAKEUP IS WAR PAINT, THEN TAP AWAY.', required: true },
+    { target: 'form .btn', text: 'TAP THE GREEN BUTTON TO CONNECT SPOTIFY, THEN TAP IT AGAIN TO CREATE THE GAME.' },
   ],
   invite: [
-    { target: '.panel.framed', text: 'THIS IS WHAT YOUR FRIENDS SEE', why: 'THEY OPEN THE LINK YOU SHARE AND SEE THE VIBE YOU PICKED. EVERY SONG THEY ADD SHOULD FIT IT. TAP HERE TO TRY IT AS ONE OF THEM.' },
-    { target: 'form input', text: 'TYPE YOUR NAME', why: 'JUST A NAME, NO SPOTIFY ACCOUNT NEEDED. USE WHAT YOUR FRIENDS CALL YOU. THEN TAP AWAY.' },
-    { target: 'form .btn', text: 'TAP JOIN', why: "YOU'LL LAND ON THE SONG PICKER." },
+    { target: '.panel.framed', text: 'THIS IS WHAT YOUR FRIENDS SEE, SO TAP HERE TO JOIN AS ONE OF THEM.' },
+    { target: 'form input', text: 'TYPE YOUR NAME, THEN TAP AWAY.' },
+    { target: 'form .btn', text: 'TAP JOIN TO PICK YOUR SONGS.' },
   ],
   submit: [
-    { target: 'label.field input', text: 'SEARCH FOR A SONG', why: 'TYPE A TITLE OR ARTIST THAT FITS THE VIBE ABOVE. IN THIS PRACTICE ROUND ANY WORD WORKS.', when: 'button.row:not([disabled])' },
-    { target: 'button.row:not([disabled])', text: 'TAP A SONG TO ADD IT', why: 'NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL.' },
-    { target: 'button.btn:not(.ghost):not([disabled])', text: 'TAP BEGIN THE EXPERIMENT', why: 'IT UNLOCKED BECAUSE EVERYONE HAS ADDED THEIR SONGS. UNTIL THEN IT STAYS LOCKED. THE HOST TAPS IT TO START THE GUESSING ROUND.' },
+    { target: 'label.field input', text: 'SEARCH FOR A SONG THAT FITS THE VIBE, ANY WORD WORKS HERE.', when: 'button.row:not([disabled])' },
+    { target: 'button.row:not([disabled])', text: 'TAP A SONG TO ADD IT.' },
+    { target: 'button.btn:not(.ghost):not([disabled])', text: 'TAP BEGIN THE EXPERIMENT TO START THE GUESSING.' },
   ],
   guess: [
-    { target: '.framed', text: 'LISTEN TO THE PLAYLIST', why: "EVERYONE'S SONGS, SHUFFLED TOGETHER IN THE HOST'S PLAYLIST. PLAY IT HERE (NO SPOTIFY ACCOUNT? YOU STILL GET PREVIEWS) OR TAP LISTEN ON SPOTIFY. TAP HERE WHEN READY." },
-    { target: '.panel button.row:not(.on)', text: 'WHO ADDED THESE?', why: 'EACH BOX OF SONGS WAS ADDED BY ONE FRIEND. YOUR OWN SONGS ARE LEFT OUT. TAP TO PICK WHO YOU THINK IT WAS.' },
-    { target: '.chips', text: 'PICK A FRIEND', why: 'GO WITH YOUR GUT. A DIMMED NAME IS ALREADY USED ON ANOTHER BOX. NOBODY SEES YOUR GUESSES UNTIL THE REVEAL, WHICH OPENS AFTER THE LAST ONE.', again: { to: 1, while: '.panel button.row:not(.on)' } },
+    { target: '.framed', text: 'LISTEN TO THE SHUFFLED PLAYLIST, THEN TAP HERE.' },
+    { target: '.panel button.row:not(.on)', text: 'TAP A BOX OF SONGS TO GUESS WHO ADDED IT.' },
+    { target: '.chips', text: 'PICK THE FRIEND YOU THINK ADDED THOSE SONGS.', again: { to: 1, while: '.panel button.row:not(.on)' } },
   ],
   reveal: [
-    { target: '.panel.framed', text: 'THE ADDER IS DECRYPTED', why: 'THIS IS WHO REALLY ADDED THE SONGS ABOVE. TAP HERE TO CONTINUE.' },
-    { target: '.guesses', text: 'WHO GUESSED WHAT', why: 'EVERY PLAYER, SO YOU CAN SEE WHO GOT FOOLED. ✓ MEANS RIGHT, ✗ MEANS WRONG, WITH WHO THEY PICKED. YOURS IS MARKED YOU. TAP HERE TO CONTINUE.' },
-    { target: '.dock .btn:last-child', text: 'NEXT SOURCE', why: 'KEEP TAPPING THROUGH EVERY BOX (THE BARS SHOW HOW FAR YOU ARE). BOXES CAN EARN A STAMP: DOXXED MEANS EVERYONE GOT IT, UNCRACKABLE MEANS NOBODY DID.', gone: true },
+    { target: '.panel.framed', text: 'SEE WHO REALLY ADDED THE SONGS, THEN TAP HERE.' },
+    { target: '.guesses', text: 'SEE WHO GUESSED WHAT, THEN TAP HERE.' },
+    { target: '.dock .btn:last-child', text: 'TAP NEXT SOURCE TO STEP THROUGH EVERY BOX.', gone: true },
     ...results, // finishing the reveal opens the results without leaving this address
   ],
   results,
