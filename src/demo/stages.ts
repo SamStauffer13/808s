@@ -10,32 +10,43 @@ export type Stage = (typeof stages)[number]
 export const codeOf = (stage: Stage) => (stage === 'home' ? 'demo' : `demo-${stage}`)
 export const stageOf = (code: string): Stage => stages.find((stage) => codeOf(stage) === code) ?? 'home'
 
-// what each step of the practice round tells a new player: what is happening, and one thing to try
-export const captions: Record<Stage, { what: string; tryIt: string }> = {
-  home: {
-    what: 'THE HOST STARTS A GAME: PICK A VIBE, THEN CONNECT SPOTIFY SO THE PLAYLIST IS MADE IN THEIR ACCOUNT',
-    tryIt: 'LOOK AT THE FORM. NOTHING HERE IS SAVED.',
-  },
-  invite: {
-    what: 'FRIENDS GET A LINK FROM THE HOST. THEY NEED NO SPOTIFY ACCOUNT, JUST A NAME.',
-    tryIt: 'TYPE A NAME AND TAP JOIN.',
-  },
-  submit: {
-    what: 'EVERYONE ADDS SONGS THAT FIT THE VIBE. NOBODY SEES WHO ADDED WHAT.',
-    tryIt: 'TYPE A SONG OR ARTIST IN THE SEARCH BOX, THEN TAP A RESULT TO ADD IT.',
-  },
-  guess: {
-    what: 'THE HOST BEGINS THE EXPERIMENT. EVERYONE LISTENS TO THE PLAYLIST, THEN GUESSES WHO ADDED EACH BOX OF SONGS.',
-    tryIt: 'TAP "WHO ADDED THESE?" ON A BOX AND PICK A FRIEND. EACH FRIEND MATCHES ONE BOX.',
-  },
-  reveal: {
-    what: 'THE ANSWERS OPEN ONE BOX AT A TIME, SO YOU CAN SEE WHO FOOLED YOU.',
-    tryIt: 'TAP NEXT SOURCE, OR SWIPE SIDEWAYS, TO STEP THROUGH THEM.',
-  },
-  results: {
-    what: 'THE MOST RIGHT GUESSES WINS THE L33T TITLE. THEN GO THROUGH EVERY BOX SONG BY SONG.',
-    tryIt: 'TAP A BAR IN THE CHART OR USE NEXT TO SEE WHO GUESSED EACH BOX RIGHT, THEN TAP START YOUR OWN.',
-  },
+// The walkthrough: for each stage, the things to touch in order. `target` is a CSS selector for the real element
+// on that screen (src/demo/Tour.svelte points at it), so a screen that changes its markup must update it here.
+// where the walkthrough remembers its place, so the trip through the (fake) Spotify login does not restart it
+export const tourKey = '808s-tour'
+
+export type Prompt = { target: string; text: string; why: string }
+
+export const tour: Record<Stage, Prompt[]> = {
+  home: [
+    { target: 'form label.field:nth-of-type(1) input', text: 'TYPE YOUR NAME', why: 'THE HOST STARTS A GAME. THIS IS HOW FRIENDS SEE YOU.' },
+    { target: 'form label.field:nth-of-type(2) input', text: 'PICK A VIBE', why: 'EVERY SONG ADDED SHOULD FIT IT.' },
+    { target: 'form button.link', text: 'HOW MANY SONGS EACH?', why: 'EVERYONE ADDS THE SAME NUMBER.' },
+    { target: 'form .btn', text: 'TAP TO CONTINUE', why: "THE PLAYLIST IS MADE IN THE HOST'S SPOTIFY, SO THE HOST LOGS IN FIRST. FRIENDS NEED NO ACCOUNT." },
+  ],
+  invite: [
+    { target: 'form input', text: 'TYPE YOUR NAME', why: "FRIENDS JOIN FROM THE HOST'S LINK. NO SPOTIFY ACCOUNT NEEDED." },
+    { target: 'form .btn', text: 'JOIN THE GAME', why: "YOU'LL LAND ON THE SONG PICKER." },
+  ],
+  submit: [
+    { target: 'label.field input', text: 'SEARCH FOR A SONG', why: 'ONE THAT FITS THE VIBE ABOVE. TYPE ANYTHING: THE PRACTICE SEARCH ALWAYS FINDS SOME.' },
+    { target: 'button.row:not([disabled])', text: 'TAP A RESULT TO ADD IT', why: 'NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL.' },
+  ],
+  guess: [
+    { target: '.framed', text: 'LISTEN TO THE PLAYLIST', why: "IT'S EVERYONE'S SONGS, SHUFFLED, IN THE HOST'S SPOTIFY." },
+    { target: '.panel button.row:not(.on)', text: 'WHO ADDED THESE?', why: 'EACH BOX OF SONGS WAS ADDED BY ONE FRIEND. TAP TO CHOOSE.' },
+    { target: '.chips', text: 'PICK A FRIEND', why: 'EACH FRIEND MATCHES ONE BOX. THE LAST GUESS OPENS THE REVEAL.' },
+  ],
+  reveal: [
+    { target: '.panel.framed', text: 'THE ADDER IS DECRYPTED', why: 'THIS IS WHO REALLY ADDED THE SONGS ABOVE.' },
+    { target: '.guesses', text: 'WHO GUESSED WHAT', why: '✓ GOT IT RIGHT · ✗ GOT IT WRONG, WITH THEIR PICK.' },
+    { target: '.dock .btn', text: 'NEXT SOURCE', why: 'OR SWIPE SIDEWAYS. SKIP TO RESULTS ANY TIME.' },
+  ],
+  results: [
+    { target: '.panel.framed', text: 'THE WINNER', why: 'THE MOST RIGHT GUESSES WINS THE L33T TITLE.' },
+    { target: '.chart', text: 'HOW THE ROOM DID', why: 'ONE BAR PER BOX OF SONGS. TAP A BAR TO OPEN IT.' },
+    { target: '.pager .btn:last-child', text: 'STEP THROUGH EVERY SONG', why: 'SEE WHO GUESSED RIGHT OR WRONG ON EACH ONE.' },
+  ],
 }
 
 const room = (phase: Room['phase']): Room => ({

@@ -36,7 +36,8 @@ export const handlers: Fake = {
   'spotify-search': ({ q }) => {
     const text = String(q).toLowerCase()
     const found = tracks.filter((t) => `${t.title} ${t.artist}`.toLowerCase().includes(text))
-    return { tracks: found.slice(0, 6).map((t) => ({ id: t.id, title: t.title, artist: t.artist, art: t.art, blocked: false })) }
+    // the practice search never comes up empty, so a new player is never left with nothing to tap
+    return { tracks: (found.length ? found : tracks).slice(0, 6).map((t) => ({ id: t.id, title: t.title, artist: t.artist, art: t.art, blocked: false })) }
   },
   'add-song': ({ spotify_id }) => {
     const t = tracks.find((x) => x.id === spotify_id)!

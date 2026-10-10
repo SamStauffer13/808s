@@ -244,13 +244,18 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .dock .prev { flex: none; width: 56px; }
 .split .link { margin-block: -16px; } /* a 44px touch area that adds no extra space */
 
-/* the demo's stage switcher (src/demo) */
-.demo-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-direction: column; gap: 8px; padding: 6px 0 10px; background: var(--bg); }
-.demo-bar p { margin: 0; }
-.demo-bar .stages { display: flex; flex-wrap: wrap; gap: 8px; }
-.demo-bar .chip { display: inline-flex; align-items: center; height: 32px; padding: 0 10px; font-size: 11px; text-decoration: none; }
-@media (max-width: 600px) { .demo-bar .jump { display: none; } } /* phones just step with BACK and NEXT STEP */
-
+/* the demo's slim bar and walkthrough prompts (src/demo) */
+.demo-bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0 10px; background: var(--bg); }
+.demo-bar .actions { display: flex; align-items: center; gap: 8px; }
+.demo-bar .chip { display: inline-flex; align-items: center; height: 32px; padding: 0 10px; font-size: 11px; text-decoration: none; white-space: nowrap; }
+.demo-bar .label { white-space: nowrap; }
+.demo-bar .chip[data-tour-next] { animation: blink 1.1s steps(1) infinite; }
+.ring { position: fixed; z-index: 6; border: 2px solid var(--accent); border-radius: var(--radius); pointer-events: none; animation: blink 1.1s steps(1) infinite; }
+.tip { position: fixed; z-index: 6; left: clamp(16px, var(--x), calc(100vw - min(300px, 100vw - 32px) - 16px)); width: min(300px, calc(100vw - 32px)); display: grid; gap: 2px; padding: 8px 10px; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--bg); color: var(--text); font: inherit; font-size: 12px; letter-spacing: 0.08em; text-align: left; cursor: pointer; }
+.tip .n { color: var(--accent); font-size: 10px; }
+.tip .say { color: var(--accent); }
+.tip .why { color: var(--text-secondary); font-size: 11px; }
+@media (prefers-reduced-motion: reduce) { .ring, .demo-bar .chip[data-tour-next] { animation: none; } }
 iframe { width: 100%; height: 152px; border: 0; border-radius: var(--radius); color-scheme: dark; }
 .link { all: unset; display: inline-flex; align-items: center; min-height: 44px; cursor: pointer; font-size: 12px; letter-spacing: 0.1em; color: var(--text-secondary); }
 .link:hover { color: var(--accent); }
