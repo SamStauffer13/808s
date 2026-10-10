@@ -10,14 +10,32 @@ export type Stage = (typeof stages)[number]
 export const codeOf = (stage: Stage) => (stage === 'home' ? 'DEMO' : `DEMO-${stage.toUpperCase()}`)
 export const stageOf = (code: string): Stage => stages.find((stage) => codeOf(stage) === code) ?? 'home'
 
-// what each step of the practice round tells a new player
-export const captions: Record<Stage, string> = {
-  home: 'THE HOST SETS A VIBE AND CONNECTS SPOTIFY, THEN SENDS FRIENDS A LINK',
-  invite: 'FRIENDS OPEN THE LINK AND JOIN WITH JUST A NAME',
-  submit: 'EVERYONE ADDS SONGS THAT FIT THE VIBE · NOBODY SEES WHO ADDED WHAT',
-  guess: 'THE HOST BEGINS THE EXPERIMENT · LISTEN, THEN MATCH EACH BOX OF SONGS TO THE FRIEND WHO ADDED IT',
-  reveal: 'THE SOURCES DECRYPT ONE BOX AT A TIME · SEE WHO GOT FOOLED',
-  results: 'THE MOST RIGHT GUESSES WINS THE L33T TITLE',
+// what each step of the practice round tells a new player: what is happening, and one thing to try
+export const captions: Record<Stage, { what: string; tryIt: string }> = {
+  home: {
+    what: 'THE HOST STARTS A GAME: PICK A VIBE, THEN CONNECT SPOTIFY SO THE PLAYLIST IS MADE IN THEIR ACCOUNT',
+    tryIt: 'LOOK AT THE FORM. NOTHING HERE IS SAVED.',
+  },
+  invite: {
+    what: 'FRIENDS GET A LINK FROM THE HOST. THEY NEED NO SPOTIFY ACCOUNT, JUST A NAME.',
+    tryIt: 'TYPE A NAME AND TAP JOIN.',
+  },
+  submit: {
+    what: 'EVERYONE ADDS SONGS THAT FIT THE VIBE. NOBODY SEES WHO ADDED WHAT.',
+    tryIt: 'TYPE A SONG OR ARTIST IN THE SEARCH BOX, THEN TAP A RESULT TO ADD IT.',
+  },
+  guess: {
+    what: 'THE HOST BEGINS THE EXPERIMENT. EVERYONE LISTENS TO THE PLAYLIST, THEN GUESSES WHO ADDED EACH BOX OF SONGS.',
+    tryIt: 'TAP "WHO ADDED THESE?" ON A BOX AND PICK A FRIEND. EACH FRIEND MATCHES ONE BOX.',
+  },
+  reveal: {
+    what: 'THE ANSWERS OPEN ONE BOX AT A TIME, SO YOU CAN SEE WHO FOOLED YOU.',
+    tryIt: 'TAP NEXT SOURCE, OR SWIPE SIDEWAYS, TO STEP THROUGH THEM.',
+  },
+  results: {
+    what: 'THE MOST RIGHT GUESSES WINS THE L33T TITLE.',
+    tryIt: 'CHECK THE LEADERBOARD, THEN TAP START YOUR OWN.',
+  },
 }
 
 const room = (phase: Room['phase']): Room => ({

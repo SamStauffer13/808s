@@ -17,7 +17,8 @@
 
 <nav class="demo-bar" aria-label="Practice round">
   <div class="split"><span class="label">/// PRACTICE ROUND · FAKE DATA</span><a class="link" href="#/">EXIT</a></div>
-  <p class="muted">STEP {at + 1} OF {stages.length} · {captions[stage]}</p>
+  <p class="muted">STEP {at + 1} OF {stages.length} · {captions[stage].what}</p>
+  <p class="try"><b class="good">TRY IT:</b> {captions[stage].tryIt}</p>
   <div class="stages">
     {#if at > 0}<a class="chip" href={`#/${codeOf(stages[at - 1])}`}>← BACK</a>{/if}
     {#each stages as s}
