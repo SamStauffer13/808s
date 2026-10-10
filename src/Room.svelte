@@ -50,13 +50,16 @@
 {#if stranger}
   <Invite {code} onjoin={load} />
 {:else if game.room}
-  {#if !intro}<Admin {code} />{/if}
+  {#if !intro}
+    <Admin {code} />
+    <p class="muted center">EXPERIMENT {code}</p>
+  {/if}
   {#if game.room.phase === 'submit'}
     <Submit />
   {:else if game.room.phase === 'guess'}
     <Guess />
   {:else if !total}
-    <p class="muted center">/// CONNECTING</p>
+    <p class="muted center">/// ESTABLISHING LINK</p>
   {:else if place === null}
     <div class="logo big">808<small>s</small></div>
     <div class="panel framed">
@@ -72,5 +75,5 @@
     <Results replay={() => go(0)} />
   {/if}
 {:else}
-  <p class="muted center">/// CONNECTING</p>
+  <p class="muted center">/// ESTABLISHING LINK</p>
 {/if}

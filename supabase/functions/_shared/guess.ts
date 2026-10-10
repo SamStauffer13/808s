@@ -18,7 +18,7 @@ export async function beginGuess(db: ReturnType<typeof admin>, room: { id: strin
     method: 'POST',
     body: JSON.stringify({
       name: (room.title ?? `808s: ${room.theme}`).slice(0, 100),
-      description: `${room.theme}. Who added that? Guess in the 808s app.`.slice(0, 300),
+      description: `${room.theme}. A social experiment: who added what? Guess in the 808s app.`.slice(0, 300),
       public: true,
     }),
   })

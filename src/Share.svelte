@@ -9,7 +9,7 @@
   async function share() {
     const url = `${location.origin}${location.pathname}#/${game.room!.code}`
     if (sheet) {
-      await navigator.share({ title: '808s', text: `Join my 808s playlist: ${game.room!.theme}`, url }).catch(() => {})
+      await navigator.share({ title: '808s', text: `Join my 808s experiment: ${game.room!.theme}`, url }).catch(() => {})
       return
     }
     await navigator.clipboard.writeText(url)

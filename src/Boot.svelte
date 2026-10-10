@@ -1,7 +1,7 @@
 <script lang="ts">
   let { done }: { done: () => void } = $props()
 
-  const lines = ['> CONNECTING TO 808S', '> SIGNAL LOCKED', '> READY']
+  const lines = ['> CONNECTING TO 808S', '> SIGNAL LOCKED', '> LOADING EXPERIMENT']
   let shown = $state(1)
 
   $effect(() => {

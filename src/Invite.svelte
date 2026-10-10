@@ -22,14 +22,14 @@
 
 <div class="form">
   {#if preview === undefined}
-    <p class="muted center">/// CONNECTING</p>
+    <p class="muted center">/// ESTABLISHING LINK</p>
     <Notice scope="preview" />
   {:else if preview === null}
-    <p class="center">PLAYLIST NOT FOUND</p>
+    <p class="center">NO EXPERIMENT AT THIS ADDRESS</p>
     <a class="btn ghost" href="#/">START YOUR OWN</a>
   {:else}
     <div class="panel framed">
-      <div class="label">INCOMING INVITE</div>
+      <div class="label">INCOMING TRANSMISSION</div>
       <div class="big">{preview.theme}</div>
     </div>
     {#if preview.phase === 'submit'}
@@ -42,7 +42,7 @@
       <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
       <p class="muted">/// USE THE NAME YOUR FRIENDS KNOW YOU BY</p>
       <Notice scope="join" />
-      <button class="btn">JOIN THE PLAYLIST</button>
+      <button class="btn">JOIN THE EXPERIMENT</button>
     </form>
   {/if}
 </div>

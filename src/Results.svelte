@@ -26,7 +26,7 @@
   const hits = $derived(mine.filter((m) => m.guess === m.owner).length)
 </script>
 
-<Head step="FINAL RESULTS" />
+<Head step="EXPERIMENT COMPLETE" />
 
 <div class="panel framed">
   <div class="label good">{winners.length > 1 ? 'IT\'S A TIE' : 'L33T'}</div>
@@ -64,5 +64,5 @@
 <Playlist />
 
 <div class="grow"></div>
-<button class="btn ghost" onclick={replay}>REPLAY THE REVEAL</button>
-<a class="btn" href="#/">NEW PLAYLIST</a>
+<button class="btn ghost" onclick={replay}>REPLAY THE FINDINGS</button>
+<a class="btn" href="#/">NEW EXPERIMENT</a>
