@@ -34,7 +34,7 @@ export const tour: Record<Stage, Prompt[]> = {
     { target: 'form label.field:nth-of-type(1) input', text: 'ENTER YOUR NAME SO YOUR FRIENDS KNOW WHO YOU ARE.' },
     { target: 'form label.field:nth-of-type(2) input', text: 'FIRST, ENTER A THEME FOR WHAT KINDS OF SONGS YOU WANT.' },
     { target: 'form label.field:nth-of-type(3) input', text: 'NEXT, GIVE THE PLAYLIST A DOPE NAME BASED OFF THAT THEME.', required: true },
-    { target: 'form .btn', text: 'FINALLY, CONNECT YOUR SPOTIFY SO THE PLAYLIST CAN BE MADE THERE, THEN CREATE THE GAME.' },
+    { target: 'form .btn', text: "FINALLY, AS A HOST YOU NEED TO AUTHENTICATE WITH SPOTIFY TO CREATE THE PLAYLIST (DON'T WORRY, IT'S SAFER THAN ANYTHING YOU'VE DONE LATELY)." },
   ],
   invite: [
     { target: '.panel.framed', text: 'THIS IS THE INVITE YOUR FRIENDS SEE WHEN THEY OPEN YOUR LINK.', look: true },
