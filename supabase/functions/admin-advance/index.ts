@@ -30,7 +30,9 @@ Deno.serve(
     if (!room) throw new HttpError(404, 'no room with that code')
 
     if (room.phase === 'submit') {
-      await beginGuess(db, room)
+      // the host's Spotify, or the admin's own when the host never connected one
+      const { data: host } = await db.from('spotify_accounts').select('user_id').eq('user_id', room.host_user_id).maybeSingle()
+      await beginGuess(db, room, host ? room.host_user_id : user.id)
       return { phase: 'guess' }
     }
     if (room.phase === 'guess') {

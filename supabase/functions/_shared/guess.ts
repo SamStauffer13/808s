@@ -3,8 +3,8 @@ import { spotify, userToken } from './spotify.ts'
 
 // The playlist is built only now, all at once and shuffled, so nobody can learn who added
 // what by watching songs appear in it during the submit phase. It goes into the host's Spotify
-// account, whoever asked for it.
-export async function beginGuess(db: ReturnType<typeof admin>, room: { id: string; host_user_id: string; title: string | null; theme: string }) {
+// account (or the one named by `account`), whoever asked for it.
+export async function beginGuess(db: ReturnType<typeof admin>, room: { id: string; host_user_id: string; title: string | null; theme: string }, account = room.host_user_id) {
   const { data: songs } = await db.from('songs').select('id, spotify_id').eq('room_id', room.id)
   if (!songs || songs.length < 2) throw new HttpError(400, 'need at least 2 tracks')
 
@@ -13,7 +13,7 @@ export async function beginGuess(db: ReturnType<typeof admin>, room: { id: strin
     ;[songs[i], songs[j]] = [songs[j], songs[i]]
   }
 
-  const token = await userToken(room.host_user_id)
+  const token = await userToken(account)
   const playlist = await spotify(token, '/me/playlists', {
     method: 'POST',
     body: JSON.stringify({
