@@ -218,6 +218,14 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .progress i { flex: 1; height: 4px; background: var(--surface-raised); }
 .progress i.seen { background: var(--accent); }
 .verdict { text-align: center; font-size: 16px; letter-spacing: 0.1em; }
+.chart { display: grid; gap: 6px; }
+.chartrow { display: grid; grid-template-columns: 24px 1fr 40px; align-items: center; gap: 10px; min-height: 28px; padding: 0 4px; border: 1px solid transparent; border-radius: var(--radius); background: none; color: var(--text-secondary); font: inherit; font-size: 12px; letter-spacing: 0.1em; text-align: left; cursor: pointer; }
+.chartrow.on { border-color: var(--accent); }
+.chartrow b { text-align: right; }
+.vs { height: 10px; background: var(--surface-raised); } /* the grey is wrong guesses, the accent is right ones */
+.vs .r { display: block; height: 100%; background: var(--accent); }
+.pager { gap: 12px; }
+.pager .btn { flex: 1; width: auto; }
 .guesses { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .guess { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; letter-spacing: 0.06em; }
 .guess > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
