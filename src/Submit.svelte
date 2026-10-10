@@ -18,11 +18,19 @@
   const everyoneIn = $derived(game.players.length > 1 && locked === game.players.length)
   const hostName = $derived(nameOf(game.players.find((p) => p.user_id === room.host_user_id)?.id).toUpperCase())
   const waiting = $derived(game.players.length - locked) // players still adding songs
-  const startHint = $derived.by(() => {
-    if (total < 2) return 'NEEDS AT LEAST 2 TRACKS TO START'
-    if (everyoneIn) return "CREW STANDING BY · BEGIN THE EXPERIMENT"
-    if (waiting > 0) return `${waiting} STILL ADDING · STARTING LOCKS EVERYONE'S SONGS`
-    return 'STARTING LOCKS YOUR SONGS AND BUILDS THE PLAYLIST'
+  const steps = $derived([
+    { text: `ADD YOUR SONGS · ${mine.length} / ${room.songs_per_player}`, done: left === 0 },
+    { text: `INVITE FRIENDS · ${game.players.length - 1} JOINED`, done: !alone },
+    { text: `WAIT FOR EVERYONE'S SONGS · ${locked} / ${game.players.length}`, done: everyoneIn },
+    { text: 'BEGIN THE EXPERIMENT', done: false },
+  ])
+
+  // starting early locks out anyone still adding, so it takes a second tap
+  let sure = $state(false)
+  $effect(() => {
+    if (!sure) return
+    const timer = setTimeout(() => (sure = false), 5000)
+    return () => clearTimeout(timer)
   })
 
   // everyone's progress, a few seconds behind at most (not while the tab is hidden)
@@ -42,6 +50,15 @@
 </script>
 
 <Head step={`LOADED ${mine.length} / ${room.songs_per_player}`} title="Add your songs" />
+
+{#if isHost()}
+  <div class="panel stack">
+    <div class="label">HOST CHECKLIST</div>
+    {#each steps as step}
+      <div class="line"><b class:good={step.done}>{step.done ? '✓' : '○'}</b><span class:muted={step.done}>{step.text}</span></div>
+    {/each}
+  </div>
+{/if}
 
 <div class="panel"><div class="label">THE PLAYLIST VIBE</div><div class="good big">{room.theme}</div></div>
 
@@ -91,6 +108,15 @@
 
 {#if isHost()}
   <Notice scope="start" />
-  <p class="muted center">/// {startHint}</p>
-  <button class="btn" disabled={total < 2} onclick={startGuessing}>BEGIN THE EXPERIMENT · {total} TRACKS</button>
+  {#if everyoneIn}
+    <p class="muted center">/// {total} TRACKS · EVERYONE'S WAITING ON YOU</p>
+    <button class="btn" onclick={startGuessing}>BEGIN THE EXPERIMENT</button>
+  {:else}
+    <button class="btn" disabled>{alone ? 'WAITING FOR FRIENDS TO JOIN' : `WAITING ON ${waiting} TO ADD SONGS`}</button>
+    {#if !alone && total >= 2}
+      <button class="link center" onclick={() => (sure ? startGuessing() : (sure = true))}>
+        {sure ? `TAP AGAIN · ${waiting} PLAYER${waiting > 1 ? 'S' : ''} WILL MISS OUT` : 'START WITHOUT THEM'}
+      </button>
+    {/if}
+  {/if}
 {/if}

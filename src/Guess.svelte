@@ -41,12 +41,29 @@
     refreshSoon()
   }
 
+  const allIn = $derived(!todo.length || done === todo.length) // this player has matched every set they can
+  let sure = $state(false)
+  $effect(() => {
+    if (!sure) return
+    const timer = setTimeout(() => (sure = false), 5000)
+    return () => clearTimeout(timer)
+  })
+
   const reveal = once(() => attempt('reveal', () => rpc('host_set_phase', { p_room: room.id, p_phase: 'reveal' })))
 </script>
 
 <Head step={`THE EXPERIMENT · ${done} / ${todo.length} CRACKED`} title="Who added what?" />
 
 <p class="muted">VIBE: <span class="text">{room.theme}</span></p>
+
+{#if isHost()}
+  <div class="panel stack">
+    <div class="label">HOST CHECKLIST</div>
+    <div class="line"><b class:good={allIn}>{allIn ? '✓' : '○'}</b><span class:muted={allIn}>LISTEN AND GUESS · {done} / {todo.length}</span></div>
+    <div class="line"><b class:good={waiting === 0}>{waiting === 0 ? '✓' : '○'}</b><span class:muted={waiting === 0}>WAIT FOR EVERYONE · {progress ? `${progress.finished} / ${progress.total}` : '...'}</span></div>
+    <div class="line"><b>○</b><span>THE REVEAL OPENS BY ITSELF · NO BUTTON NEEDED</span></div>
+  </div>
+{/if}
 
 {#if todo.length}
   <p class="muted center"><Eq />/// LISTEN, THEN PICK WHO ADDED EACH SET · ONE FRIEND PER SET</p>
@@ -103,6 +120,9 @@
 
 {#if isHost()}
   <Notice scope="reveal" />
-  <p class="muted center">/// THE REVEAL OPENS ON ITS OWN WHEN EVERYONE HAS GUESSED · OPENING IT EARLY SKIPS ANYONE STILL GUESSING</p>
-  <button class="btn ghost" onclick={reveal}>OPEN THE REVEAL NOW</button>
+  {#if allIn && waiting > 0}
+    <button class="link center" onclick={() => (sure ? reveal() : (sure = true))}>
+      {sure ? `TAP AGAIN · SKIPS ${waiting} PLAYER${waiting > 1 ? 'S' : ''} STILL GUESSING` : 'OPEN THE REVEAL EARLY'}
+    </button>
+  {/if}
 {/if}
