@@ -15,38 +15,46 @@ export const stageOf = (code: string): Stage => stages.find((stage) => codeOf(st
 // where the walkthrough remembers its place, so the trip through the (fake) Spotify login does not restart it
 export const tourKey = '808s-tour'
 
-export type Prompt = { target: string; text: string; why: string }
+// `again`: after this prompt is done, go back to prompt number `to` while something matching `while` is still on the screen
+// `gone`: the prompt is done when its target leaves the screen (the reveal turns into the results on the same address)
+// `when`: the prompt is done as soon as something matching this shows up (search results appear while you type)
+// A prompt on a text box is done when the box has been filled in and left; on anything else, when it is tapped.
+export type Prompt = { target: string; text: string; why: string; again?: { to: number; while: string }; gone?: boolean; when?: string }
+
+const results: Prompt[] = [
+  { target: '.panel.framed', text: 'THE WINNER', why: 'THE MOST RIGHT GUESSES WINS THE L33T TITLE.' },
+  { target: '.chart', text: 'HOW THE ROOM DID', why: 'ONE BAR PER BOX OF SONGS. TAP A BAR TO OPEN IT.' },
+  { target: '.pager .btn:last-child', text: 'STEP THROUGH EVERY SONG', why: 'SEE WHO GUESSED RIGHT OR WRONG ON EACH ONE.' },
+  { target: 'a.btn', text: 'START YOUR OWN GAME', why: "THAT'S THE WHOLE GAME. GO PLAY IT WITH FRIENDS." },
+]
 
 export const tour: Record<Stage, Prompt[]> = {
   home: [
-    { target: 'form label.field:nth-of-type(1) input', text: 'TYPE YOUR NAME', why: 'THE HOST STARTS A GAME. THIS IS HOW FRIENDS SEE YOU.' },
-    { target: 'form label.field:nth-of-type(2) input', text: 'PICK A VIBE', why: 'EVERY SONG ADDED SHOULD FIT IT.' },
-    { target: 'form button.link', text: 'HOW MANY SONGS EACH?', why: 'EVERYONE ADDS THE SAME NUMBER.' },
-    { target: 'form .btn', text: 'TAP TO CONTINUE', why: "THE PLAYLIST IS MADE IN THE HOST'S SPOTIFY, SO THE HOST LOGS IN FIRST. FRIENDS NEED NO ACCOUNT." },
+    { target: 'form label.field:nth-of-type(1) input', text: 'TYPE YOUR NAME', why: 'THIS IS HOW YOUR FRIENDS SEE YOU IN THE CREW LIST. A FIRST NAME OR NICKNAME IS PERFECT. THEN TAP THE NEXT BOX.' },
+    { target: 'form label.field:nth-of-type(2) input', text: 'TYPE A VIBE', why: 'IT TELLS EVERYONE WHAT KIND OF SONGS TO ADD. TRY: SONGS THAT SOUND LIKE A ROAD TRIP AT 2AM. THEN TAP AWAY.' },
+    { target: 'form .btn', text: 'TAP THE GREEN BUTTON', why: "THE PLAYLIST IS MADE IN THE HOST'S SPOTIFY, SO THE HOST CONNECTS FIRST AND TAPS AGAIN TO CREATE THE GAME. FRIENDS NEED NO ACCOUNT." },
   ],
   invite: [
-    { target: 'form input', text: 'TYPE YOUR NAME', why: "FRIENDS JOIN FROM THE HOST'S LINK. NO SPOTIFY ACCOUNT NEEDED." },
-    { target: 'form .btn', text: 'JOIN THE GAME', why: "YOU'LL LAND ON THE SONG PICKER." },
+    { target: 'form input', text: 'TYPE YOUR NAME', why: "THE NAME YOUR FRIENDS KNOW YOU BY. YOU JOINED FROM THE HOST'S LINK, SO NO SPOTIFY ACCOUNT IS NEEDED. THEN TAP AWAY." },
+    { target: 'form .btn', text: 'TAP JOIN', why: "YOU'LL LAND ON THE SONG PICKER." },
   ],
   submit: [
-    { target: 'label.field input', text: 'SEARCH FOR A SONG', why: 'ONE THAT FITS THE VIBE ABOVE. TYPE ANYTHING: THE PRACTICE SEARCH ALWAYS FINDS SOME.' },
-    { target: 'button.row:not([disabled])', text: 'TAP A RESULT TO ADD IT', why: 'NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL.' },
+    { target: 'label.field input', text: 'SEARCH FOR A SONG', why: 'TYPE A TITLE OR ARTIST THAT FITS THE VIBE ABOVE. IN THIS PRACTICE ROUND ANY WORD WORKS.', when: 'button.row:not([disabled])' },
+    { target: 'button.row:not([disabled])', text: 'TAP A SONG TO ADD IT', why: 'NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL.' },
+    { target: 'button.btn:not(.ghost):not([disabled])', text: 'TAP BEGIN THE EXPERIMENT', why: 'EVERYONE IS IN. THE HOST STARTS THE GUESSING ROUND.' },
   ],
   guess: [
     { target: '.framed', text: 'LISTEN TO THE PLAYLIST', why: "IT'S EVERYONE'S SONGS, SHUFFLED, IN THE HOST'S SPOTIFY." },
     { target: '.panel button.row:not(.on)', text: 'WHO ADDED THESE?', why: 'EACH BOX OF SONGS WAS ADDED BY ONE FRIEND. TAP TO CHOOSE.' },
-    { target: '.chips', text: 'PICK A FRIEND', why: 'EACH FRIEND MATCHES ONE BOX. THE LAST GUESS OPENS THE REVEAL.' },
+    { target: '.chips', text: 'PICK A FRIEND', why: 'EACH FRIEND MATCHES ONE BOX. THE LAST GUESS OPENS THE REVEAL.', again: { to: 1, while: '.panel button.row:not(.on)' } },
   ],
   reveal: [
     { target: '.panel.framed', text: 'THE ADDER IS DECRYPTED', why: 'THIS IS WHO REALLY ADDED THE SONGS ABOVE.' },
     { target: '.guesses', text: 'WHO GUESSED WHAT', why: '✓ GOT IT RIGHT · ✗ GOT IT WRONG, WITH THEIR PICK.' },
-    { target: '.dock .btn', text: 'NEXT SOURCE', why: 'OR SWIPE SIDEWAYS. SKIP TO RESULTS ANY TIME.' },
+    { target: '.dock .btn:last-child', text: 'NEXT SOURCE', why: 'KEEP GOING THROUGH EVERY BOX. SWIPE SIDEWAYS OR SKIP TO RESULTS IF YOU LIKE.', gone: true },
+    ...results, // finishing the reveal opens the results without leaving this address
   ],
-  results: [
-    { target: '.panel.framed', text: 'THE WINNER', why: 'THE MOST RIGHT GUESSES WINS THE L33T TITLE.' },
-    { target: '.chart', text: 'HOW THE ROOM DID', why: 'ONE BAR PER BOX OF SONGS. TAP A BAR TO OPEN IT.' },
-    { target: '.pager .btn:last-child', text: 'STEP THROUGH EVERY SONG', why: 'SEE WHO GUESSED RIGHT OR WRONG ON EACH ONE.' },
-  ],
+  results,
 }
 
 const room = (phase: Room['phase']): Room => ({
@@ -77,8 +85,8 @@ const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
     owners: ownersOf([0]),
     counts: Object.fromEntries(players.map((p, i) => [p.id, i === 0 ? 1 : 2])),
   }),
-  // everyone else has guessed everything; you have matched 3 of your 7
-  guess: () => ({ room: room('guess'), songs: songsInOrder, owners: ownersOf([0]), guesses: guessesBy(0, [3, 5, 2]) }),
+  // everyone else has guessed everything; you have matched 5 of your 7
+  guess: () => ({ room: room('guess'), songs: songsInOrder, owners: ownersOf([0]), guesses: guessesBy(0, [3, 5, 2, 6, 1]) }),
   reveal: finished,
   results: finished,
 }

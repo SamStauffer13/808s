@@ -13,7 +13,7 @@
   const link = (s: (typeof stages)[number]) => `#/${codeOf(s)}`
   const fresh = () => {
     try {
-      sessionStorage.removeItem(tourKey) // leaving a stage by the bar starts the next one from its first prompt
+      sessionStorage.removeItem(tourKey) // leaving a stage by the bar starts the other one from its first prompt
     } catch {}
   }
 
@@ -26,7 +26,6 @@
   <span class="label">PRACTICE {at + 1}/{stages.length}</span>
   <span class="actions">
     {#if at > 0}<a class="chip" href={link(stages[at - 1])} onclick={fresh}>← BACK</a>{/if}
-    <a class="chip on" data-tour-next href={at < stages.length - 1 ? link(stages[at + 1]) : '#/'} onclick={fresh}>{at < stages.length - 1 ? 'NEXT STEP →' : 'START YOUR OWN'}</a>
     <a class="link" href="#/" onclick={fresh}>EXIT</a>
   </span>
 </nav>
@@ -35,4 +34,4 @@
   {#if stage === 'home'}<Home />{:else}<Room {code} />{/if}
 {/key}
 
-{#key code}<Tour {stage} last={at === stages.length - 1} />{/key}
+{#key code}<Tour {stage} />{/key}

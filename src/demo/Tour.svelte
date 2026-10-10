@@ -1,13 +1,10 @@
 <script lang="ts">
   import { tour, tourKey, type Prompt, type Stage } from './stages'
 
-  let { stage, last }: { stage: Stage; last: boolean } = $props()
+  let { stage }: { stage: Stage } = $props()
 
-  // the stage's prompts, then one pointing at the bar's NEXT STEP so there is always a next thing to touch
-  const steps = $derived<Prompt[]>([
-    ...tour[stage],
-    { target: '[data-tour-next]', text: last ? 'ALL DONE' : 'NEXT STEP', why: last ? 'START A REAL GAME OF YOUR OWN.' : 'ON TO THE NEXT PART OF THE GAME.' },
-  ])
+  // there is no skip button: the way forward is doing what the last prompt says, which moves the real game along
+  const steps = $derived<Prompt[]>(tour[stage])
   // only the home stage leaves the page (the Spotify login), so only it needs to remember where it was
   const saved = (() => {
     try {
@@ -17,28 +14,36 @@
       return 0
     }
   })()
-  let i = $state(Math.min(saved, steps.length - 2)) // never resume on the bar's NEXT STEP: a login round trip should land back on its button
+  let i = $state(Math.min(saved, steps.length - 1))
   $effect(() => {
     try {
       if (stage === 'home') sessionStorage.setItem(tourKey, `${stage}:${i}`)
     } catch {}
   })
   const step = $derived(steps[i])
-  const advance = () => i < steps.length - 1 && i++
+  const usable = 'input, button, a, select, textarea'
+  const advance = () => {
+    const again = step.again
+    if (again && document.querySelector(again.while)) i = again.to
+    else if (i < steps.length - 1) i++
+  }
 
-  // touching the thing a prompt points at moves on to the next prompt (tapping the prompt itself does too)
+  // A prompt is done when its thing has been used: a text box once it has been filled in and left, anything else
+  // once it is tapped. (Tapping into a box does not count; the point is to type something.)
+  const fields = 'input, textarea, select'
   $effect(() => {
     const touched = (e: Event) => {
       const el = document.querySelector(step.target)
-      if (!el || !(e.target instanceof Node) || !el.contains(e.target)) return
+      if (!el || step.when || step.gone || !(e.target instanceof Element) || !el.contains(e.target)) return
+      if (e.type === 'change' ? !e.target.matches(fields) : e.target.matches(fields)) return
       const at = i
       setTimeout(() => i === at && advance()) // after the screen has reacted
     }
     document.addEventListener('click', touched, true)
-    document.addEventListener('focusin', touched, true)
+    document.addEventListener('change', touched, true)
     return () => {
       document.removeEventListener('click', touched, true)
-      document.removeEventListener('focusin', touched, true)
+      document.removeEventListener('change', touched, true)
     }
   })
 
@@ -52,7 +57,12 @@
   const say = part('span', 'say')
   part('i', 'cursor')
   const why = part('span', 'why')
-  line.onclick = advance
+  // a prompt about something you can only look at (the playlist, a result) is dismissed by tapping it; one about
+  // something you can use is not, so nobody skips past the thing they were meant to try
+  line.onclick = () => {
+    const el = document.querySelector(step.target)
+    if (el && !el.matches(usable) && !el.querySelector(usable)) advance()
+  }
 
   $effect(() => {
     count.textContent = `${i + 1}/${steps.length}`
@@ -64,15 +74,30 @@
   $effect(() => {
     let frame = 0
     let scrolledFor = -1
+    let seenFor = -1
+    let goneAt = 0
     const follow = () => {
       const el = document.querySelector(step.target)
+      if (el && seenFor !== i) {
+        seenFor = i
+        // a box that already has something in it is not asked for again
+        if (!step.when && el instanceof HTMLInputElement && el.value.trim()) advance()
+      }
+      // it was there and has been gone for a moment (not just remounting between two reveal sets): the user did it
+      if (el) goneAt = 0
+      else if (step.gone && seenFor === i) {
+        goneAt ||= Date.now()
+        if (Date.now() - goneAt > 400) {
+          goneAt = 0
+          advance()
+        }
+      }
+      if (step.when && document.querySelector(step.when)) advance()
       if (el) {
-        // the bar sits at the top, so its prompt goes under it; the rest go above the nearest whole control
-        const bar = el.closest('nav')
-        const anchor = bar ?? el.closest('label.field, .dock, .pager') ?? el
-        const spot = bar ? anchor.nextElementSibling : anchor.previousElementSibling
-        if (spot !== line) {
-          bar ? anchor.after(line) : anchor.before(line)
+        // above the nearest whole control (a field with its label, the bottom dock, a row of buttons)
+        const anchor = el.closest('label.field, .dock, .pager') ?? el
+        if (anchor.previousElementSibling !== line) {
+          anchor.before(line)
           if (scrolledFor !== i) {
             scrolledFor = i
             line.scrollIntoView({ block: 'center', behavior: 'smooth' })
