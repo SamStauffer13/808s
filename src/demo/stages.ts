@@ -1,4 +1,4 @@
-// The demo walks one fake game through the real screens. Each stage is a code (#/DEMO-SUBMIT, ...) and
+// The demo walks one fake game through the real screens. Each stage is a code (#/demo-submit, ...) and
 // shows what the host sees at that point of a real game, with the other seven players already in.
 import { game, type Room } from '../lib/game.svelte'
 import { stampFor, stamps, statsOf } from '../lib/stamps'
@@ -7,7 +7,7 @@ import { guessesBy, me, order, players, playlist, sets, setSongs, songId, theme 
 export const stages = ['home', 'invite', 'submit', 'guess', 'reveal', 'results'] as const
 export type Stage = (typeof stages)[number]
 
-export const codeOf = (stage: Stage) => (stage === 'home' ? 'DEMO' : `DEMO-${stage.toUpperCase()}`)
+export const codeOf = (stage: Stage) => (stage === 'home' ? 'demo' : `demo-${stage}`)
 export const stageOf = (code: string): Stage => stages.find((stage) => codeOf(stage) === code) ?? 'home'
 
 // what each step of the practice round tells a new player: what is happening, and one thing to try
@@ -40,7 +40,7 @@ export const captions: Record<Stage, { what: string; tryIt: string }> = {
 
 const room = (phase: Room['phase']): Room => ({
   id: 'demo',
-  code: 'DEMO',
+  code: 'demo',
   host_user_id: me.user_id,
   theme,
   songs_per_player: 2,

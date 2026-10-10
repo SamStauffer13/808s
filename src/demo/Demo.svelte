@@ -9,7 +9,7 @@
   let { code }: { code: string } = $props()
   const stage = $derived(stageOf(code))
   const at = $derived(stages.indexOf(stage))
-  const link = (s: (typeof stages)[number]) => `#/${codeOf(s).toLowerCase()}` // the address bar shows lowercase; the router reads either
+  const link = (s: (typeof stages)[number]) => `#/${codeOf(s)}`
 
   // the real screens call the fake server only while the demo is open
   Object.assign(fake, handlers)

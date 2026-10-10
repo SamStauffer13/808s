@@ -86,9 +86,9 @@ export const me = () => game.players.find((p) => p.user_id === game.userId)
 export const isHost = () => game.room?.host_user_id === game.userId
 export const nameOf = (playerId?: string) => game.players.find((p) => p.id === playerId)?.name ?? '?'
 
-// #/DEMO and #/DEMO-<STAGE> open the demo (src/demo): the real screens on a fake game and a fake server.
-// Real room codes look like AB-1234, so they can never match.
-export const isDemo = (code: string) => code === 'DEMO' || code.startsWith('DEMO-')
+// #/demo and #/demo-<stage> open the demo (src/demo): the real screens on a fake game and a fake server.
+// Real room codes are uppercase like AB-1234, so they can never match.
+export const isDemo = (code: string) => code === 'demo' || code.startsWith('demo-')
 
 const countsOf = (rows: { player_id: string; n: number }[]) => Object.fromEntries(rows.map((c) => [c.player_id, c.n]))
 

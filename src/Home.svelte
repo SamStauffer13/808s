@@ -58,7 +58,7 @@
   <span>{tagline[0]}</span>
   <span class="good">{tagline[1]}<i class="cursor"></i></span>
 </p>
-{#if !isDemo(location.hash.slice(2).toUpperCase())}<a class="link center" href="#/demo">NEW HERE? SEE HOW IT WORKS</a>{/if}
+{#if !isDemo(location.hash.slice(2))}<a class="link center" href="#/demo">NEW HERE? SEE HOW IT WORKS</a>{/if}
 
 <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), spotifyName ? create() : connect())}>
   <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>

@@ -4,7 +4,11 @@
   import Room from './Room.svelte'
   import { isDemo } from './lib/game.svelte'
 
-  const read = () => decodeURIComponent(location.hash.slice(2)).toUpperCase()
+  // room codes are uppercase; the demo's addresses are lowercase
+  const read = () => {
+    const hash = decodeURIComponent(location.hash.slice(2))
+    return isDemo(hash) ? hash : hash.toUpperCase()
+  }
   let code = $state(read())
 
   // a short terminal intro, once per visit, only on the home screen
