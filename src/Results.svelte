@@ -63,7 +63,7 @@
 </div>
 
 <div class="wave"></div>
-<div class="split"><span class="label">HOW THE ROOM DID</span><span class="good">{right} OF {all} RIGHT</span></div>
+<div class="split"><span class="label">HOW THE CREW DID</span><span class="good">{right} OF {all} RIGHT</span></div>
 <p class="muted">EACH BAR IS ONE BOX OF SONGS · <span class="good">RIGHT</span> VS WRONG · TAP A BAR TO OPEN IT BELOW</p>
 <div class="chart" role="list">
   {#each sets as s, i}

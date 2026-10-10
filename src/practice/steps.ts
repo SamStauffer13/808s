@@ -23,7 +23,7 @@ export const titles: Record<Stage, string> = {
 export type Prompt = { target: string; text: string; look?: boolean; skipTo?: Stage; final?: boolean; again?: { to: number; while: string }; when?: string; required?: boolean }
 
 const search = (text: string): Prompt => ({ target: 'label.field input', text, when: 'button.row:not([disabled])' })
-const addSong: Prompt = { target: 'button.row:not([disabled])', text: 'NEXT, TAP YOUR SONG TO ADD IT; NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL.' }
+const addSong: Prompt = { target: 'button.row:not([disabled])', text: 'NEXT, TAP YOUR SONG TO ADD IT; NOBODY SEES WHO ADDED WHAT UNTIL THE RESULTS.' }
 
 // the same for everyone once the guessing starts
 const guess: Prompt[] = [

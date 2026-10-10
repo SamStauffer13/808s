@@ -35,7 +35,7 @@
     </div>
     {#if preview.phase === 'submit'}
       <div class="panel stack">
-        <div class="label">HOW IT WORKS</div>
+        <div class="label">MISSION BRIEFING</div>
         <div class="line"><b class="good">1</b><span>ENTER YOUR NAME BELOW AND JOIN</span></div>
         <div class="line"><b class="good">2</b><span>ADD YOUR SONGS THAT FIT THE THEME</span></div>
         <div class="line"><b class="good">3</b><span>ONCE THE CREW IS IN, LISTEN TO THE PLAYLIST AND GUESS WHO ADDED WHAT</span></div>

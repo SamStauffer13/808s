@@ -59,7 +59,7 @@
   <Share />
 {/if}
 {#if left > 0}
-  <p class="muted center">/// ADD {left} MORE SONG{left > 1 ? 'S' : ''} THAT FIT THE VIBE · NOBODY SEES WHO ADDED WHAT UNTIL THE REVEAL</p>
+  <p class="muted center">/// ADD {left} MORE SONG{left > 1 ? 'S' : ''} THAT FIT THE VIBE · NOBODY SEES WHO ADDED WHAT UNTIL THE RESULTS</p>
 {/if}
 
 {#each slots as s, i}
@@ -76,7 +76,7 @@
 <Notice scope="songs" />
 
 {#if mine.length >= room.songs_per_player}
-  <p class="center good">{everyoneIn ? (isHost() ? "EVERYONE'S IN · PRESS BEGIN THE EXPERIMENT BELOW" : "EVERYONE'S IN") : waiting > 0 ? `SONGS ADDED · WAITING ON ${waiting} MORE PLAYER${waiting > 1 ? 'S' : ''}` : 'SONGS ADDED'}</p>
+  <p class="center good">{everyoneIn ? (isHost() ? "EVERYONE'S IN · PRESS BEGIN THE EXPERIMENT BELOW" : "EVERYONE'S IN") : waiting > 0 ? `SONGS ADDED · WAITING ON ${waiting} MORE CREW MEMBER${waiting > 1 ? 'S' : ''}` : 'SONGS ADDED'}</p>
   {#if !isHost()}
     <p class="muted center">/// {everyoneIn ? `WAITING ON ${hostName} TO BEGIN THE EXPERIMENT` : `WHEN EVERYONE'S DONE, ${hostName} BEGINS THE EXPERIMENT`} · THE ROUND WHERE YOU GUESS WHO ADDED WHAT</p>
   {/if}

@@ -55,7 +55,7 @@
     try {
       const { phase } = await call<{ phase: string }>('admin-advance', { key, code: room })
       connect = false
-      notify('admin', `${room} MOVED TO ${phase === 'guess' ? 'THE EXPERIMENT' : 'THE REVEAL'}`)
+      notify('admin', `${room} MOVED TO ${phase === 'guess' ? 'THE EXPERIMENT' : 'THE RESULTS'}`)
     } catch (e) {
       const message = (e as Error).message
       if (/connect/i.test(message)) connect = true

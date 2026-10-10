@@ -53,7 +53,7 @@
     <div class="label">HOST CHECKLIST</div>
     <div class="line"><b class:good={allIn}>{allIn ? '✓' : '○'}</b><span class:muted={allIn}>LISTEN AND GUESS · {done} / {todo.length}</span></div>
     <div class="line"><b class:good={waiting === 0}>{waiting === 0 ? '✓' : '○'}</b><span class:muted={waiting === 0}>WAIT FOR EVERYONE · {progress ? `${progress.finished} / ${progress.total}` : '...'}</span></div>
-    <div class="line"><b>○</b><span>THE REVEAL OPENS BY ITSELF · NO BUTTON NEEDED</span></div>
+    <div class="line"><b>○</b><span>THE RESULTS OPEN BY THEMSELVES · NO BUTTON NEEDED</span></div>
   </div>
 {/if}
 
@@ -62,8 +62,8 @@
 {/if}
 
 {#if todo.length && done === todo.length}
-  <p class="center good">ALL GUESSED · {waiting > 0 ? `WAITING ON ${waiting} MORE PLAYER${waiting > 1 ? 'S' : ''}` : 'OPENING THE REVEAL'}</p>
-  <p class="muted center">/// THE REVEAL OPENS WHEN EVERYONE IS DONE · COME BACK ANY TIME</p>
+  <p class="center good">ALL GUESSED · {waiting > 0 ? `WAITING ON ${waiting} MORE CREW MEMBER${waiting > 1 ? 'S' : ''}` : 'OPENING THE RESULTS'}</p>
+  <p class="muted center">/// THE RESULTS OPEN WHEN THE WHOLE CREW IS DONE · COME BACK ANY TIME</p>
 {:else if !todo.length}
   <p class="center good">NOTHING TO GUESS · THESE ARE ALL YOUR SONGS</p>
 {/if}
