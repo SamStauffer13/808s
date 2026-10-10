@@ -20,40 +20,35 @@
     goStage('home')
   }
 
-  // A prompt is done when its thing has been used: a text box once it has been filled in and left, anything else
-  // once it is tapped. (Tapping into a box does not count; the point is to type something.)
+  // A prompt is done when its thing has been used: a button or panel once it is tapped, a text box once NEXT (or
+  // Return) is pressed with something typed in it.
   const fields = 'input, textarea, select'
-  // finishing a text box moves the cursor to the next empty one, so the form fills in top to bottom
-  let focusNext = false
   $effect(() => {
     const touched = (e: Event) => {
       const el = document.querySelector(step.target)
-      if (!el || step.look || step.when || step.gone || !(e.target instanceof Element) || !el.contains(e.target)) return
-      if (e.type === 'change' ? !e.target.matches(fields) : e.target.matches(fields)) return
-      if (e.type === 'change') focusNext = true
+      if (!el || step.look || step.when || step.gone || !(e.target instanceof Element) || !el.contains(e.target) || e.target.matches(fields)) return
       const at = i
       setTimeout(() => i === at && advance()) // after the screen has reacted
     }
-    // Enter finishes a box too. When another box is next it moves there instead of submitting a half-filled form.
+    // Return does what NEXT does, and never sends a half-filled form
     const enter = (e: KeyboardEvent) => {
       const el = document.querySelector(step.target)
-      const next = document.querySelector(steps[i + 1]?.target ?? '')
-      if (e.key !== 'Enter' || !(e.target instanceof HTMLInputElement) || !el?.contains(e.target) || step.when || !next?.matches('input')) return
+      if (e.key !== 'Enter' || !(e.target instanceof HTMLInputElement) || !el?.contains(e.target) || step.when) return
       e.preventDefault()
-      e.target.blur() // leaving the box is what finishes it
+      if (e.target.value.trim()) advance()
     }
     document.addEventListener('click', touched, true)
-    document.addEventListener('change', touched, true)
     document.addEventListener('keydown', enter, true)
     return () => {
       document.removeEventListener('click', touched, true)
-      document.removeEventListener('change', touched, true)
       document.removeEventListener('keydown', enter, true)
     }
   })
 
   // The lit spot follows its target as screens change; a target that is not there yet lights nothing.
   const pad = 8
+  let asksText = $state(false) // the lit thing is a text box, so the card has a NEXT button
+  let typed = $state(false) // and something has been typed in it
   let hole = $state<{ top: number; left: number; width: number; height: number } | null>(null)
   $effect(() => {
     let frame = 0
@@ -72,8 +67,7 @@
         seenFor = i
         // a box that already has something in it is not asked for again
         if (!step.when && el instanceof HTMLInputElement && el.value.trim()) advance()
-        else if (focusNext && el instanceof HTMLInputElement) el.focus({ preventScroll: true })
-        focusNext = false
+        else if (el instanceof HTMLInputElement) el.focus({ preventScroll: true }) // the cursor is already in the box
       }
       // it was there and has been gone for a moment (not just remounting between two reveal sets): the user did it
       if (el) goneAt = 0
@@ -86,6 +80,8 @@
       }
       if (step.when && document.querySelector(step.when)) advance()
       if (el) {
+        asksText = !step.look && !step.when && el instanceof HTMLInputElement
+        typed = el instanceof HTMLInputElement && el.value.trim() !== ''
         // the whole control: a field with its label, the bottom dock, a row of buttons
         const anchor = el.closest('label.field, .dock, .pager') ?? el
         const r = anchor.getBoundingClientRect()
@@ -157,7 +153,13 @@
     <div class="practice-card {card.side}" bind:clientHeight={cardHeight} style:top="{card.top}px" style:--arrow="{card.arrow}px">
       <div class="meta"><span>STEP {i + 1} OF {steps.length}</span><span>{titles[where]}</span></div>
       <p class="say" aria-live="polite">{step.text}</p>
-      {#if step.look}<button type="button" class="btn" onclick={advance}>GOT IT</button>{/if}
+      {#if step.look}
+        <button type="button" class="btn" onclick={advance}>GOT IT</button>
+      {:else if asksText}
+        <button type="button" class="btn" disabled={!typed} onclick={advance}>NEXT</button>
+      {:else if !step.when}
+        <p class="muted">TAP THE LIT SPOT</p>
+      {/if}
       <div class="dots" aria-hidden="true">
         {#each stages as s}<i class:on={s === where}></i>{/each}
       </div>
