@@ -1,6 +1,6 @@
 # 808s
 
-A themed music guessing game. A host sets a playlist vibe, the crew adds songs, everyone listens and cracks
+A themed music guessing experiment. A host sets a playlist vibe, the crew adds songs, everyone listens and cracks
 each set of songs: who added it? Live at https://samstauffer.net/808s/
 
 ## Where things live
@@ -23,27 +23,27 @@ npm run dev        # http://localhost:5173
 npm run check      # types
 ```
 
-## Practice round: play a whole game with fake players
+## Practice round: play a whole experiment with fake players
 
 The "NEW HERE? TRY THE TUTORIAL" link starts it, on Home for a host and on the invite page for a crew member. There is no separate page: the real screens run on a
-fake game (you plus Cierra, Shilo, Dalton, Matt and Cole, one song each) and a fake server, with a wizard on top (`src/practice/`,
+fake experiment (you plus Cierra, Shilo, Dalton, Matt and Cole, one song each) and a fake server, with a wizard on top (`src/practice/`,
 switched on by `src/lib/practice.svelte.ts`). The screen dims except for the one thing to touch, and a card says in one sentence what
 it is for. There is no skip button: doing what the card says (adding a song, pressing BEGIN THE EXPERIMENT, guessing every song)
-moves the game to the next stage. There are two journeys: the host's (Home, Add Songs, Guess, Results) and a crew member's from an invite link (Join, Add Songs, Guess, Results, with Cierra as the host and a skip past waiting for them). The last guess opens the scoreboard, like a real game.
+moves the experiment to the next stage. There are two journeys: the host's (Home, Add Songs, Guess, Results) and a crew member's from an invite link (Join, Add Songs, Guess, Results, with Cierra as the host and a skip past waiting for them). The last guess opens the scoreboard, like a real experiment.
 EXIT (top of the screen) reloads the page back to where practice was started from, which throws all of it away.
 
 To test one screen after a change, open `/?practice` for the host (or `/?practice=submit`, `guess`, `results`), or `/?practice=guest` for the crew member (`guest-submit`, `guest-guess`, `guest-results` jump to a stage) in dev.
 An old `/808s/demo` link starts practice too.
 
-Keep it in step when the game data, the screens or the server calls they make change:
+Keep it in step when the experiment data, the screens or the server calls they make change:
 - `src/practice/steps.ts` has the prompts for each journey and the CSS selectors they point at: update them when a screen's markup changes.
 - `src/practice/backend.ts` answers the server calls. A call it has no answer for throws "not available in the practice
   round" and never reaches the real server, so a new call needs a handler there.
-- `src/practice/data.ts` has the fake game; `seed.ts` fails to load if a stamp in `src/lib/stamps.ts` is never earned by a set.
+- `src/practice/data.ts` has the fake experiment; `seed.ts` fails to load if a stamp in `src/lib/stamps.ts` is never earned by a set.
 - `npm run check` catches a changed type.
 
 Practice checks the screens, not the server: a broken Edge Function or permission rule will not show up in it. Before
-a big release, play one real game with two browsers (normal and incognito) as two players, one connected to Spotify as
+a big release, play one real experiment with two browsers (normal and incognito) as two players, one connected to Spotify as
 host: create a room, join from the invite link, add songs in both, begin the experiment, guess in both, and check the
 scoreboard opens by itself for both and the song-by-song results and playlist look right. Also try `FORCE NEXT PHASE` (see below) on a
 throwaway room.
@@ -62,7 +62,7 @@ If the build says "Cannot find native binding" on Windows: `npm install --no-sav
   `git@github-808s:SamStauffer13/808s.git`. The `github-808s` alias in `~/.ssh/config` uses the deploy key
   `~/.ssh/808s_deploy`, which is added to the repo with write access.
 
-## Admin override: moving a stuck game along
+## Admin override: moving a stuck experiment along
 
 When the host is away, the owner can move any room to its next phase. In the room (or on the invite page, or Home
 with a room code), tap the small 808s logo five times, enter the key once (it is kept on that device only), then press
@@ -72,7 +72,7 @@ with a room code), tap the small 808s logo five times, enter the key once (it is
 Submit to guess builds the playlist in the host's Spotify; if the host never connected one, it uses the admin's, and
 the panel offers a `CONNECT SPOTIFY` button that returns to the room and carries on. Guess to reveal needs nothing.
 
-## How a game flows
+## How an experiment flows
 
 In the app the guessing round is called "the Experiment", and the host begins it.
 
@@ -88,7 +88,7 @@ Each revealed set can get a stamp (`DOXXED`, `UNCRACKABLE`, `PROXIED`). The rule
 
 ## Runs by itself
 
-- Nightly (04:00 UTC) pg_cron job `808s-cleanup` deletes games older than 28 days that never made a playlist, and
+- Nightly (04:00 UTC) pg_cron job `808s-cleanup` deletes experiments older than 28 days that never made a playlist, and
   the anonymous accounts left behind.
 - `keepalive.yml` pings Supabase every 3 days so the free tier does not pause. GitHub disables scheduled
   workflows after 60 days without repo activity; run it once by hand if that happens.
@@ -114,7 +114,7 @@ Each revealed set can get a stamp (`DOXXED`, `UNCRACKABLE`, `PROXIED`). The rule
 
 ## Small things to know
 
-- Games hold up to 20 players and 1 to 5 songs each.
+- Experiments hold up to 20 players and 1 to 5 songs each.
 - Blocked artists: `tooEasyToTrace` in `supabase/functions/_shared/spotify.ts`, with the comment in `src/Slot.svelte`.
 - The tagline lives at the top of `src/Home.svelte`. Colors and spacing are tokens at the top of `src/app.css`.
 - The vibe tells people what to submit and becomes the Spotify playlist's description. The optional playlist name

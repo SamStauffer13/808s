@@ -5,8 +5,8 @@ import type { Role, Stage } from '../lib/practice.svelte'
 
 // what the card calls each stage (the order is not a count: a real game has many more taps than five)
 export const titles: Record<Stage, string> = {
-  home: 'START A GAME',
-  invite: 'JOIN THE GAME',
+  home: 'START AN EXPERIMENT',
+  invite: 'JOIN THE EXPERIMENT',
   submit: 'ADD SONGS',
   guess: 'GUESS',
   results: 'RESULTS',
@@ -35,7 +35,7 @@ const results: Prompt[] = [
   { target: '.panel.framed', text: "HERE'S WHO WON, BASED ON THE MOST RIGHT GUESSES.", look: true },
   { target: '.chart', text: 'THIS SHOWS HOW MANY PEOPLE GOT EACH SONG RIGHT.', look: true },
   { target: '.pager .btn:last-child', text: 'NEXT, STEP THROUGH EVERY SONG TO SEE WHO ADDED IT AND HOW EVERYONE GUESSED.' },
-  { target: 'a.btn', text: 'FINALLY, START A REAL GAME OF YOUR OWN.', final: true },
+  { target: 'a.btn', text: 'FINALLY, START A REAL EXPERIMENT OF YOUR OWN.', final: true },
 ]
 
 export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
@@ -47,8 +47,8 @@ export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
       { target: 'form .btn', text: "FINALLY, AS A HOST YOU NEED TO AUTHENTICATE WITH SPOTIFY TO CREATE THE PLAYLIST (DON'T WORRY, IT'S SAFER THAN ANYTHING YOU'VE DONE LATELY)." },
     ],
     submit: [
-      { target: '.panel.stack', text: 'AFTER YOU CREATE A GAME, SEND THE INVITE LINK TO YOUR CREW AND WATCH THIS CHECKLIST FILL IN.', look: true },
-      search('FIRST, SEARCH FOR THE SONG YOU WANT TO ADD TO THE GAME.'),
+      { target: '.panel.stack', text: 'AFTER YOU CREATE AN EXPERIMENT, SEND THE INVITE LINK TO YOUR CREW AND WATCH THIS CHECKLIST FILL IN.', look: true },
+      search('FIRST, SEARCH FOR THE SONG YOU WANT TO ADD TO THE EXPERIMENT.'),
       addSong,
       { target: 'button.btn:not(.ghost):not([disabled])', text: 'ONCE EVERYONE YOU SHARED THE LINK WITH HAS ADDED THEIR SONGS, CLICK THIS BUTTON TO BEGIN THE EXPERIMENT.' },
     ],
@@ -60,7 +60,7 @@ export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
       { target: '.panel.framed', text: 'THIS IS THE THEME YOUR HOST PICKED FOR THE SONGS.', look: true },
       { target: '.panel.stack', text: 'THESE ARE THE STEPS, FROM JOINING TO SEEING WHO WON.', look: true },
       { target: 'form input', text: 'FIRST, ENTER YOUR NAME SO THE CREW KNOWS WHO YOU ARE.' },
-      { target: 'form .btn', text: 'NEXT, JOIN THE GAME SO YOU CAN ADD YOUR SONG.' },
+      { target: 'form .btn', text: 'NEXT, JOIN THE EXPERIMENT SO YOU CAN ADD YOUR SONG.' },
     ],
     submit: [
       search('FIRST, SEARCH FOR A SONG THAT FITS THE THEME.'),

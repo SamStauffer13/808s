@@ -130,10 +130,10 @@
   <div class="practice-card done" role="dialog" aria-label="Practice finished">
     <p class="say">YOU'RE READY.</p>
     {#if practice.role === 'host'}
-      <p class="muted">THAT'S EVERY STEP. START A REAL GAME AND SEND YOUR CREW THE LINK.</p>
-      <button type="button" class="btn" onclick={exitPractice}>START A REAL GAME</button>
+      <p class="muted">THAT'S EVERY STEP. START A REAL EXPERIMENT AND SEND YOUR CREW THE LINK.</p>
+      <button type="button" class="btn" onclick={exitPractice}>START A REAL EXPERIMENT</button>
     {:else}
-      <p class="muted">THAT'S EVERY STEP. HEAD BACK TO YOUR INVITE AND JOIN THE REAL GAME.</p>
+      <p class="muted">THAT'S EVERY STEP. HEAD BACK TO YOUR INVITE AND JOIN THE REAL EXPERIMENT.</p>
       <button type="button" class="btn" onclick={exitPractice}>BACK TO MY INVITE</button>
     {/if}
     <button type="button" class="btn ghost plain" onclick={replay}>PLAY IT AGAIN</button>
