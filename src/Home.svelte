@@ -60,10 +60,7 @@
   <span>{tagline[1]}</span>
   <span class="good">{tagline[2]}<i class="cursor"></i></span>
 </p>
-{#if !practice.on}
-  <button type="button" class="btn ghost" onclick={() => startPractice()}>PRACTICE ROUND</button>
-  <p class="muted center">/// NEW HERE? 2 MINUTES · FAKE FRIENDS · NOTHING IS REAL</p>
-{/if}
+{#if !practice.on}<button type="button" class="link center" onclick={() => startPractice()}>NEW HERE? RUN THE TRAINING SIMULATION →</button>{/if}
 
 <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), spotifyName ? create() : connect())}>
   <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>

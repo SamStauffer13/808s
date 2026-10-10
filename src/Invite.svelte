@@ -45,9 +45,6 @@
       <Notice scope="join" />
       <button class="btn">JOIN THE EXPERIMENT</button>
     </form>
-    {#if !practice.on}
-      <button type="button" class="btn ghost" onclick={() => startPractice('invite')}>PRACTICE ROUND</button>
-      <p class="muted center">/// NEW HERE? 2 MINUTES · FAKE FRIENDS · NOTHING IS REAL</p>
-    {/if}
+    {#if !practice.on}<button type="button" class="link center" onclick={() => startPractice('invite')}>NEW HERE? RUN THE TRAINING SIMULATION →</button>{/if}
   {/if}
 </div>
