@@ -259,9 +259,6 @@ body.practicing #app { padding-top: 56px; }
 .practice-card.above::before { bottom: -7px; border-left: 0; border-top: 0; }
 .practice-card .meta { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; letter-spacing: 0.14em; color: var(--text-secondary); }
 .practice-card .say { font-size: 17px; line-height: 1.4; letter-spacing: 0.04em; }
-.practice-card .dots { display: flex; justify-content: center; gap: 6px; }
-.practice-card .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
-.practice-card .dots i.on { background: var(--accent); }
 .practice-card.done { top: 50%; transform: translate(-50%, -50%); text-align: center; }
 .practice-card.done .say { font-size: 22px; }
 @keyframes rise { from { opacity: 0; margin-top: 8px; } }

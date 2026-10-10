@@ -155,9 +155,6 @@
       {:else if !step.when}
         <p class="muted">TAP THE LIT SPOT</p>
       {/if}
-      <div class="dots" aria-hidden="true">
-        {#each journeys[practice.role] as s}<i class:on={s === practice.stage}></i>{/each}
-      </div>
     </div>
   {/if}
 {/if}
