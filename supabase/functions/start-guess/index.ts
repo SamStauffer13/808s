@@ -18,7 +18,7 @@ Deno.serve(
       db.from('song_owners').select('player_id').eq('room_id', room_id),
     ])
     const added = (id: string) => (owners ?? []).filter((o) => o.player_id === id).length
-    if ((players?.length ?? 0) < 2) throw new HttpError(400, 'wait for friends to join')
+    if ((players?.length ?? 0) < 2) throw new HttpError(400, 'wait for the crew to join')
     if (players!.some((p) => added(p.id) < room.songs_per_player)) throw new HttpError(400, 'wait for everyone to add their songs')
 
     return { playlist_id: await beginGuess(db, room) }
