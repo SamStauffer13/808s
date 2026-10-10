@@ -90,6 +90,11 @@
     let seenFor = -1
     let goneAt = 0
     const follow = () => {
+      // boxes the practice round insists on are required from the start, so the form cannot be sent without them
+      for (const s of steps) {
+        const box = s.required ? document.querySelector(s.target) : null
+        if (box instanceof HTMLInputElement) box.required = true
+      }
       const el = document.querySelector(step.target)
       if (el && seenFor !== i) {
         seenFor = i

@@ -28,8 +28,9 @@ export const tourKey = '808s-tour'
 // `again`: after this prompt is done, go back to prompt number `to` while something matching `while` is still on the screen
 // `gone`: the prompt is done when its target leaves the screen (the reveal turns into the results on the same address)
 // `when`: the prompt is done as soon as something matching this shows up (search results appear while you type)
+// `required`: the practice round will not let the form go on until this box is filled, even if the real one allows it
 // A prompt on a text box is done when the box has been filled in and left; on anything else, when it is tapped.
-export type Prompt = { target: string; text: string; why: string; again?: { to: number; while: string }; gone?: boolean; when?: string }
+export type Prompt = { target: string; text: string; why: string; again?: { to: number; while: string }; gone?: boolean; when?: string; required?: boolean }
 
 const results: Prompt[] = [
   { target: '.panel.framed', text: 'THE WINNER', why: 'THE MOST RIGHT GUESSES WINS THE L33T TITLE. TIES SHARE IT. TAP HERE TO CONTINUE.' },
@@ -42,6 +43,7 @@ export const tour: Record<Stage, Prompt[]> = {
   home: [
     { target: 'form label.field:nth-of-type(1) input', text: 'TYPE YOUR NAME', why: 'THIS IS HOW YOUR FRIENDS SEE YOU IN THE CREW LIST. A FIRST NAME OR NICKNAME IS PERFECT. THEN TAP THE NEXT BOX.' },
     { target: 'form label.field:nth-of-type(2) input', text: 'TYPE A VIBE', why: 'IT TELLS EVERYONE WHAT KIND OF SONGS TO ADD. TRY: SONGS THAT SOUND LIKE A ROAD TRIP AT 2AM. THEN TAP AWAY.' },
+    { target: 'form label.field:nth-of-type(3) input', text: 'NAME THE PLAYLIST', why: 'THIS BECOMES THE TITLE OF THE SPOTIFY PLAYLIST. IN A REAL GAME YOU CAN LEAVE IT BLANK AND IT USES YOUR VIBE, BUT TRY ONE HERE, LIKE MAKEUP IS WAR PAINT. THEN TAP AWAY.', required: true },
     { target: 'form .btn', text: 'TAP THE GREEN BUTTON', why: 'THE FIRST TAP CONNECTS YOUR SPOTIFY, WHERE THE PLAYLIST GETS MADE. THEN TAP IT AGAIN TO CREATE THE GAME.' },
   ],
   invite: [
