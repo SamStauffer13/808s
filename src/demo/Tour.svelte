@@ -42,44 +42,49 @@
     }
   })
 
-  // follow the target as the page scrolls or changes; a target that is not there yet shows nothing
-  let box = $state<{ x: number; y: number; w: number; h: number } | null>(null)
-  let tipHeight = $state(80)
-  // under the thing it points at, or above it when there is no room left below
-  const tipTop = $derived.by(() => {
-    if (!box) return 0
-    const below = box.y + box.h + 12
-    const above = box.y - 12 - tipHeight
-    return below + tipHeight > innerHeight - 8 && above > 48 ? above : below
+  // The prompt is a line of the page itself, placed just above what it points at, so it never covers anything.
+  // It is built by hand because it lives among the real screens' elements, not in this component's markup.
+  const line = document.createElement('button')
+  line.type = 'button'
+  line.className = 'prompt'
+  const part = (tag: string, cls: string) => line.appendChild(Object.assign(document.createElement(tag), { className: cls }))
+  const count = part('span', 'n')
+  const say = part('span', 'say')
+  part('i', 'cursor')
+  const why = part('span', 'why')
+  line.onclick = advance
+
+  $effect(() => {
+    count.textContent = `${i + 1}/${steps.length}`
+    say.textContent = `> ${step.text}`
+    why.textContent = step.why
   })
+
+  // keep the line next to its target as screens change; a target that is not there yet shows nothing
   $effect(() => {
     let frame = 0
-    let scrolledTo = ''
-    let shown = '' // what `box` holds, kept here so this effect never reads the state it writes
+    let scrolledFor = -1
     const follow = () => {
       const el = document.querySelector(step.target)
       if (el) {
-        const r = el.getBoundingClientRect()
-        if (scrolledTo !== step.target) {
-          scrolledTo = step.target
-          el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+        // the bar sits at the top, so its prompt goes under it; the rest go above the nearest whole control
+        const bar = el.closest('nav')
+        const anchor = bar ?? el.closest('label.field, .dock, .pager') ?? el
+        const spot = bar ? anchor.nextElementSibling : anchor.previousElementSibling
+        if (spot !== line) {
+          bar ? anchor.after(line) : anchor.before(line)
+          if (scrolledFor !== i) {
+            scrolledFor = i
+            line.scrollIntoView({ block: 'center', behavior: 'smooth' })
+          }
         }
-        const next = { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }
-        const key = `${next.x},${next.y},${next.w},${next.h}`
-        if (key !== shown) [shown, box] = [key, next]
-      } else if (shown) [shown, box] = ['', null]
+      } else line.remove()
       frame = requestAnimationFrame(follow)
     }
     follow()
-    return () => cancelAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(frame)
+      line.remove()
+    }
   })
 </script>
-
-{#if box}
-  <div class="ring" style:left="{box.x - 4}px" style:top="{box.y - 4}px" style:width="{box.w + 8}px" style:height="{box.h + 8}px" aria-hidden="true"></div>
-  <button class="tip" style:--x="{box.x}px" style:top="{tipTop}px" bind:offsetHeight={tipHeight} onclick={advance}>
-    <span class="n">{i + 1}/{steps.length}</span>
-    <span class="say">{step.text}</span>
-    <span class="why">{step.why}</span>
-  </button>
-{/if}
