@@ -152,7 +152,7 @@
   <div class="practice-block" style:inset="{hole.top + hole.height}px 0 0 0"></div>
   <div class="practice-block" style:inset="{hole.top}px {width - hole.left}px {height - hole.top - hole.height}px 0"></div>
   <div class="practice-block" style:inset="{hole.top}px 0 {height - hole.top - hole.height}px {hole.left + hole.width}px"></div>
-  <div class="practice-ring" style:top="{hole.top}px" style:left="{hole.left}px" style:width="{hole.width}px" style:height="{hole.height}px"></div>
+  <div class="practice-spot" style:top="{hole.top}px" style:left="{hole.left}px" style:width="{hole.width}px" style:height="{hole.height}px"></div>
   {#if card}
     <div class="practice-card {card.side}" bind:clientHeight={cardHeight} style:top="{card.top}px" style:--arrow="{card.arrow}px">
       <div class="meta"><span>STEP {i + 1} OF {steps.length}</span><span>{titles[where]}</span></div>

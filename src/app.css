@@ -251,8 +251,7 @@ body.practicing #app { padding-top: 56px; }
 .practice-pill button:hover { color: var(--accent); }
 .practice-block { position: fixed; z-index: 20; } /* see-through: only the lit spot takes taps */
 .practice-veil { position: fixed; inset: 0; z-index: 20; background: rgba(0, 0, 0, 0.72); }
-.practice-ring { position: fixed; z-index: 21; pointer-events: none; border-radius: 10px; outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.72); animation: ring 1.6s ease-in-out infinite; }
-@keyframes ring { 50% { outline-offset: 6px; outline-color: var(--accent-hover); } }
+.practice-spot { position: fixed; z-index: 21; pointer-events: none; border-radius: 10px; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.72); } /* only dims around the lit spot */
 .practice-card { position: fixed; z-index: 22; left: 50%; width: min(480px, calc(100% - 32px)); transform: translateX(-50%); display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--surface-raised); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6); animation: rise 200ms ease-out; }
 .practice-card.below::before, .practice-card.above::before { content: ''; position: absolute; left: var(--arrow); width: 12px; height: 12px; background: var(--surface-raised); border: 1px solid var(--accent); transform: translateX(-50%) rotate(45deg); }
 .practice-card.below::before { top: -7px; border-right: 0; border-bottom: 0; }
@@ -265,7 +264,7 @@ body.practicing #app { padding-top: 56px; }
 .practice-card.done { top: 50%; transform: translate(-50%, -50%); text-align: center; }
 .practice-card.done .say { font-size: 22px; }
 @keyframes rise { from { opacity: 0; margin-top: 8px; } }
-@media (prefers-reduced-motion: reduce) { .practice-ring, .practice-card { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .practice-card { animation: none; } }
 iframe { width: 100%; height: 152px; border: 0; border-radius: var(--radius); color-scheme: dark; }
 .link { all: unset; display: inline-flex; align-items: center; min-height: 44px; cursor: pointer; font-size: 12px; letter-spacing: 0.1em; color: var(--text-secondary); }
 .link:hover { color: var(--accent); }

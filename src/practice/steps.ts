@@ -31,14 +31,14 @@ const results: Prompt[] = [
 
 export const tour: Record<Stage, Prompt[]> = {
   home: [
-    { target: 'form label.field:nth-of-type(1) input', text: 'TYPE YOUR NAME, THEN TAP OUTSIDE THE BOX.' },
-    { target: 'form label.field:nth-of-type(2) input', text: 'TYPE A VIBE FOR THE SONGS, LIKE A ROAD TRIP AT 2AM, THEN TAP OUTSIDE THE BOX.' },
-    { target: 'form label.field:nth-of-type(3) input', text: 'NAME YOUR PLAYLIST, LIKE MAKEUP IS WAR PAINT, THEN TAP OUTSIDE THE BOX.', required: true },
+    { target: 'form label.field:nth-of-type(1) input', text: 'ENTER YOUR NAME, THEN TAP OUTSIDE THE BOX.' },
+    { target: 'form label.field:nth-of-type(2) input', text: 'DESCRIBE THE KIND OF SONGS TO ADD, THEN TAP OUTSIDE THE BOX.' },
+    { target: 'form label.field:nth-of-type(3) input', text: 'NAME YOUR PLAYLIST, THEN TAP OUTSIDE THE BOX.', required: true },
     { target: 'form .btn', text: 'TAP THE GREEN BUTTON TO CONNECT SPOTIFY, THEN TAP IT AGAIN TO CREATE THE GAME.' },
   ],
   invite: [
     { target: '.panel.framed', text: 'THIS IS WHAT YOUR FRIENDS SEE WHEN THEY OPEN YOUR LINK.', look: true },
-    { target: 'form input', text: 'TYPE YOUR NAME, THEN TAP OUTSIDE THE BOX.' },
+    { target: 'form input', text: 'ENTER YOUR NAME, THEN TAP OUTSIDE THE BOX.' },
     { target: 'form .btn', text: 'TAP JOIN TO PICK YOUR SONGS.' },
   ],
   submit: [
