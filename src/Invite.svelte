@@ -41,7 +41,7 @@
     {/if}
     <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), join())}>
       <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
-      <p class="muted">/// USE THE NAME YOUR FRIENDS KNOW YOU BY</p>
+      <p class="muted">/// USE THE NAME YOUR CREW KNOWS YOU BY</p>
       <Notice scope="join" />
       <button class="btn">JOIN THE EXPERIMENT</button>
     </form>

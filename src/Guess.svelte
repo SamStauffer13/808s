@@ -8,7 +8,7 @@
   import { rpc } from './lib/supabase'
 
   const room = $derived(game.room!)
-  const friends = $derived(game.players.filter((p) => p.id !== me()?.id))
+  const crew = $derived(game.players.filter((p) => p.id !== me()?.id))
   const packs = $derived(packsOf(game.songs))
   const isMine = (pack: Pack) => pack.songs.some((s) => game.owners[s.id] === me()?.id)
   const guessFor = (pack: Pack) => game.guesses.find((g) => g.song_id === pack.songs[0].id && g.guesser_id === me()?.id)?.guessed_player_id
@@ -28,7 +28,7 @@
     return () => clearInterval(timer)
   })
 
-  // a friend can only be matched to one set, so choosing them again moves them
+  // a crew member can only be matched to one set, so choosing them again moves them
   async function pick(pack: Pack, playerId: string) {
     open = null
     const meId = me()!.id
@@ -58,7 +58,7 @@
 {/if}
 
 {#if todo.length}
-  <p class="muted center"><Eq />/// LISTEN TO THE PLAYLIST, THEN FOR EACH BOX OF SONGS PICK THE FRIEND WHO ADDED THEM · EACH FRIEND MATCHES ONE BOX</p>
+  <p class="muted center"><Eq />/// LISTEN TO THE PLAYLIST, THEN FOR EACH BOX OF SONGS PICK THE CREW MEMBER WHO ADDED THEM · EACH CREW MEMBER MATCHES ONE BOX</p>
 {/if}
 
 {#if todo.length && done === todo.length}
@@ -96,7 +96,7 @@
       </button>
       {#if open === pack.id}
         <div class="chips" role="radiogroup" aria-label="Who added these songs">
-          {#each friends as p}
+          {#each crew as p}
             <button class="chip" role="radio" aria-checked={guessFor(pack) === p.id} class:on={guessFor(pack) === p.id} class:used={matchedElsewhere(pack, p.id)} onclick={() => pick(pack, p.id)}>
               {guessFor(pack) === p.id ? '✓ ' : ''}{p.name.toUpperCase()}
             </button>

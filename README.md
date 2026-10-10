@@ -1,6 +1,6 @@
 # 808s
 
-A themed music guessing game. A host sets a playlist vibe, friends add songs, everyone listens and cracks
+A themed music guessing game. A host sets a playlist vibe, the crew adds songs, everyone listens and cracks
 each set of songs: who added it? Live at https://samstauffer.net/808s/
 
 ## Where things live
@@ -77,7 +77,7 @@ the panel offers a `CONNECT SPOTIFY` button that returns to the room and carries
 In the app the guessing round is called "the Experiment", and the host begins it.
 
 1. **Create:** the host connects Spotify and sets a vibe.
-2. **Submit:** friends join by link and add songs. Who added what stays hidden.
+2. **Submit:** the crew joins by link and add songs. Who added what stays hidden.
 3. **Experiment:** the host presses `BEGIN THE EXPERIMENT`, which builds a shuffled playlist in their Spotify.
 4. **Guess:** each player matches every other player's songs to whoever added them.
 5. **Reveal:** it opens by itself when the last guess is in (only the admin override can open it early), and everyone lands on the
@@ -122,7 +122,7 @@ Each revealed set can get a stamp (`DOXXED`, `UNCRACKABLE`, `PROXIED`). The rule
 - Notices show next to the control that caused them: `attempt(scope, fn)` stores the error under a scope and a
   `<Notice scope="...">` placed beside the button displays it. There is no global toast.
 - Rejoin: typing a name that is already in the playlist takes that seat, in any phase, host included. It trusts
-  the crew, so anyone with the invite link could take a friend's seat. If that ever matters, require host approval.
+  the crew, so anyone with the invite link could take a crew member's seat. If that ever matters, require host approval.
 
 - Host login: the home screen's `CONNECT SPOTIFY` sends the host through Spotify's login (`spotify-account` builds the
   link, `spotify-callback` receives the result and stores their refresh token in `spotify_accounts`, which only Edge Functions can read).

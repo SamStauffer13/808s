@@ -128,7 +128,7 @@
   <div class="practice-veil"></div>
   <div class="practice-card done" role="dialog" aria-label="Practice finished">
     <p class="say">YOU'RE READY.</p>
-    <p class="muted">THAT'S EVERY STEP. START A REAL GAME AND SEND YOUR FRIENDS THE LINK.</p>
+    <p class="muted">THAT'S EVERY STEP. START A REAL GAME AND SEND YOUR CREW THE LINK.</p>
     <button type="button" class="btn" onclick={exitPractice}>START A REAL GAME</button>
     <button type="button" class="btn ghost plain" onclick={replay}>PLAY IT AGAIN</button>
   </div>

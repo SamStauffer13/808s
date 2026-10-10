@@ -24,7 +24,7 @@ const handlers: Fake = {
     const connected = sessionStorage.getItem(spotifyKey) !== null
     return { connected, name: connected ? savedName() || me.name : null }
   },
-  'create-room': () => (goStage('invite'), { room: { code: practiceCode } }), // next you see what a friend sees
+  'create-room': () => (goStage('invite'), { room: { code: practiceCode } }), // next you see what a crew member sees
 
   // invite
   room_preview: () => [{ theme, phase: 'submit' }],

@@ -1,4 +1,4 @@
-// What the practice game is made of: you and five friends, and 12 tracks of a public Spotify playlist. Each player adds one song.
+// What the practice game is made of: you and five crew members, and 12 tracks of a public Spotify playlist. Each player adds one song.
 // Pure data, nothing here talks to a server.
 import type { Guess, Song } from '../lib/game.svelte'
 
@@ -40,7 +40,7 @@ export const chosen = {
   get: () => sessionStorage.getItem(chosenKey),
   set: (id: string) => sessionStorage.setItem(chosenKey, id),
 }
-// the songs a search may offer: everything except what your friends already added
+// the songs a search may offer: everything except what your crew already added
 export const searchable = () => tracks.filter((t, i) => i === 0 || i >= sets.length)
 
 const trackOf = (set: number) => (set === 0 && tracks.find((t) => t.id === chosen.get())) || tracks[set]
@@ -51,7 +51,7 @@ export const setSongs = (set: number): Song[] => {
 }
 
 // What each guesser got wrong, as pairs of sets they swapped (a swap makes both sets wrong, and keeps every
-// guesser's picks valid: a friend can only be matched to one set). Everything else is guessed correctly.
+// guesser's picks valid: a crew member can only be matched to one set). Everything else is guessed correctly.
 // This spread gives the reveal a DOXXED set (0), an UNCRACKABLE one (5) and a PROXIED one (3).
 const swaps: [number, number][][] = [
   [[5, 3]], // you

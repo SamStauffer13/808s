@@ -20,7 +20,7 @@
   const waiting = $derived(game.players.length - locked) // players still adding songs
   const steps = $derived([
     { text: `ADD YOUR SONGS · ${mine.length} / ${room.songs_per_player}`, done: left === 0 },
-    { text: `INVITE FRIENDS · ${game.players.length - 1} JOINED`, done: !alone },
+    { text: `INVITE THE CREW · ${game.players.length - 1} JOINED`, done: !alone },
     { text: `WAIT FOR EVERYONE'S SONGS · ${locked} / ${game.players.length}`, done: everyoneIn },
     { text: 'BEGIN THE EXPERIMENT', done: false },
   ])
@@ -55,7 +55,7 @@
 <div class="panel"><div class="label">THE PLAYLIST VIBE</div><div class="good big">{room.theme}</div></div>
 
 {#if alone}
-  <p class="muted center">/// SEND THE INVITE LINK TO YOUR FRIENDS</p>
+  <p class="muted center">/// SEND THE INVITE LINK TO YOUR CREW</p>
   <Share />
 {/if}
 {#if left > 0}
@@ -104,6 +104,6 @@
     <p class="muted center">/// {total} TRACKS · EVERYONE'S WAITING ON YOU</p>
     <button class="btn" onclick={startGuessing}>BEGIN THE EXPERIMENT</button>
   {:else}
-    <button class="btn" disabled>{alone ? 'WAITING FOR FRIENDS TO JOIN' : `WAITING ON ${waiting} TO ADD SONGS`}</button>
+    <button class="btn" disabled>{alone ? 'WAITING FOR THE CREW TO JOIN' : `WAITING ON ${waiting} TO ADD SONGS`}</button>
   {/if}
 {/if}

@@ -5,7 +5,7 @@ import type { Stage } from '../lib/practice.svelte'
 // what the card calls each stage (the order is not a count: a real game has many more taps than six)
 export const titles: Record<Stage, string> = {
   home: 'START A GAME',
-  invite: 'FRIENDS JOIN',
+  invite: 'CREW JOINS',
   submit: 'ADD SONGS',
   guess: 'GUESS',
   results: 'RESULTS',
@@ -21,14 +21,14 @@ export type Prompt = { target: string; text: string; look?: boolean; final?: boo
 
 export const tour: Record<Stage, Prompt[]> = {
   home: [
-    { target: 'form label.field:nth-of-type(1) input', text: 'ENTER YOUR NAME SO YOUR FRIENDS KNOW WHO YOU ARE.' },
+    { target: 'form label.field:nth-of-type(1) input', text: 'ENTER YOUR NAME SO YOUR CREW KNOWS WHO YOU ARE.' },
     { target: 'form label.field:nth-of-type(2) input', text: 'FIRST, ENTER A THEME FOR WHAT KINDS OF SONGS YOU WANT.' },
     { target: 'form label.field:nth-of-type(3) input', text: 'NEXT, GIVE THE PLAYLIST A DOPE NAME BASED OFF THAT THEME.', required: true },
     { target: 'form .btn', text: "FINALLY, AS A HOST YOU NEED TO AUTHENTICATE WITH SPOTIFY TO CREATE THE PLAYLIST (DON'T WORRY, IT'S SAFER THAN ANYTHING YOU'VE DONE LATELY)." },
   ],
   invite: [
-    { target: '.panel.framed', text: 'THIS IS THE INVITE YOUR FRIENDS SEE WHEN THEY OPEN YOUR LINK.', look: true },
-    { target: 'form input', text: 'FIRST, ENTER YOUR NAME SO THE OTHER PLAYERS KNOW WHO YOU ARE.' },
+    { target: '.panel.framed', text: 'THIS IS THE INVITE YOUR CREW SEES WHEN THEY OPEN YOUR LINK.', look: true },
+    { target: 'form input', text: 'FIRST, ENTER YOUR NAME SO THE REST OF THE CREW KNOWS WHO YOU ARE.' },
     { target: 'form .btn', text: 'THEN, JOIN THE GAME SO YOU CAN ADD YOUR SONG.' },
   ],
   submit: [
@@ -38,8 +38,8 @@ export const tour: Record<Stage, Prompt[]> = {
   ],
   guess: [
     { target: '.framed', text: "FIRST, LISTEN TO EVERYONE'S SONGS, SHUFFLED TOGETHER.", look: true },
-    { target: '.panel button.row:not(.on)', text: 'NEXT, PICK A SONG TO GUESS WHICH FRIEND ADDED IT.' },
-    { target: '.chips', text: 'THEN, CHOOSE THE FRIEND YOU THINK ADDED IT.', again: { to: 1, while: '.panel button.row:not(.on)' } },
+    { target: '.panel button.row:not(.on)', text: 'NEXT, PICK A SONG TO GUESS WHICH CREW MEMBER ADDED IT.' },
+    { target: '.chips', text: 'THEN, CHOOSE THE CREW MEMBER YOU THINK ADDED IT.', again: { to: 1, while: '.panel button.row:not(.on)' } },
   ],
   results: [
     { target: '.panel.framed', text: "HERE'S WHO WON, BASED ON THE MOST RIGHT GUESSES.", look: true },
