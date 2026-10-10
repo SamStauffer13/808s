@@ -54,7 +54,6 @@ a { color: var(--accent); }
 .good { color: var(--accent); }
 .text { color: var(--text); }
 .big { font-size: 16px; }
-.bad { color: var(--text-secondary); }
 .stamp { font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: var(--accent); }
 
 .tagline { text-align: center; font-size: 13px; line-height: 1.8; letter-spacing: 0.14em; color: var(--text-secondary); }

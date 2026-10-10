@@ -100,7 +100,7 @@ export async function refreshCounts() {
   game.counts = countsOf(data ?? [])
 }
 
-export async function refresh() {
+async function refresh() {
   if (isDemo(game.room!.code)) return // the demo has no server to reload from
   const id = game.room!.id
   const submitting = game.room!.phase === 'submit'

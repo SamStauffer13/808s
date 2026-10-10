@@ -2,7 +2,7 @@ import { admin, HttpError } from './http.ts'
 
 const API = 'https://api.spotify.com/v1'
 
-export type Track = { id: string; title: string; artist: string; art: string | null; blocked: boolean }
+type Track = { id: string; title: string; artist: string; art: string | null; blocked: boolean }
 
 // some artists are far too easy to trace back to whoever added them
 const tooEasyToTrace = /taylor swift/i
@@ -64,7 +64,7 @@ export async function readState(state: string): Promise<{ userId: string; return
   return e > Date.now() ? { userId: u, returnTo: r } : null
 }
 
-export const callbackUrl = () => `${Deno.env.get('SUPABASE_URL')}/functions/v1/spotify-callback`
+const callbackUrl = () => `${Deno.env.get('SUPABASE_URL')}/functions/v1/spotify-callback`
 
 export async function exchangeCode(code: string) {
   return await tokenRequest({ grant_type: 'authorization_code', code, redirect_uri: callbackUrl() })
