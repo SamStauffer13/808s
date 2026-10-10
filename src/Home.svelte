@@ -4,7 +4,7 @@
   import { attempt, isDemo, notify, once, saveName, savedName } from './lib/game.svelte'
   import { call } from './lib/supabase'
 
-  const tagline = ["CAN YOU FEEL PEOPLE'S VIBES?", "LET'S TEST THAT"]
+  const tagline = ["EVERYONE ADDS SONGS.", "GUESS WHO ADDED WHAT."]
 
   // The playlist is made in the host's own Spotify account. Logging in leaves this page, so the form is kept
   // for the trip and comes back filled in.
@@ -58,7 +58,6 @@
   <span>{tagline[0]}</span>
   <span class="good">{tagline[1]}<i class="cursor"></i></span>
 </p>
-<p class="muted center">/// A SOCIAL EXPERIMENT · ADD SONGS, THEN GUESS WHO ADDED WHAT</p>
 {#if !isDemo(location.hash.slice(2).toUpperCase())}<a class="link center" href="#/DEMO">NEW HERE? SEE HOW IT WORKS</a>{/if}
 
 <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), spotifyName ? create() : connect())}>
