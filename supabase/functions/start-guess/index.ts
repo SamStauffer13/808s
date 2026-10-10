@@ -10,7 +10,7 @@ Deno.serve(
     const db = admin()
     const { data: room } = await db.from('rooms').select('*').eq('id', room_id).maybeSingle()
     if (!room || room.host_user_id !== user.id) throw new HttpError(403, 'host only')
-    if (room.phase !== 'submit') throw new HttpError(400, 'not in the submit phase')
+    if (room.phase !== 'submit') throw new HttpError(400, 'this experiment is not taking songs anymore')
 
     // everyone has to be in and done adding songs; only the admin override (admin-advance) skips this
     const [{ data: players }, { data: owners }] = await Promise.all([

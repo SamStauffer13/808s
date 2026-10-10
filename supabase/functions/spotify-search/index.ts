@@ -8,7 +8,7 @@ Deno.serve(
 
     // search is for people in a playlist, so a stray script cannot spend the Spotify quota
     const { count } = await admin().from('players').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
-    if (!count) throw new HttpError(403, 'join a playlist first')
+    if (!count) throw new HttpError(403, 'join an experiment first')
 
     const { q } = await req.json()
     const query = String(q ?? '').trim().slice(0, 80)
