@@ -2,29 +2,34 @@
   import Boot from './Boot.svelte'
   import Home from './Home.svelte'
   import Room from './Room.svelte'
-  import { isDemo } from './lib/game.svelte'
+  import { installPractice, practice, practiceCode, startFromAddress } from './lib/practice.svelte'
 
-  // room codes are uppercase; the demo's addresses are lowercase
-  const read = () => {
-    const hash = decodeURIComponent(location.hash.slice(2))
-    return isDemo(hash) ? hash : hash.toUpperCase()
-  }
+  startFromAddress()
+
+  // room codes are uppercase
+  const read = () => decodeURIComponent(location.hash.slice(2)).toUpperCase()
   let code = $state(read())
 
   // a short terminal intro, once per visit, only on the home screen
-  let booting = $state(!read() && !sessionStorage.getItem('808s-booted') && !matchMedia('(prefers-reduced-motion: reduce)').matches)
+  let booting = $state(!practice.on && !read() && !sessionStorage.getItem('808s-booted') && !matchMedia('(prefers-reduced-motion: reduce)').matches)
   const booted = () => {
     sessionStorage.setItem('808s-booted', '1')
     booting = false
   }
 </script>
 
-<svelte:window onhashchange={() => (code = read())} />
+<svelte:window onhashchange={() => (startFromAddress(), (code = read()))} />
 
 {#if booting}
   <Boot done={booted} />
-{:else if isDemo(code)}
-  {#await import('./demo/Demo.svelte') then demo}<demo.default {code} />{/await}
+{:else if practice.on}
+  <!-- the real screens on a fake game; the address is ignored while practicing -->
+  {#await installPractice() then}
+    {#key practice.stage}
+      {#if practice.stage === 'home'}<Home />{:else}<Room code={practiceCode} />{/if}
+    {/key}
+    {#await import('./practice/Wizard.svelte') then wizard}<wizard.default />{/await}
+  {/await}
 {:else if code}
   {#key code}<Room {code} />{/key}
 {:else}

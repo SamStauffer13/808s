@@ -5,7 +5,8 @@
   import Guess from './Guess.svelte'
   import Reveal from './Reveal.svelte'
   import Results from './Results.svelte'
-  import { game, isDemo, open, packsOf } from './lib/game.svelte'
+  import { game, open, packsOf } from './lib/game.svelte'
+  import { practice } from './lib/practice.svelte'
 
   let { code } = $props()
   let stranger = $state(false)
@@ -27,7 +28,7 @@
   // they move), and past the last set means they are on the results.
   const key = $derived(`808s-reveal-${code}`)
   const read = () => {
-    if (isDemo(code)) return code === 'demo-results' ? Infinity : 0 // the demo never saves a place
+    if (practice.on) return practice.stage === 'results' ? Infinity : 0 // practice never saves a place
     try {
       const saved = localStorage.getItem(key)
       return saved === null ? 0 : Number(saved)
@@ -38,6 +39,7 @@
   let place = $state(read())
   const go = (to: number) => {
     place = to
+    if (practice.on) return
     try {
       localStorage.setItem(key, String(to))
     } catch {}

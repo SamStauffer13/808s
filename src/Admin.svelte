@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import Notice from './Notice.svelte'
   import { attempt, notify, once } from './lib/game.svelte'
+  import { practice } from './lib/practice.svelte'
   import { call } from './lib/supabase'
 
   // The owner's override: five taps on the logo open it, and the admin key, entered once, stays on this device.
@@ -31,6 +32,7 @@
   const room = $derived((code || typed).trim().toUpperCase())
 
   const tap = () => {
+    if (practice.on) return // practice has no admin
     clearTimeout(idle)
     idle = setTimeout(() => (taps = 0), 2000)
     if (++taps < 5) return

@@ -1,46 +1,45 @@
-// The demo's stand-in for the server: the app's calls (`rpc` and `call` in lib/supabase.ts) land here, keyed by
+// Practice's stand-in for the server: the app's calls (`rpc` and `call` in lib/supabase.ts) land here, keyed by
 // name, so the real screens work end to end without a network. Each handler does what the real server would,
 // including moving to the next stage when the real game would move on.
 import { game, packsOf, type Song } from '../lib/game.svelte'
-import type { Fake } from '../lib/supabase'
-import { me, scores, theme, tracks } from './data'
-import { codeOf, type Stage } from './stages'
-
-const go = (stage: Stage) => (location.hash = `/${codeOf(stage)}`)
+import { goStage, practiceCode } from '../lib/practice.svelte'
+import { fake, type Fake } from '../lib/supabase'
+import { chosen, me, scores, searchable, theme, tracks } from './data'
 
 // "logged in to Spotify" lasts for the tab, so the round trip through Spotify looks like the real one
-const spotifyKey = '808s-demo-spotify'
+const spotifyKey = '808s-practice-spotify'
 
 // have you matched every set that is not yours?
 const finished = () =>
   packsOf(game.songs).every((pack) => game.owners[pack.songs[0].id] === me.id || game.guesses.some((g) => g.guesser_id === me.id && g.song_id === pack.songs[0].id))
 
-export const handlers: Fake = {
+const handlers: Fake = {
   // home
   'spotify-account': ({ action }) => {
     if (action === 'login') {
       sessionStorage.setItem(spotifyKey, '1')
-      return { url: `${location.origin}${location.pathname}?spotify=connected#/${codeOf('home')}` }
+      return { url: `${location.origin}${location.pathname}?spotify=connected#/` }
     }
     if (action === 'disconnect') sessionStorage.removeItem(spotifyKey)
     const connected = sessionStorage.getItem(spotifyKey) !== null
     return { connected, name: connected ? me.name : null }
   },
-  'create-room': () => ({ room: { code: codeOf('invite') } }), // next you see what a friend sees
+  'create-room': () => (goStage('invite'), { room: { code: practiceCode } }), // next you see what a friend sees
 
   // invite
   room_preview: () => [{ theme, phase: 'submit' }],
-  join_room: () => (go('submit'), { code: codeOf('submit') }),
+  join_room: () => (goStage('submit'), { code: practiceCode }),
 
   // adding songs
   'spotify-search': ({ q }) => {
     const text = String(q).toLowerCase()
-    const found = tracks.filter((t) => `${t.title} ${t.artist}`.toLowerCase().includes(text))
+    const found = searchable().filter((t) => `${t.title} ${t.artist}`.toLowerCase().includes(text))
     // the practice search never comes up empty, so a new player is never left with nothing to tap
-    return { tracks: (found.length ? found : tracks).slice(0, 6).map((t) => ({ id: t.id, title: t.title, artist: t.artist, art: t.art, blocked: false })) }
+    return { tracks: (found.length ? found : searchable()).slice(0, 6).map((t) => ({ id: t.id, title: t.title, artist: t.artist, art: t.art, blocked: false })) }
   },
   'add-song': ({ spotify_id }) => {
     const t = tracks.find((x) => x.id === spotify_id)!
+    chosen.set(t.id)
     const song: Song = { id: `added-${t.id}`, pack: null, spotify_id: t.id, title: t.title, artist: t.artist, art_url: t.art }
     game.songs = [...game.songs, song]
     game.owners = { ...game.owners, [song.id]: me.id }
@@ -53,15 +52,16 @@ export const handlers: Fake = {
   },
 
   // the host moves the game along
-  'start-guess': () => go('guess'),
-  'admin-advance': ({ code }) => (code === undefined ? { ok: true } : { phase: 'guess' }), // the owner's override, from Home
+  'start-guess': () => goStage('guess'),
 
   // guessing: the screen has already recorded your pick; the last one opens the reveal, like the real server
   submit_guess: () => {
-    if (finished()) go('reveal')
+    if (finished()) goStage('reveal')
   },
-  guess_progress: () => [{ finished: finished() ? 8 : 7, total: 8 }],
+  guess_progress: () => [{ finished: finished() ? 6 : 5, total: 6 }],
 
   // results
   room_scores: () => scores(),
 }
+
+export const install = () => void Object.assign(fake, handlers)

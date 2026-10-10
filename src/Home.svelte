@@ -1,7 +1,8 @@
 <script lang="ts">
   import Admin from './Admin.svelte'
   import Notice from './Notice.svelte'
-  import { attempt, isDemo, notify, once, saveName, savedName } from './lib/game.svelte'
+  import { attempt, notify, once, saveName, savedName } from './lib/game.svelte'
+  import { practice, startPractice } from './lib/practice.svelte'
   import { call } from './lib/supabase'
 
   const tagline = ["EVERYONE ADDS SONGS.", "GUESS WHO ADDED WHAT.", "WINNERS GET CREDS."]
@@ -59,7 +60,10 @@
   <span>{tagline[1]}</span>
   <span class="good">{tagline[2]}<i class="cursor"></i></span>
 </p>
-{#if !isDemo(location.hash.slice(2))}<a class="link center" href="#/demo">NEW HERE? SEE HOW IT WORKS</a>{/if}
+{#if !practice.on}
+  <button type="button" class="btn ghost" onclick={() => startPractice()}>PRACTICE ROUND</button>
+  <p class="muted center">/// NEW HERE? 2 MINUTES · FAKE FRIENDS · NOTHING IS REAL</p>
+{/if}
 
 <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), spotifyName ? create() : connect())}>
   <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>

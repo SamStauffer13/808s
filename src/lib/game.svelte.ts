@@ -1,3 +1,4 @@
+import { practice } from './practice.svelte'
 import { rpc, signIn, supabase } from './supabase'
 
 export type Room = {
@@ -86,22 +87,18 @@ export const me = () => game.players.find((p) => p.user_id === game.userId)
 export const isHost = () => game.room?.host_user_id === game.userId
 export const nameOf = (playerId?: string) => game.players.find((p) => p.id === playerId)?.name ?? '?'
 
-// #/demo and #/demo-<stage> open the demo (src/demo): the real screens on a fake game and a fake server.
-// Real room codes are uppercase like AB-1234, so they can never match.
-export const isDemo = (code: string) => code === 'demo' || code.startsWith('demo-')
-
 const countsOf = (rows: { player_id: string; n: number }[]) => Object.fromEntries(rows.map((c) => [c.player_id, c.n]))
 
 // Other players' songs are hidden until the guess phase, so their adds never arrive through realtime.
 // While songs are being added, the screen asks for the counts on a timer instead.
 export async function refreshCounts() {
-  if (isDemo(game.room!.code)) return
+  if (practice.on) return
   const { data } = await supabase.rpc('submission_counts', { p_room: game.room!.id })
   game.counts = countsOf(data ?? [])
 }
 
 async function refresh() {
-  if (isDemo(game.room!.code)) return // the demo has no server to reload from
+  if (practice.on) return // practice has no server to reload from
   const id = game.room!.id
   const submitting = game.room!.phase === 'submit'
   const [room, players, songs, owners, guesses, counts] = await Promise.all([
@@ -133,10 +130,7 @@ export function refreshSoon() {
 // Loads the room, keeps it fresh through realtime, and returns a cleanup. Null if this
 // browser is not a member of the room.
 export async function open(code: string) {
-  if (isDemo(code)) {
-    const { seed, stageOf } = await import('../demo/stages')
-    return seed(stageOf(code))
-  }
+  if (practice.on) return (await import('../practice/seed')).seed(practice.stage)
   game.userId = (await signIn()).id
   game.room = null
   const { data } = await supabase.from('rooms').select('*').eq('code', code).maybeSingle()

@@ -23,21 +23,26 @@ npm run dev        # http://localhost:5173
 npm run check      # types
 ```
 
-## Demo: play a whole game with fake players
+## Practice round: play a whole game with fake players
 
-`/808s/demo` (or `/demo` in dev) is the practice round for new players, linked from Home and the invite page. It runs the
-real screens against a fake 8-player game and a fake server (`src/demo/`), so you can see every stage without players.
-A slim bar at the top has BACK and EXIT, and a blinking prompt walks new players through each stage: it sits above
-the next thing to touch and says in one sentence what to do with it. There is no skip button: doing what the last prompt says (adding a song, pressing
-BEGIN THE EXPERIMENT, guessing every box, stepping through the reveal) moves the game to the next stage (`src/demo/Tour.svelte`; the prompts and the CSS selectors they point at are in
-`src/demo/stages.ts`, so update them when a screen's markup changes). The stages are Home, Invite, Submit, Guess, Reveal, Results. Search, adding songs and guessing all work, and the last guess opens the reveal like the real game.
-A stage can also be opened directly, for example `/808s/#/demo-results`.
+The PRACTICE ROUND button on Home and on the invite page starts it. There is no separate page: the real screens run on a
+fake game (you plus Cierra, Shilo, Jill, Caitlin and Kathleen, one song each) and a fake server, with a wizard on top (`src/practice/`,
+switched on by `src/lib/practice.svelte.ts`). The screen dims except for the one thing to touch, and a card says in one sentence what
+to do. There is no skip button: doing what the card says (adding a song, pressing BEGIN THE EXPERIMENT, guessing every song,
+stepping through the reveal) moves the game to the next stage. The stages are Home, Invite, Submit, Guess, Reveal, Results.
+EXIT (top of the screen) reloads the page back to where practice was started from, which throws all of it away.
 
-Keep it in step when the game data, the screens or the server calls they make change: `npm run check` catches a
-changed type, a new call needs a handler in `src/demo/backend.ts`, and the demo fails to load if a stamp in
-`src/lib/stamps.ts` is never earned by a demo set.
+To test one screen after a change, open `/?practice` (or `/?practice=submit`, `guess`, `reveal`, `results`, `invite`) in dev.
+An old `/808s/demo` link starts practice too.
 
-The demo checks the screens, not the server: a broken Edge Function or permission rule will not show up in it. Before
+Keep it in step when the game data, the screens or the server calls they make change:
+- `src/practice/steps.ts` has the prompts and the CSS selectors they point at: update them when a screen's markup changes.
+- `src/practice/backend.ts` answers the server calls. A call it has no answer for throws "not available in the practice
+  round" and never reaches the real server, so a new call needs a handler there.
+- `src/practice/data.ts` has the fake game; `seed.ts` fails to load if a stamp in `src/lib/stamps.ts` is never earned by a set.
+- `npm run check` catches a changed type.
+
+Practice checks the screens, not the server: a broken Edge Function or permission rule will not show up in it. Before
 a big release, play one real game with two browsers (normal and incognito) as two players, one connected to Spotify as
 host: create a room, join from the invite link, add songs in both, begin the experiment, guess in both, and check the
 reveal opens by itself and the results and playlist look right. Also try `FORCE NEXT PHASE` (see below) on a
