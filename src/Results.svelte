@@ -43,7 +43,7 @@
 <Head step="EXPERIMENT COMPLETE" />
 
 <div class="panel framed">
-  <div class="label good">{winners.length > 2 ? `${winners.length}-WAY TIE` : winners.length > 1 ? "IT'S A TIE" : 'L33T · MASTER DECODER'}</div>
+  <div class="label good">{winners.length > 2 ? `${winners.length}-WAY TIE` : winners.length > 1 ? "IT'S A TIE" : 'L33T'}</div>
   {#if winners.length > 2}
     <div class="big center">{winners.map((w) => w.name.toUpperCase()).join(' · ')}</div>
   {:else}
