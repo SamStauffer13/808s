@@ -3,7 +3,7 @@
 import type { Guess, Song } from '../lib/game.svelte'
 
 // you are the host; seed() swaps in the name the player typed
-const names = ['Rookie', 'Cierra', 'Shilo', 'Jill', 'Caitlin', 'Kathleen']
+const names = ['Rookie', 'Cierra', 'Shilo', 'Dalton', 'Matt', 'Cole']
 export const players = names.map((name, i) => ({ id: `p${i}`, user_id: `u${i}`, name }))
 export const me = players[0]
 
@@ -57,9 +57,9 @@ const swaps: [number, number][][] = [
   [[5, 3]], // you
   [[5, 3]], // Cierra
   [[5, 3]], // Shilo
-  [[5, 1]], // Jill
-  [[5, 2]], // Caitlin
-  [[4, 1]], // Kathleen
+  [[5, 1]], // Dalton
+  [[5, 2]], // Matt
+  [[4, 1]], // Cole
 ]
 
 // who guesser g says made set s

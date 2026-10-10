@@ -26,7 +26,7 @@ npm run check      # types
 ## Practice round: play a whole game with fake players
 
 The "NEW HERE? TRY THE TUTORIAL" link on Home and on the invite page starts it. There is no separate page: the real screens run on a
-fake game (you plus Cierra, Shilo, Jill, Caitlin and Kathleen, one song each) and a fake server, with a wizard on top (`src/practice/`,
+fake game (you plus Cierra, Shilo, Dalton, Matt and Cole, one song each) and a fake server, with a wizard on top (`src/practice/`,
 switched on by `src/lib/practice.svelte.ts`). The screen dims except for the one thing to touch, and a card says in one sentence what
 to do. There is no skip button: doing what the card says (adding a song, pressing BEGIN THE EXPERIMENT, guessing every song,
 stepping through the reveal) moves the game to the next stage. The stages are Home, Invite, Submit, Guess, Reveal, Results.
