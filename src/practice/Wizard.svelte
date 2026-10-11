@@ -73,7 +73,7 @@
         asksText = !step.look && !step.when && el instanceof HTMLInputElement
         typed = el instanceof HTMLInputElement && el.value.trim() !== ''
         // the whole control: a field with its label, the bottom dock, a row of buttons
-        const anchor = el.closest('label.field, .dock, .pager') ?? el
+        const anchor = el.closest('label.field, .dock') ?? el
         const r = anchor.getBoundingClientRect()
         const now = [r.top, r.left, r.width, r.height].map(Math.round).join()
         if (now !== last) {

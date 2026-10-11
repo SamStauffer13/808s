@@ -86,7 +86,8 @@
     while (n < 5 && new Set(names.map((x) => x.slice(0, n))).size < new Set(names).size) n++
     return Object.fromEntries(ranked.map((p, i) => [p.id, names[i].slice(0, n)]))
   })
-  const guessOf = (guesser: string, subject: string) => sets.find((s) => s.owner === subject)?.guesses.find((g) => g.guesser_id === guesser)
+  const grid = $derived(new Map(sets.flatMap((s) => s.guesses.map((g) => [`${g.guesser_id}:${s.owner}`, g] as const))))
+  const guessOf = (guesser: string, subject: string) => grid.get(`${guesser}:${subject}`)
 
   let open = $state<Record<string, boolean>>({})
 </script>
