@@ -148,10 +148,10 @@
 {#if worst.length || blamed.length}
   <div class="stack awards">
     {#if worst.length}
-      <div class="award"><span class="stamp">[ ZERO SIGNAL ]</span><span class="text">{worst.map((w) => w.name.toUpperCase()).join(' + ')}</span><span class="dim">ONLY {worst[0].correct} OF {worst[0].total} RIGHT</span></div>
+      <div class="award"><span class="stamp">[ N00B ]</span><span class="text">{worst.map((w) => w.name.toUpperCase()).join(' + ')}</span><span class="dim">ONLY {worst[0].correct} OF {worst[0].total} RIGHT</span></div>
     {/if}
     {#if blamed.length}
-      <div class="award"><span class="stamp">[ THE DECOY ]</span><span class="text">{blamed.map((b) => nameOf(b.id).toUpperCase()).join(' + ')}</span><span class="dim">WRONGLY BLAMED {blamed[0].n} TIMES</span></div>
+      <div class="award"><span class="stamp">[ HONEYPOT ]</span><span class="text">{blamed.map((b) => nameOf(b.id).toUpperCase()).join(' + ')}</span><span class="dim">WRONGLY BLAMED {blamed[0].n} TIMES</span></div>
     {/if}
   </div>
 {/if}
