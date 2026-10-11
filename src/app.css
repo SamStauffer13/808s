@@ -73,6 +73,15 @@ a { color: var(--accent); }
   60% { text-shadow: -2px 0 var(--accent), 2px 0 var(--text-secondary); transform: skewX(-6deg); }
   75% { text-shadow: none; transform: none; }
 }
+.glitch { animation: glitch 700ms 250ms 1 both; } /* a one-off burst when the scoreboard opens */
+.glitch.lost { color: var(--miss); animation-name: glitch-miss; }
+@keyframes glitch-miss {
+  15% { text-shadow: -3px 0 var(--miss), 3px 0 var(--text-secondary); transform: translateX(2px); }
+  30% { text-shadow: 3px 0 var(--miss); transform: translateX(-2px); }
+  45% { text-shadow: none; transform: none; }
+  60% { text-shadow: -2px 0 var(--miss), 2px 0 var(--text-secondary); transform: skewX(-6deg); }
+  75% { text-shadow: none; transform: none; }
+}
 .logo.big small { font-size: 40px; }
 .logo.mark { font-size: 18px; opacity: 0.55; cursor: default; user-select: none; -webkit-tap-highlight-color: transparent; }
 .logo.mark small { font-size: 11px; }

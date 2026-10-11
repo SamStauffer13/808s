@@ -43,10 +43,10 @@
   const verdict = $derived.by(() => {
     const n = calls.length
     const share = n ? hits / n : 0
-    if (n > 1 && hits === n) return { tag: 'MIND READER', note: 'EVERY SINGLE ONE. ARE YOU IN THEIR HEADS?' }
-    if (n > 1 && hits === 0) return { tag: 'COMPLETE STRANGER', note: 'NOT ONE. YOU DO NOT KNOW THESE PEOPLE.' }
-    if (share >= 0.5) return { tag: 'DECENT SIGNAL', note: 'YOU KNOW YOUR CREW. MOSTLY.' }
-    return { tag: 'MOSTLY STATIC', note: 'A FEW LUCKY HITS IN THE NOISE.' }
+    if (n > 1 && hits === n) return { extreme: true, tag: 'MIND READER', note: 'EVERY SINGLE ONE. ARE YOU IN THEIR HEADS?' }
+    if (n > 1 && hits === 0) return { extreme: true, tag: 'COMPLETE STRANGER', note: 'NOT ONE. YOU DO NOT KNOW THESE PEOPLE.' }
+    if (share >= 0.5) return { extreme: false, tag: 'DECENT SIGNAL', note: 'YOU KNOW YOUR CREW. MOSTLY.' }
+    return { extreme: false, tag: 'MOSTLY STATIC', note: 'A FEW LUCKY HITS IN THE NOISE.' }
   })
 
   // crew awards, from what everyone guessed
@@ -84,7 +84,7 @@
   {#if winners.length > 2}
     <div class="big center">{winners.map((w) => w.name.toUpperCase()).join(' · ')}</div>
   {:else}
-    <div class="logo name" style:--len={Math.max(1, ...winners.map((w) => w.name.length))}>{winners.map((w) => w.name.toUpperCase()).join(' + ')}</div>
+    <div class="logo name glitch" style:--len={Math.max(1, ...winners.map((w) => w.name.length))}>{winners.map((w) => w.name.toUpperCase()).join(' + ')}</div>
   {/if}
   <div class="muted"><span class="good">{top}</span> / {winners[0]?.total} RIGHT</div>
 </div>
@@ -107,7 +107,7 @@
   <div class="wave"></div>
   <div class="split"><span class="label">YOUR REPORT</span><span class="good">{hits} OF {calls.length} CRACKED</span></div>
   <div class="panel framed report">
-    <div class="label good">[ {verdict.tag} ]</div>
+    <div class="label good" class:glitch={verdict.extreme} class:lost={verdict.extreme && !hits}>[ {verdict.tag} ]</div>
     <div class="muted">{verdict.note}</div>
   </div>
   <div class="stack">
