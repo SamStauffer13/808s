@@ -20,8 +20,8 @@ export function statsOf(guesses: Guess[], owner: string | undefined): SetStats {
 // A stamp for a set. The first rule that matches wins, so order them most to least notable.
 // To add a stamp, add a line; to drop one, delete its line.
 const rules: { tag: string; note: string; when: (s: SetStats) => boolean }[] = [
-  { tag: 'DOXXED', note: 'EVERYONE GOT IT RIGHT', when: (s) => s.right === s.guessers },
-  { tag: 'UNCRACKABLE', note: 'NOBODY GOT IT RIGHT', when: (s) => s.right === 0 },
+  { tag: 'MARKED', note: 'EVERYONE GOT IT RIGHT', when: (s) => s.right === s.guessers },
+  { tag: 'ANONYMOUS', note: 'NOBODY GOT IT RIGHT', when: (s) => s.right === 0 },
   { tag: 'PROXIED', note: 'MOST PEOPLE PICKED THE SAME WRONG PERSON', when: (s) => s.topWrong > s.right },
 ]
 
