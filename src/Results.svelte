@@ -37,7 +37,15 @@
   let at = $state(0)
   const set = $derived(sets[at])
   const step = (by: number) => (at = Math.min(sets.length - 1, Math.max(0, at + by)))
-  const pct = (n: number, of: number) => (of ? (n / of) * 100 : 0)
+  const pct = (n: number, of: number) => (of ? Math.round((n / of) * 100) : 0)
+
+  // one row per person (each added one box), the most guessed first; a tap opens their box below
+  const people = $derived(
+    sets
+      .map((s, i) => ({ i, name: nameOf(s.owner), yours: s.yours, ...s.stats, share: pct(s.stats.right, s.stats.guessers) }))
+      .sort((a, b) => b.share - a.share || b.guessers - a.guessers || a.name.localeCompare(b.name)),
+  )
+  const spread = $derived(people.length > 1 && people[0].share !== people[people.length - 1].share)
 </script>
 
 <Head step="EXPERIMENT COMPLETE" />
@@ -67,14 +75,19 @@
 </div>
 
 <div class="wave"></div>
-<div class="split"><span class="label">HOW THE CREW DID</span><span class="good">{right} OF {all} RIGHT</span></div>
-<p class="muted">EACH BAR IS ONE BOX OF SONGS · <span class="good">RIGHT</span> VS WRONG · TAP A BAR TO OPEN IT BELOW</p>
-<div class="chart" role="list">
-  {#each sets as s, i}
-    <button class="chartrow" class:on={i === at} role="listitem" onclick={() => (at = i)} aria-label={`Box ${i + 1}: ${s.stats.right} right, ${s.stats.guessers - s.stats.right} wrong`}>
-      <span>{String(i + 1).padStart(2, '0')}</span>
-      <div class="vs"><i class="r" style:width={`${pct(s.stats.right, s.stats.guessers)}%`}></i></div>
-      <b>{s.stats.right}/{s.stats.guessers}</b>
+<div class="split"><span class="label">HOW READABLE WAS EACH PERSON?</span><span class="good">{right} OF {all} RIGHT</span></div>
+<p class="muted">% OF GUESSERS WHO CRACKED THEM · MOST GUESSED ON TOP · TAP A NAME TO OPEN THEIR BOX BELOW</p>
+<div class="chart">
+  {#each people as p, n}
+    <button class="chartrow" class:on={p.i === at} style:--n={n} onclick={() => (at = p.i)} aria-label={`${p.name}: ${p.right} of ${p.guessers} guessed right, ${p.share} percent`}>
+      <span class="who">
+        <span class="dim">{String(n + 1).padStart(2, '0')}</span>
+        <span class="text">{p.name.toUpperCase()}</span>
+        {#if p.yours}<span class="tag">YOU</span>{/if}
+        {#if spread && n === 0}<span class="flag">MOST GUESSED</span>{:else if spread && n === people.length - 1}<span class="flag">LEAST GUESSED</span>{/if}
+      </span>
+      <span class="pct"><span class="dim">{p.right}/{p.guessers}</span> <b class:good={p.share >= 50}>{p.guessers ? `${p.share}%` : '--'}</b></span>
+      <span class="meter"><span class="vs"><i class="r" style:width={`${p.share}%`}></i></span></span>
     </button>
   {/each}
 </div>

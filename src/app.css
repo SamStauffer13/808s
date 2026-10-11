@@ -218,12 +218,23 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .progress i { flex: 1; height: 4px; background: var(--surface-raised); }
 .progress i.seen { background: var(--accent); }
 .verdict { text-align: center; font-size: 16px; letter-spacing: 0.1em; }
-.chart { display: grid; gap: 6px; }
-.chartrow { display: grid; grid-template-columns: 24px 1fr 40px; align-items: center; gap: 10px; min-height: 28px; padding: 0 4px; border: 1px solid transparent; border-radius: var(--radius); background: none; color: var(--text-secondary); font: inherit; font-size: 12px; letter-spacing: 0.1em; text-align: left; cursor: pointer; }
-.chartrow.on { border-color: var(--accent); }
-.chartrow b { text-align: right; }
-.vs { height: 10px; background: var(--surface-raised); } /* the grey is wrong guesses, the accent is right ones */
-.vs .r { display: block; height: 100%; background: var(--accent); }
+.chart { display: grid; gap: 4px; }
+.chartrow { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; align-items: center; padding: 8px 10px; border: 1px solid transparent; border-radius: var(--radius); background: none; color: var(--text-secondary); font: inherit; font-size: 12px; letter-spacing: 0.1em; text-align: left; cursor: pointer; }
+.chartrow:hover { background: var(--surface); }
+.chartrow.on { border-color: var(--accent); background: var(--accent-tint); }
+.chartrow .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.chartrow .who .text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chartrow .tag { font-size: 10px; color: var(--accent); }
+.chartrow .flag { flex: none; padding: 1px 5px; border: 1px solid var(--border); border-radius: 3px; font-size: 9px; letter-spacing: 0.14em; }
+.chartrow:first-child .flag { border-color: var(--accent); color: var(--accent); }
+.chartrow .pct { display: flex; align-items: baseline; gap: 8px; }
+.chartrow .pct b { font-size: 15px; letter-spacing: 0.04em; }
+.chartrow .dim { color: var(--text-secondary); font-size: 11px; }
+/* the bar is a row of cells, like a signal meter, that light up from the left when the scoreboard opens */
+.meter { grid-column: 1 / -1; filter: drop-shadow(0 0 5px var(--accent-tint)); }
+.vs { display: block; height: 12px; background: var(--surface-raised); -webkit-mask: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 11px); mask: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 11px); }
+.vs .r { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-hover)); animation: charge 700ms steps(14) both; animation-delay: calc(var(--n, 0) * 70ms); }
+@keyframes charge { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
 .pager { gap: 12px; }
 .pager .btn { flex: 1; width: auto; }
 .guesses { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
