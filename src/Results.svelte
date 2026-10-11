@@ -4,7 +4,7 @@
   import Playlist from './Playlist.svelte'
   import Scramble from './Scramble.svelte'
   import { attempt, game, me, nameOf, packsOf } from './lib/game.svelte'
-  import { noteOf, statsOf, stampFor } from './lib/stamps'
+  import { badges, noteOf, statsOf, stampFor } from './lib/stamps'
   import { rpc } from './lib/supabase'
 
   let { replay }: { replay: () => void } = $props()
@@ -57,8 +57,8 @@
   // only a perfect or a zero earns a title
   const verdict = $derived(
     calls.length < 2 ? null
-    : hits === calls.length ? { tag: 'L33T', note: 'EVERY SINGLE ONE. ARE YOU IN THEIR HEADS?' }
-    : hits === 0 ? { tag: 'N00B', note: 'NOT ONE. YOU DO NOT KNOW THESE PEOPLE.' }
+    : hits === calls.length ? { tag: badges.best, note: badges.perfect }
+    : hits === 0 ? { tag: badges.worst, note: badges.zero }
     : null,
   )
 
@@ -94,7 +94,7 @@
 <Head step="EXPERIMENT COMPLETE" />
 
 <div class="panel framed">
-  <div class="label good">{winners.length > 2 ? `${winners.length}-WAY TIE` : winners.length > 1 ? "IT'S A TIE" : 'L33T'}</div>
+  <div class="label good">{winners.length > 2 ? `${winners.length}-WAY TIE` : winners.length > 1 ? "IT'S A TIE" : badges.best}</div>
   {#if winners.length > 2}
     <div class="big center">{winners.map((w) => w.name.toUpperCase()).join(' · ')}</div>
   {:else}
@@ -148,10 +148,10 @@
 {#if worst.length || blamed.length}
   <div class="stack awards">
     {#if worst.length}
-      <div class="award"><span class="stamp">[ N00B ]</span><span class="text">{worst.map((w) => w.name.toUpperCase()).join(' + ')}</span><span class="dim">ONLY {worst[0].correct} OF {worst[0].total} RIGHT</span></div>
+      <div class="award"><span class="stamp">[ {badges.worst} ]</span><span class="text">{worst.map((w) => w.name.toUpperCase()).join(' + ')}</span><span class="dim">ONLY {worst[0].correct} OF {worst[0].total} RIGHT</span></div>
     {/if}
     {#if blamed.length}
-      <div class="award"><span class="stamp">[ HONEYPOT ]</span><span class="text">{blamed.map((b) => nameOf(b.id).toUpperCase()).join(' + ')}</span><span class="dim">WRONGLY BLAMED {blamed[0].n} TIMES</span></div>
+      <div class="award"><span class="stamp">[ {badges.blamed} ]</span><span class="text">{blamed.map((b) => nameOf(b.id).toUpperCase()).join(' + ')}</span><span class="dim">WRONGLY BLAMED {blamed[0].n} TIMES</span></div>
     {/if}
   </div>
 {/if}

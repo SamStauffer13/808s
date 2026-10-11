@@ -25,6 +25,17 @@ const rules: { tag: string; note: string; when: (s: SetStats) => boolean }[] = [
   { tag: 'PROXIED', note: 'MOST PEOPLE PICKED THE SAME WRONG PERSON', when: (s) => s.topWrong > s.right },
 ]
 
+// Every other tag on the scoreboard, in one place. Two families, so a word always means one thing:
+// - the GUESSER: L33T is a great guesser (the winner, or a perfect score) and N00B is a bad one (a zero score, or last place)
+// - the PERSON BEING GUESSED: the stamps above, and HONEYPOT, the person the crew blamed wrongly most often
+export const badges = {
+  best: 'L33T',
+  worst: 'N00B',
+  blamed: 'HONEYPOT',
+  perfect: 'EVERY SINGLE ONE. ARE YOU IN THEIR HEADS?',
+  zero: 'NOT ONE. YOU DO NOT KNOW THESE PEOPLE.',
+}
+
 export const stamps = rules.map((r) => r.tag)
 export const noteOf = (tag: string) => rules.find((r) => r.tag === tag)?.note
 

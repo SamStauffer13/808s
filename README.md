@@ -84,7 +84,7 @@ In the app the guessing round is called "the Experiment", and the host begins it
    scoreboard first: the winner, how the room did, and each song with who added it and who guessed what. REPLAY THE FINDINGS
    walks through the dramatic song-by-song reveal at the player's own pace; their place is saved on their device.
 
-Each revealed set can get a stamp (`MARKED`, `ANONYMOUS`, `PROXIED`). The rules are one short table in `src/lib/stamps.ts`.
+Each file on the scoreboard can get a stamp (`MARKED`, `ANONYMOUS`, `PROXIED`), and people get badges: `L33T` (a great guesser), `N00B` (a bad one) and `HONEYPOT` (blamed wrongly most). Every one of these words lives in `src/lib/stamps.ts`: the stamp rules in one short table, the badges in `badges`. Rename them there.
 
 ## Runs by itself
 
