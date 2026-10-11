@@ -1,14 +1,14 @@
-// Everything the scoreboard shows, worked out from the finished game. A plain function of the game state and the
-// scores, so the screen only has to draw it.
+// Everything the scoreboard shows, worked out from the finished game. A plain function of the game state, so the
+// screen only has to draw it. By the reveal everyone's guesses and every owner are visible, so the scores come from
+// them directly.
 import { packsOf, type Guess, type Player, type Song } from './game.svelte'
 import { badges, stampFor, statsOf } from './stamps'
 
-export type Score = { player_id: string; name: string; correct: number; total: number }
 type State = { players: Player[]; songs: Song[]; owners: Record<string, string>; guesses: Guess[] }
 
 const pct = (n: number, of: number) => (of ? Math.round((n / of) * 100) : 0)
 
-export function analyze(game: State, scores: Score[], meId?: string) {
+export function analyze(game: State, meId?: string) {
   const nameOf = (id?: string) => game.players.find((p) => p.id === id)?.name ?? '?'
 
   // one file per subject: a person and the songs they added, with how the crew did and how you called it
@@ -35,7 +35,21 @@ export function analyze(game: State, scores: Score[], meId?: string) {
 
   const calls = files.filter((f) => f.call)
   const hits = calls.filter((f) => f.call!.hit).length
+  const picks = new Map(files.flatMap((f) => f.guesses.map((g) => [`${g.guesser_id}:${f.id}`, g.guessed_player_id] as const)))
 
+  // the leaderboard: sets matched right, then fewer guesses first, then name
+  const scores = game.players
+    .map((p) => {
+      const theirs = files.filter((f) => f.id !== p.id)
+      return {
+        id: p.id,
+        name: p.name,
+        total: theirs.length,
+        correct: theirs.filter((f) => picks.get(`${p.id}:${f.id}`) === f.id).length,
+        guessed: theirs.filter((f) => picks.has(`${p.id}:${f.id}`)).length,
+      }
+    })
+    .sort((a, b) => b.correct - a.correct || a.guessed - b.guessed || a.name.localeCompare(b.name))
   const top = scores[0]?.correct ?? 0
   const last = scores[scores.length - 1]?.correct
   const tiedLast = scores.filter((s) => s.correct === last)
@@ -46,20 +60,20 @@ export function analyze(game: State, scores: Score[], meId?: string) {
   const most = Math.max(0, ...wrong.values())
 
   // every guesser (rows) against every subject (columns), in leaderboard order on both sides
-  const ranked = scores.length ? scores.flatMap((sc) => game.players.filter((p) => p.id === sc.player_id)) : game.players
+  const ranked = scores.map((s) => game.players.find((p) => p.id === s.id)!)
   const names = ranked.map((p) => p.name.toUpperCase())
   let n = 2 // the shortest start of each name that tells everyone apart, so a column only needs a few letters
   while (n < 5 && new Set(names.map((x) => x.slice(0, n))).size < new Set(names).size) n++
-  const picks = new Map(files.flatMap((f) => f.guesses.map((g) => [`${g.guesser_id}:${f.id}`, g.guessed_player_id] as const)))
 
   return {
     files,
+    scores,
+    top,
+    winners: scores.filter((s) => s.correct === top),
     hits,
     guessed: calls.length,
     right: files.reduce((sum, f) => sum + f.right, 0),
     all: files.reduce((sum, f) => sum + f.guessers, 0),
-    top,
-    winners: scores.filter((s) => s.correct === top),
     // only a perfect or a zero earns a title
     verdict:
       calls.length < 2 ? null

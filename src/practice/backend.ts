@@ -4,7 +4,7 @@
 import { game, packsOf, savedName, type Song } from '../lib/game.svelte'
 import { goStage, practiceCode, spotifyKey } from '../lib/practice.svelte'
 import { fake, type Fake } from '../lib/supabase'
-import { chosen, me, scores, searchable, theme, tracks } from './data'
+import { chosen, me, searchable, theme, tracks } from './data'
 
 // have you matched every set that is not yours?
 const finished = () =>
@@ -56,9 +56,6 @@ const handlers: Fake = {
     if (finished()) goStage('results')
   },
   guess_progress: () => [{ finished: finished() ? 6 : 5, total: 6 }],
-
-  // results
-  room_scores: () => scores(),
 }
 
 export const install = () => void Object.assign(fake, handlers)

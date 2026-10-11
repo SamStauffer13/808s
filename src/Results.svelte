@@ -2,23 +2,15 @@
   import Awards from './Awards.svelte'
   import GuessGrid from './GuessGrid.svelte'
   import Head from './Head.svelte'
-  import Notice from './Notice.svelte'
   import Playlist from './Playlist.svelte'
   import SubjectFile from './SubjectFile.svelte'
-  import { attempt, game, me } from './lib/game.svelte'
-  import { analyze, type Score } from './lib/results'
+  import { game, me } from './lib/game.svelte'
+  import { analyze } from './lib/results'
   import { badges } from './lib/stamps'
-  import { rpc } from './lib/supabase'
 
   let { replay }: { replay: () => void } = $props()
 
-  let scores = $state<Score[]>([])
-  $effect(() => {
-    const room = game.room!.id
-    attempt('scores', async () => (scores = await rpc('room_scores', { p_room: room })))
-  })
-
-  const r = $derived(analyze(game, scores, me()?.id))
+  const r = $derived(analyze(game, me()?.id))
 </script>
 
 <Head step="EXPERIMENT COMPLETE" />
@@ -37,9 +29,8 @@
 
 <div class="wave"></div>
 <div class="label">SUBJECT PERFORMANCE</div>
-<Notice scope="scores" />
 <div class="stack">
-  {#each scores as s, n}
+  {#each r.scores as s, n}
     <div class="score">
       <span>{String(n + 1).padStart(2, '0')}</span>
       <span class="text">{s.name.toUpperCase()}</span>

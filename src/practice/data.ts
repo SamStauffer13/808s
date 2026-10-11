@@ -75,17 +75,6 @@ export const guessesBy = (g: number, among: number[]): Guess[] =>
     .filter((set) => set !== g)
     .map((set) => ({ song_id: songId(set), guesser_id: players[g].id, guessed_player_id: players[pick(g, set)].id }))
 
-// like the real room_scores: a point for each set matched. Everyone guesses the same number of sets here,
-// so there is no fewest-guesses tie-break; ties fall back to name.
-export function scores() {
-  return players
-    .map((p, g) => {
-      const guessed = sets.filter((set) => set !== g)
-      return { player_id: p.id, name: p.name, correct: guessed.filter((set) => pick(g, set) === set).length, total: guessed.length }
-    })
-    .sort((a, b) => b.correct - a.correct || a.name.localeCompare(b.name))
-}
-
 // a swap table that matches someone twice would make an impossible game: catch it here, not on screen
 players.forEach((_, g) => {
   const picked = new Set(sets.filter((set) => set !== g).map((set) => pick(g, set)))
