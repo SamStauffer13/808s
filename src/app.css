@@ -230,22 +230,6 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .progress i { flex: 1; height: 4px; background: var(--surface-raised); }
 .progress i.seen { background: var(--accent); }
 .verdict { text-align: center; font-size: 16px; letter-spacing: 0.1em; }
-.bad { color: var(--miss); }
-.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-
-/* the guess grid: guessers down the side, subjects across the top; a green tick is a hit, red letters are who they blamed */
-.gridwrap { overflow-x: auto; padding-bottom: 4px; }
-.grid { width: 100%; border-collapse: separate; border-spacing: 3px; font-size: 11px; letter-spacing: 0.06em; }
-.grid th { font-weight: 500; color: var(--text-secondary); }
-.grid thead th { padding-bottom: 2px; font-size: 10px; }
-.grid thead th.me, .grid tr.me th { color: var(--accent); }
-.grid tbody th { max-width: 76px; padding-right: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
-.grid td { min-width: 34px; height: 32px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text-secondary); text-align: center; animation: flicker 400ms steps(4) both; animation-delay: calc(var(--n, 0) * 45ms); }
-.grid td.hit { border-color: var(--accent); background: var(--accent-tint); color: var(--accent); font-weight: 700; }
-.grid td.miss { border-color: var(--miss-edge); background: var(--miss-tint); color: var(--miss); font-weight: 700; }
-.grid tr.me td { box-shadow: inset 0 0 0 1px var(--accent-tint); }
-@keyframes flicker { from { opacity: 0; } 50% { opacity: 0.4; } to { opacity: 1; } }
-
 /* the files: one per subject, always open to read, a tap shows who guessed what */
 .files { display: grid; gap: 8px; }
 .file { border: 1px solid var(--border); border-left: 3px solid var(--border); border-radius: var(--radius); background: var(--surface); }
@@ -258,7 +242,7 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .file .who .text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .file .flag { flex: none; padding: 1px 5px; border: 1px solid var(--accent); border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: var(--accent); }
 .file .pct { display: flex; align-items: baseline; gap: 8px; }
-.file .pct b { font-size: 15px; letter-spacing: 0.04em; }
+.file .pct b { font-size: 22px; letter-spacing: 0.04em; }
 .file .dim { font-size: 11px; color: var(--text-secondary); }
 .file .songs { grid-column: 1 / -1; display: grid; gap: 2px; font-size: 13px; letter-spacing: 0.04em; color: var(--text); }
 .file .songs > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -4,7 +4,7 @@
   import type { Analysis } from './lib/results'
   import { noteOf } from './lib/stamps'
 
-  // One subject: who they are, the songs they added, how the crew did and how you called it. A tap shows who guessed what.
+  // One subject: the songs they added, who they are, and how much of the crew cracked them. A tap shows who guessed what.
   let { file, rank }: { file: Analysis['files'][number]; rank: number } = $props()
   let open = $state(false)
   const upper = (id?: string) => nameOf(id).toUpperCase()
@@ -12,17 +12,18 @@
 
 <div class="file" class:open class:hit={file.call?.hit} class:miss={file.call && !file.call.hit}>
   <button class="head" aria-expanded={open} onclick={() => (open = !open)}>
+    <span class="songs">
+      {#each file.songs as song}<span>♪ {song.title} <span class="dim">· {song.artist}</span></span>{/each}
+    </span>
     <span class="who">
-      <span class="dim">{String(rank + 1).padStart(2, '0')}</span>
+      <span class="dim">ADDED BY</span>
       <span class="text"><Scramble text={file.name.toUpperCase()} delay={Math.min(rank * 150, 1200)} /></span>
       {#if file.yours}<span class="tag">YOU</span>{/if}
       {#if file.stamp}<span class="flag" title={noteOf(file.stamp)}>{file.stamp}</span>{/if}
     </span>
-    <span class="pct"><span class="dim">{file.right}/{file.guessers}</span> <b class:good={file.share >= 50}>{file.guessers ? `${file.share}%` : '--'}</b> <span class="dim">{open ? '▴' : '▾'}</span></span>
+    <span class="pct"><b class:good={file.share >= 50}>{file.guessers ? `${file.share}%` : '--'}</b></span>
     <span class="meter"><span class="vs"><i class="r" style:width={`${file.share}%`} style:--n={rank}></i></span></span>
-    <span class="songs">
-      {#each file.songs as song}<span>♪ {song.title} <span class="dim">· {song.artist}</span></span>{/each}
-    </span>
+    <span class="dim">{file.right} OF {file.guessers} RIGHT {open ? '▴' : '▾'}</span>
     {#if file.call}
       <span class="you">YOU {file.call.hit ? '✓ NAILED IT' : `✗ SAID ${upper(file.call.pick)}`}</span>
     {:else if file.yours}

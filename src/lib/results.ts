@@ -59,12 +59,6 @@ export function analyze(game: State, meId?: string) {
   for (const f of files) for (const g of f.guesses) if (g.guessed_player_id !== f.id) wrong.set(g.guessed_player_id, (wrong.get(g.guessed_player_id) ?? 0) + 1)
   const most = Math.max(0, ...wrong.values())
 
-  // every guesser (rows) against every subject (columns), in leaderboard order on both sides
-  const ranked = scores.map((s) => game.players.find((p) => p.id === s.id)!)
-  const names = ranked.map((p) => p.name.toUpperCase())
-  let n = 2 // the shortest start of each name that tells everyone apart, so a column only needs a few letters
-  while (n < 5 && new Set(names.map((x) => x.slice(0, n))).size < new Set(names).size) n++
-
   return {
     files,
     scores,
@@ -72,8 +66,6 @@ export function analyze(game: State, meId?: string) {
     winners: scores.filter((s) => s.correct === top),
     hits,
     guessed: calls.length,
-    right: files.reduce((sum, f) => sum + f.right, 0),
-    all: files.reduce((sum, f) => sum + f.guessers, 0),
     // only a perfect or a zero earns a title
     verdict:
       calls.length < 2 ? null
@@ -83,12 +75,6 @@ export function analyze(game: State, meId?: string) {
     // a crew-wide tie for last is not an award, so only one or two names qualify
     worst: scores.length > 1 && last < top && tiedLast.length <= 2 ? tiedLast : [],
     blamed: most < 2 ? [] : [...wrong].filter(([, count]) => count === most).map(([id]) => ({ name: nameOf(id), count: most })),
-    grid: {
-      guessers: ranked,
-      subjects: ranked.filter((p) => files.some((f) => f.id === p.id)),
-      code: Object.fromEntries(ranked.map((p, i) => [p.id, names[i].slice(0, n)])),
-      pick: (guesser: string, subject: string) => picks.get(`${guesser}:${subject}`),
-    },
   }
 }
 

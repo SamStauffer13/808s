@@ -34,8 +34,7 @@ const guess: Prompt[] = [
 ]
 const results: Prompt[] = [
   { target: '.panel.framed', text: "HERE'S WHO WON, BASED ON THE MOST RIGHT GUESSES.", look: true },
-  { target: '.gridwrap', text: "THIS GRID IS EVERYONE'S GUESSES AT ONCE: GREEN IS A HIT, RED LETTERS ARE WHO THEY BLAMED.", look: true },
-  { target: '.file', text: 'EACH FILE IS ONE SUBJECT, THE SONGS THEY ADDED, AND HOW YOU CALLED IT.', look: true },
+  { target: '.file', text: "EACH FILE IS ONE PERSON'S SONGS, WHO ADDED THEM, AND WHAT PERCENT OF THE CREW GUESSED THEM.", look: true },
   { target: '.file .head', text: 'TAP A FILE TO SEE EXACTLY WHO GUESSED WHAT.', when: '.file.open' },
   { target: 'a.btn', text: 'FINALLY, START A REAL EXPERIMENT OF YOUR OWN.', final: true },
 ]

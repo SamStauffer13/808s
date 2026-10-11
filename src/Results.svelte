@@ -1,6 +1,5 @@
 <script lang="ts">
   import Awards from './Awards.svelte'
-  import GuessGrid from './GuessGrid.svelte'
   import Head from './Head.svelte'
   import Playlist from './Playlist.svelte'
   import SubjectFile from './SubjectFile.svelte'
@@ -25,8 +24,6 @@
   <div class="muted"><span class="good">{r.top}</span> / {r.winners[0]?.total} RIGHT</div>
 </div>
 
-{#if r.grid.subjects.length}<GuessGrid grid={r.grid} right={r.right} all={r.all} />{/if}
-
 <div class="wave"></div>
 <div class="label">SUBJECT PERFORMANCE</div>
 <div class="stack">
@@ -49,7 +46,7 @@
     <div class="muted">{r.verdict.note}</div>
   </div>
 {/if}
-<p class="muted">ONE FILE PER SUBJECT · MOST GUESSED ON TOP · TAP A FILE TO SEE WHO GUESSED WHAT</p>
+<p class="muted">EACH CARD IS ONE PERSON'S SONGS · MOST GUESSED ON TOP · TAP ONE TO SEE WHO GUESSED WHAT</p>
 <div class="files">
   {#each r.files as file, rank (file.id)}<SubjectFile {file} {rank} />{/each}
 </div>
