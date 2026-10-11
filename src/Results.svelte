@@ -33,6 +33,36 @@
   const hits = $derived(sets.filter((s) => s.guesses.some((g) => g.guesser_id === me()?.id && g.guessed_player_id === s.owner)).length)
   const guessed = $derived(sets.filter((s) => s.guesses.some((g) => g.guesser_id === me()?.id)).length)
 
+  // your own report: for every box that is not yours, who you said and who it really was
+  const calls = $derived(
+    sets.flatMap((s, i) => {
+      const mine = s.guesses.find((g) => g.guesser_id === me()?.id)
+      return mine ? [{ i, song: s.pack.songs[0], owner: s.owner, pick: mine.guessed_player_id, hit: mine.guessed_player_id === s.owner }] : []
+    }),
+  )
+  const verdict = $derived.by(() => {
+    const n = calls.length
+    const share = n ? hits / n : 0
+    if (n > 1 && hits === n) return { tag: 'MIND READER', note: 'EVERY SINGLE ONE. ARE YOU IN THEIR HEADS?' }
+    if (n > 1 && hits === 0) return { tag: 'COMPLETE STRANGER', note: 'NOT ONE. YOU DO NOT KNOW THESE PEOPLE.' }
+    if (share >= 0.5) return { tag: 'DECENT SIGNAL', note: 'YOU KNOW YOUR CREW. MOSTLY.' }
+    return { tag: 'MOSTLY STATIC', note: 'A FEW LUCKY HITS IN THE NOISE.' }
+  })
+
+  // crew awards, from what everyone guessed
+  // a crew-wide tie for last is not an award, so only one or two names qualify
+  const worst = $derived.by(() => {
+    const last = scores[scores.length - 1]?.correct
+    const tied = scores.filter((s) => s.correct === last)
+    return scores.length > 1 && last < top && tied.length <= 2 ? tied : []
+  })
+  const blamed = $derived.by(() => {
+    const wrong = new Map<string, number>()
+    for (const s of sets) for (const g of s.guesses) if (g.guessed_player_id !== s.owner) wrong.set(g.guessed_player_id, (wrong.get(g.guessed_player_id) ?? 0) + 1)
+    const most = Math.max(0, ...wrong.values())
+    return most < 2 ? [] : [...wrong].filter(([, n]) => n === most).map(([id]) => ({ id, n: most }))
+  })
+
   // the song-by-song browser: any set can be opened from the chart, or stepped through with the arrows
   let at = $state(0)
   const set = $derived(sets[at])
@@ -72,6 +102,36 @@
     </div>
   {/each}
 </div>
+
+{#if calls.length}
+  <div class="wave"></div>
+  <div class="split"><span class="label">YOUR REPORT</span><span class="good">{hits} OF {calls.length} CRACKED</span></div>
+  <div class="panel framed report">
+    <div class="label good">[ {verdict.tag} ]</div>
+    <div class="muted">{verdict.note}</div>
+  </div>
+  <div class="stack">
+    {#each calls as c}
+      <button class="call" class:hit={c.hit} onclick={() => (at = c.i)} aria-label={`${c.song.title}: ${c.hit ? 'you got it' : 'you missed it'}`}>
+        <b>{c.hit ? '✓' : '✗'}</b>
+        <span class="grow-text"><span class="text">{c.song.title}</span><span class="dim">{c.hit ? `YOU SAID ${nameOf(c.pick).toUpperCase()} · NAILED IT` : `YOU SAID ${nameOf(c.pick).toUpperCase()} · IT WAS ${nameOf(c.owner).toUpperCase()}`}</span></span>
+      </button>
+    {/each}
+  </div>
+{/if}
+
+{#if worst.length || blamed.length}
+  <div class="wave"></div>
+  <div class="label">CREW AWARDS</div>
+  <div class="stack awards">
+    {#if worst.length}
+      <div class="award"><span class="stamp">[ ZERO SIGNAL ]</span><span class="text">{worst.map((w) => w.name.toUpperCase()).join(' + ')}</span><span class="dim">ONLY {worst[0].correct} OF {worst[0].total} RIGHT</span></div>
+    {/if}
+    {#if blamed.length}
+      <div class="award"><span class="stamp">[ THE DECOY ]</span><span class="text">{blamed.map((b) => nameOf(b.id).toUpperCase()).join(' + ')}</span><span class="dim">WRONGLY BLAMED {blamed[0].n} TIMES</span></div>
+    {/if}
+  </div>
+{/if}
 
 <div class="wave"></div>
 <div class="split"><span class="label">HOW READABLE WAS EACH PERSON?</span><span class="good">{right} OF {all} RIGHT</span></div>

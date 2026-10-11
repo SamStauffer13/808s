@@ -10,6 +10,9 @@
   --accent-hover: #1ed760;
   --accent-text: #090b0a;
   --accent-tint: rgba(29, 185, 84, 0.14);
+  --miss: #ff5c6c;
+  --miss-edge: rgba(255, 92, 108, 0.35);
+  --miss-tint: rgba(255, 92, 108, 0.07);
   --radius: 6px;
   --control: 48px;
   font-family: 'JetBrains Mono', monospace;
@@ -234,6 +237,17 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .vs { display: block; height: 12px; background: var(--surface-raised); -webkit-mask: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 11px); mask: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 11px); }
 .vs .r { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-hover)); animation: charge 700ms steps(14) both; animation-delay: calc(var(--n, 0) * 70ms); }
 @keyframes charge { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+.report { gap: 6px; }
+.call { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 6px 12px; border: 1px solid var(--miss-edge); border-left: 3px solid var(--miss); border-radius: var(--radius); background: var(--miss-tint); font: inherit; font-size: 13px; letter-spacing: 0.06em; text-align: left; cursor: pointer; }
+.call.hit { border-color: var(--border); border-left-color: var(--accent); background: var(--surface); }
+.call:hover { background: var(--surface-hover); }
+.call b { flex: none; width: 16px; text-align: center; color: var(--miss); }
+.call.hit b { color: var(--accent); }
+.call .grow-text > span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.call .dim { font-size: 11px; color: var(--text-secondary); }
+.award { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; border: 1px dashed var(--accent); border-radius: var(--radius); background: var(--surface); font-size: 14px; letter-spacing: 0.1em; }
+.award .stamp { font-size: 12px; }
+.award .dim { font-size: 11px; color: var(--text-secondary); }
 .pager { gap: 12px; }
 .pager .btn { flex: 1; width: auto; }
 .guesses { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
