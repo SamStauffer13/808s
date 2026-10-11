@@ -57,6 +57,7 @@ a { color: var(--accent); }
 .good { color: var(--accent); }
 .text { color: var(--text); }
 .big { font-size: 16px; }
+.tag { font-size: 10px; color: var(--accent); }
 .stamp { font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: var(--accent); }
 
 .tagline { text-align: center; font-size: 13px; line-height: 1.8; letter-spacing: 0.14em; color: var(--text-secondary); }
@@ -119,7 +120,6 @@ a { color: var(--accent); }
 .row.on { border-color: var(--accent); background: var(--accent-tint); }
 .row.hit { border-color: var(--accent); }
 .row .dim { color: var(--text-secondary); }
-.row .tag { font-size: 11px; color: var(--accent); }
 button.row { width: 100%; cursor: pointer; text-align: left; }
 button.row:hover:not(:disabled) { background: var(--surface-hover); }
 .row.blocked { border-style: dashed; opacity: 0.6; }
@@ -256,7 +256,6 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .file .head:hover { background: var(--surface-hover); }
 .file .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .file .who .text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.file .tag { font-size: 10px; color: var(--accent); }
 .file .flag { flex: none; padding: 1px 5px; border: 1px solid var(--accent); border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: var(--accent); }
 .file .pct { display: flex; align-items: baseline; gap: 8px; }
 .file .pct b { font-size: 15px; letter-spacing: 0.04em; }
@@ -282,7 +281,7 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .guess.hit { border-color: var(--accent); }
 .guess.me { background: var(--accent-tint); }
 .guess .dim { font-size: 11px; color: var(--text-secondary); }
-.guess .tag { margin-left: 4px; font-size: 10px; color: var(--accent); }
+
 /* short phone screens: trim the source card so the result line stays above the buttons */
 @media (max-height: 640px) {
   .panel.framed { gap: 4px; padding-block: 10px; }

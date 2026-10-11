@@ -11,7 +11,7 @@ export type Room = {
   playlist_id: string | null
   playlist_url: string | null
 }
-type Player = { id: string; user_id: string; name: string }
+export type Player = { id: string; user_id: string; name: string }
 export type Song = { id: string; pack: string | null; spotify_id: string; title: string; artist: string; art_url: string | null }
 export type Track = { id: string; title: string; artist: string; art: string | null; blocked: boolean }
 export type Guess = { song_id: string; guesser_id: string; guessed_player_id: string }
