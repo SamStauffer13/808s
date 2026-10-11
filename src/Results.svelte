@@ -42,10 +42,9 @@
   // one row per person (each added one box), the most guessed first; a tap opens their box below
   const people = $derived(
     sets
-      .map((s, i) => ({ i, name: nameOf(s.owner), yours: s.yours, ...s.stats, share: pct(s.stats.right, s.stats.guessers) }))
+      .map((s, i) => ({ i, name: nameOf(s.owner), yours: s.yours, stamp: s.stamp, ...s.stats, share: pct(s.stats.right, s.stats.guessers) }))
       .sort((a, b) => b.share - a.share || b.guessers - a.guessers || a.name.localeCompare(b.name)),
   )
-  const spread = $derived(people.length > 1 && people[0].share !== people[people.length - 1].share)
 </script>
 
 <Head step="EXPERIMENT COMPLETE" />
@@ -76,7 +75,7 @@
 
 <div class="wave"></div>
 <div class="split"><span class="label">HOW READABLE WAS EACH PERSON?</span><span class="good">{right} OF {all} RIGHT</span></div>
-<p class="muted">% OF GUESSERS WHO CRACKED THEM · MOST GUESSED ON TOP · TAP A NAME TO OPEN THEIR BOX BELOW</p>
+<p class="muted">% OF GUESSERS WHO CRACKED THEM · MOST GUESSED ON TOP · STAMPS MARK THE EXTREMES · TAP A NAME TO OPEN THEIR BOX BELOW</p>
 <div class="chart">
   {#each people as p, n}
     <button class="chartrow" class:on={p.i === at} style:--n={n} onclick={() => (at = p.i)} aria-label={`${p.name}: ${p.right} of ${p.guessers} guessed right, ${p.share} percent`}>
@@ -84,7 +83,7 @@
         <span class="dim">{String(n + 1).padStart(2, '0')}</span>
         <span class="text">{p.name.toUpperCase()}</span>
         {#if p.yours}<span class="tag">YOU</span>{/if}
-        {#if spread && n === 0}<span class="flag">MOST GUESSED</span>{:else if spread && n === people.length - 1}<span class="flag">LEAST GUESSED</span>{/if}
+        {#if p.stamp}<span class="flag" title={noteOf(p.stamp)}>{p.stamp}</span>{/if}
       </span>
       <span class="pct"><span class="dim">{p.right}/{p.guessers}</span> <b class:good={p.share >= 50}>{p.guessers ? `${p.share}%` : '--'}</b></span>
       <span class="meter"><span class="vs"><i class="r" style:width={`${p.share}%`}></i></span></span>

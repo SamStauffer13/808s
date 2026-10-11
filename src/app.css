@@ -225,8 +225,7 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .chartrow .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .chartrow .who .text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chartrow .tag { font-size: 10px; color: var(--accent); }
-.chartrow .flag { flex: none; padding: 1px 5px; border: 1px solid var(--border); border-radius: 3px; font-size: 9px; letter-spacing: 0.14em; }
-.chartrow:first-child .flag { border-color: var(--accent); color: var(--accent); }
+.chartrow .flag { flex: none; padding: 1px 5px; border: 1px solid var(--accent); border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: var(--accent); }
 .chartrow .pct { display: flex; align-items: baseline; gap: 8px; }
 .chartrow .pct b { font-size: 15px; letter-spacing: 0.04em; }
 .chartrow .dim { color: var(--text-secondary); font-size: 11px; }
