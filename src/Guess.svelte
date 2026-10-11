@@ -58,7 +58,7 @@
 {/if}
 
 {#if todo.length}
-  <p class="muted center"><Eq />/// LISTEN TO THE PLAYLIST, THEN FOR EACH BOX OF SONGS PICK THE CREW MEMBER WHO ADDED THEM · EACH CREW MEMBER MATCHES ONE BOX</p>
+  <p class="muted center"><Eq />/// LISTEN TO THE PLAYLIST, THEN FOR EACH SET OF SONGS PICK THE CREW MEMBER WHO ADDED THEM · EACH CREW MEMBER MATCHES ONE SET</p>
 {/if}
 
 {#if todo.length && done === todo.length}

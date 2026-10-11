@@ -2,14 +2,14 @@
   import Head from './Head.svelte'
   import Notice from './Notice.svelte'
   import Playlist from './Playlist.svelte'
-  import Art from './Art.svelte'
+  import Scramble from './Scramble.svelte'
   import { attempt, game, me, nameOf, packsOf } from './lib/game.svelte'
   import { noteOf, statsOf, stampFor } from './lib/stamps'
   import { rpc } from './lib/supabase'
 
   let { replay }: { replay: () => void } = $props()
 
-  type Score ={ player_id: string; name: string; correct: number; total: number }
+  type Score = { player_id: string; name: string; correct: number; total: number }
 
   const room = $derived(game.room!)
   let scores = $state<Score[]>([])
@@ -30,16 +30,30 @@
   )
   const right = $derived(sets.reduce((n, s) => n + s.stats.right, 0))
   const all = $derived(sets.reduce((n, s) => n + s.stats.guessers, 0))
-  const hits = $derived(sets.filter((s) => s.guesses.some((g) => g.guesser_id === me()?.id && g.guessed_player_id === s.owner)).length)
-  const guessed = $derived(sets.filter((s) => s.guesses.some((g) => g.guesser_id === me()?.id)).length)
+  const pct = (n: number, of: number) => (of ? Math.round((n / of) * 100) : 0)
 
-  // your own report: for every box that is not yours, who you said and who it really was
-  const calls = $derived(
-    sets.flatMap((s, i) => {
-      const mine = s.guesses.find((g) => g.guesser_id === me()?.id)
-      return mine ? [{ i, song: s.pack.songs[0], owner: s.owner, pick: mine.guessed_player_id, hit: mine.guessed_player_id === s.owner }] : []
-    }),
+  // one file per subject (a person and the songs they added), the most guessed first, with how you called it
+  const files = $derived(
+    sets
+      .map((s) => {
+        const mine = s.guesses.find((g) => g.guesser_id === me()?.id)
+        return {
+          id: s.owner ?? s.pack.id,
+          name: nameOf(s.owner),
+          yours: s.yours,
+          songs: s.pack.songs,
+          guesses: s.guesses,
+          stamp: s.stamp,
+          ...s.stats,
+          share: pct(s.stats.right, s.stats.guessers),
+          call: mine ? { pick: mine.guessed_player_id, hit: mine.guessed_player_id === s.owner } : null,
+        }
+      })
+      .sort((a, b) => b.share - a.share || b.guessers - a.guessers || a.name.localeCompare(b.name)),
   )
+  const calls = $derived(files.filter((f) => f.call))
+  const hits = $derived(calls.filter((f) => f.call!.hit).length)
+
   // only a perfect or a zero earns a title
   const verdict = $derived(
     calls.length < 2 ? null
@@ -62,18 +76,19 @@
     return most < 2 ? [] : [...wrong].filter(([, n]) => n === most).map(([id]) => ({ id, n: most }))
   })
 
-  // the song-by-song browser: any set can be opened from the chart, or stepped through with the arrows
-  let at = $state(0)
-  const set = $derived(sets[at])
-  const step = (by: number) => (at = Math.min(sets.length - 1, Math.max(0, at + by)))
-  const pct = (n: number, of: number) => (of ? Math.round((n / of) * 100) : 0)
+  // the guess grid: every guesser (rows) against every subject (columns), in leaderboard order on both sides
+  const ranked = $derived(scores.length ? scores.flatMap((sc) => game.players.filter((p) => p.id === sc.player_id)) : game.players)
+  const subjects = $derived(ranked.filter((p) => sets.some((s) => s.owner === p.id)))
+  // the shortest start of each name that tells everyone apart, so a column only needs a few letters
+  const codes = $derived.by(() => {
+    const names = ranked.map((p) => p.name.toUpperCase())
+    let n = 2
+    while (n < 5 && new Set(names.map((x) => x.slice(0, n))).size < new Set(names).size) n++
+    return Object.fromEntries(ranked.map((p, i) => [p.id, names[i].slice(0, n)]))
+  })
+  const guessOf = (guesser: string, subject: string) => sets.find((s) => s.owner === subject)?.guesses.find((g) => g.guesser_id === guesser)
 
-  // one row per person (each added one box), the most guessed first; a tap opens their box below
-  const people = $derived(
-    sets
-      .map((s, i) => ({ i, name: nameOf(s.owner), yours: s.yours, stamp: s.stamp, ...s.stats, share: pct(s.stats.right, s.stats.guessers) }))
-      .sort((a, b) => b.share - a.share || b.guessers - a.guessers || a.name.localeCompare(b.name)),
-  )
+  let open = $state<Record<string, boolean>>({})
 </script>
 
 <Head step="EXPERIMENT COMPLETE" />
@@ -87,6 +102,34 @@
   {/if}
   <div class="muted"><span class="good">{top}</span> / {winners[0]?.total} RIGHT</div>
 </div>
+
+{#if subjects.length}
+  <div class="split"><span class="label">THE GUESS GRID</span><span class="good">{right} OF {all} RIGHT</span></div>
+  <div class="gridwrap">
+    <table class="grid">
+      <thead>
+        <tr>
+          <th><span class="sr">Guesser</span></th>
+          {#each subjects as c}<th class:me={c.id === me()?.id} title={c.name}>{codes[c.id]}</th>{/each}
+        </tr>
+      </thead>
+      <tbody>
+        {#each ranked as r, ri}
+          <tr class:me={r.id === me()?.id}>
+            <th scope="row">{r.name.toUpperCase()}</th>
+            {#each subjects as c, ci}
+              {@const g = guessOf(r.id, c.id)}
+              <td class:hit={g && g.guessed_player_id === c.id} class:miss={g && g.guessed_player_id !== c.id} style:--n={ri + ci} title={g ? `${r.name} guessed ${nameOf(g.guessed_player_id)} for ${c.name}` : ''}>
+                {#if r.id === c.id}·{:else if !g}–{:else if g.guessed_player_id === c.id}✓{:else}{codes[g.guessed_player_id]}{/if}
+              </td>
+            {/each}
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">ROWS GUESS · COLUMNS ARE THE SUBJECTS · <span class="good">✓</span> CRACKED IT · <span class="bad">RED</span> IS WHO THEY BLAMED</p>
+{/if}
 
 <div class="wave"></div>
 <div class="label">SUBJECT PERFORMANCE</div>
@@ -102,28 +145,7 @@
   {/each}
 </div>
 
-{#if calls.length}
-  <div class="wave"></div>
-  <div class="split"><span class="label">YOUR REPORT</span><span class="good">{hits} OF {calls.length} CRACKED</span></div>
-  {#if verdict}
-    <div class="panel framed">
-      <div class="label good glitch" class:lost={!hits}>[ {verdict.tag} ]</div>
-      <div class="muted">{verdict.note}</div>
-    </div>
-  {/if}
-  <div class="stack report">
-    {#each calls as c}
-      <button class="call" class:hit={c.hit} onclick={() => (at = c.i)} aria-label={`${c.song.title}: ${c.hit ? 'you got it' : 'you missed it'}`}>
-        <b>{c.hit ? '✓' : '✗'}</b>
-        <span class="grow-text"><span class="text">{c.song.title}</span><span class="dim">{c.hit ? `YOU SAID ${nameOf(c.pick).toUpperCase()} · NAILED IT` : `YOU SAID ${nameOf(c.pick).toUpperCase()} · IT WAS ${nameOf(c.owner).toUpperCase()}`}</span></span>
-      </button>
-    {/each}
-  </div>
-{/if}
-
 {#if worst.length || blamed.length}
-  <div class="wave"></div>
-  <div class="label">CREW AWARDS</div>
   <div class="stack awards">
     {#if worst.length}
       <div class="award"><span class="stamp">[ ZERO SIGNAL ]</span><span class="text">{worst.map((w) => w.name.toUpperCase()).join(' + ')}</span><span class="dim">ONLY {worst[0].correct} OF {worst[0].total} RIGHT</span></div>
@@ -135,55 +157,50 @@
 {/if}
 
 <div class="wave"></div>
-<div class="split"><span class="label">HOW READABLE WAS EACH PERSON?</span><span class="good">{right} OF {all} RIGHT</span></div>
-<p class="muted">% OF GUESSERS WHO CRACKED THEM · MOST GUESSED ON TOP · STAMPS MARK THE EXTREMES · TAP A NAME TO OPEN THEIR BOX BELOW</p>
-<div class="chart">
-  {#each people as p, n}
-    <button class="chartrow" class:on={p.i === at} style:--n={n} onclick={() => (at = p.i)} aria-label={`${p.name}: ${p.right} of ${p.guessers} guessed right, ${p.share} percent`}>
-      <span class="who">
-        <span class="dim">{String(n + 1).padStart(2, '0')}</span>
-        <span class="text">{p.name.toUpperCase()}</span>
-        {#if p.yours}<span class="tag">YOU</span>{/if}
-        {#if p.stamp}<span class="flag" title={noteOf(p.stamp)}>{p.stamp}</span>{/if}
-      </span>
-      <span class="pct"><span class="dim">{p.right}/{p.guessers}</span> <b class:good={p.share >= 50}>{p.guessers ? `${p.share}%` : '--'}</b></span>
-      <span class="meter"><span class="vs"><i class="r" style:width={`${p.share}%`}></i></span></span>
-    </button>
-  {/each}
-</div>
-
-{#if set}
-  <div class="wave"></div>
-  <div class="split"><span class="label">SONG BY SONG · {at + 1} OF {sets.length}</span><span class="good">YOU: {hits} OF {guessed} RIGHT</span></div>
-  <div class="panel stack">
-    {#each set.pack.songs as song}
-      <div class="row">
-        <Art src={song.art_url} />
-        <div class="grow-text"><div>{song.title}</div><div class="dim">{song.artist}</div></div>
-      </div>
-    {/each}
-    <div class="label">ADDED BY</div>
-    <div class="logo name" style:--len={nameOf(set.owner).length}>{nameOf(set.owner).toUpperCase()}{#if set.yours} <span class="tag">YOU</span>{/if}</div>
-    <div class="split">
-      <span class="good">{set.stats.right} OF {set.stats.guessers} GUESSED RIGHT</span>
-      {#if set.stamp}<span class="stamp">[ {set.stamp} ]</span>{/if}
-    </div>
-    {#if set.stamp}<p class="muted">{noteOf(set.stamp)}</p>{/if}
-    <div class="guesses">
-      {#each set.guesses as g}
-        {@const hit = g.guessed_player_id === set.owner}
-        <div class="guess" class:hit class:me={g.guesser_id === me()?.id}>
-          <span><b class:good={hit}>{hit ? '✓' : '✗'}</b> {nameOf(g.guesser_id).toUpperCase()}{#if g.guesser_id === me()?.id} <span class="tag">YOU</span>{/if}</span>
-          {#if !hit}<span class="dim">→ {nameOf(g.guessed_player_id).toUpperCase()}</span>{/if}
-        </div>
-      {/each}
-    </div>
-  </div>
-  <div class="split pager">
-    <button class="btn ghost" onclick={() => step(-1)} disabled={at === 0} aria-label="Previous box">← PREV</button>
-    <button class="btn ghost" onclick={() => step(1)} disabled={at === sets.length - 1} aria-label="Next box">NEXT →</button>
+<div class="split"><span class="label">THE FILES</span>{#if calls.length}<span class="good">YOU CRACKED {hits} OF {calls.length}</span>{/if}</div>
+{#if verdict}
+  <div class="panel framed">
+    <div class="label good glitch" class:lost={!hits}>[ {verdict.tag} ]</div>
+    <div class="muted">{verdict.note}</div>
   </div>
 {/if}
+<p class="muted">ONE FILE PER SUBJECT · MOST GUESSED ON TOP · TAP A FILE TO SEE WHO GUESSED WHAT</p>
+<div class="files">
+  {#each files as f, n (f.id)}
+    <div class="file" class:open={open[f.id]} class:hit={f.call?.hit} class:miss={f.call && !f.call.hit}>
+      <button class="head" aria-expanded={!!open[f.id]} onclick={() => (open[f.id] = !open[f.id])}>
+        <span class="who">
+          <span class="dim">{String(n + 1).padStart(2, '0')}</span>
+          <span class="text"><Scramble text={f.name.toUpperCase()} delay={Math.min(n * 150, 1200)} /></span>
+          {#if f.yours}<span class="tag">YOU</span>{/if}
+          {#if f.stamp}<span class="flag" title={noteOf(f.stamp)}>{f.stamp}</span>{/if}
+        </span>
+        <span class="pct"><span class="dim">{f.right}/{f.guessers}</span> <b class:good={f.share >= 50}>{f.guessers ? `${f.share}%` : '--'}</b> <span class="dim">{open[f.id] ? '▴' : '▾'}</span></span>
+        <span class="meter"><span class="vs"><i class="r" style:width={`${f.share}%`} style:--n={n}></i></span></span>
+        <span class="songs">
+          {#each f.songs as song}<span>♪ {song.title} <span class="dim">· {song.artist}</span></span>{/each}
+        </span>
+        {#if f.call}
+          <span class="you">YOU {f.call.hit ? '✓ NAILED IT' : `✗ SAID ${nameOf(f.call.pick).toUpperCase()}`}</span>
+        {:else if f.yours}
+          <span class="you">YOUR SONGS</span>
+        {/if}
+      </button>
+      {#if open[f.id]}
+        <div class="guesses">
+          {#each f.guesses as g}
+            {@const hit = g.guessed_player_id === f.id}
+            <div class="guess" class:hit class:me={g.guesser_id === me()?.id}>
+              <span><b class:good={hit}>{hit ? '✓' : '✗'}</b> {nameOf(g.guesser_id).toUpperCase()}{#if g.guesser_id === me()?.id} <span class="tag">YOU</span>{/if}</span>
+              {#if !hit}<span class="dim">→ {nameOf(g.guessed_player_id).toUpperCase()}</span>{/if}
+            </div>
+          {/each}
+        </div>
+        {#if f.stamp}<p class="muted note">{noteOf(f.stamp)}</p>{/if}
+      {/if}
+    </div>
+  {/each}
+</div>
 
 <Playlist />
 

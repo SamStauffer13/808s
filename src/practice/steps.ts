@@ -34,10 +34,9 @@ const guess: Prompt[] = [
 ]
 const results: Prompt[] = [
   { target: '.panel.framed', text: "HERE'S WHO WON, BASED ON THE MOST RIGHT GUESSES.", look: true },
-  { target: '.report', text: 'THIS IS YOUR REPORT: THE SONGS YOU CRACKED AND THE ONES THAT FOOLED YOU.', look: true },
-  { target: '.awards', text: 'AND THE CREW AWARDS FOR THE BEST AND WORST GUESSES.', look: true },
-  { target: '.chart', text: 'THIS SHOWS HOW OFTEN EACH PERSON WAS GUESSED RIGHT, MOST GUESSED ON TOP, WITH STAMPS FOR THE EXTREMES.', look: true },
-  { target: '.pager .btn:last-child', text: 'NEXT, STEP THROUGH EVERY SONG TO SEE WHO ADDED IT AND HOW EVERYONE GUESSED.' },
+  { target: '.gridwrap', text: "THIS GRID IS EVERYONE'S GUESSES AT ONCE: GREEN IS A HIT, RED LETTERS ARE WHO THEY BLAMED.", look: true },
+  { target: '.file', text: 'EACH FILE IS ONE SUBJECT, THE SONGS THEY ADDED, AND HOW YOU CALLED IT.', look: true },
+  { target: '.file .head', text: 'TAP A FILE TO SEE EXACTLY WHO GUESSED WHAT.', when: '.file.open' },
   { target: 'a.btn', text: 'FINALLY, START A REAL EXPERIMENT OF YOUR OWN.', final: true },
 ]
 
