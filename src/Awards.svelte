@@ -7,7 +7,7 @@
 </script>
 
 {#if worst.length || blamed.length}
-  <div class="stack">
+  <div class="stack awards">
     {#if worst.length}
       <div class="award"><span class="stamp">[ {badges.worst} ]</span><span class="text">{upper(worst.map((w) => w.name))}</span><span class="dim">ONLY {worst[0].correct} OF {worst[0].total} RIGHT</span></div>
     {/if}

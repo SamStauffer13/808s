@@ -2,6 +2,7 @@
 // selector for the real element on that screen (Wizard.svelte lights it up), so a screen that changes its markup must
 // update it here.
 import { spotifyKey, type Role, type Stage } from '../lib/practice.svelte'
+import { badges, stamps } from '../lib/stamps'
 
 // what the card calls each stage (the order is not a count: a real game has many more taps than five)
 export const titles: Record<Stage, string> = {
@@ -34,9 +35,11 @@ const guess: Prompt[] = [
 ]
 const results: Prompt[] = [
   { target: '.panel.framed', text: "HERE'S WHO WON, BASED ON THE MOST RIGHT GUESSES.", look: true },
-  { target: '.file', text: "EACH FILE IS ONE PERSON'S SONGS, WHO ADDED THEM, AND WHAT PERCENT OF THE CREW GUESSED THEM.", look: true },
-  { target: '.file .head', text: 'TAP A FILE TO SEE EXACTLY WHO GUESSED WHAT.', when: '.file.open' },
-  { target: 'a.btn', text: 'FINALLY, START A REAL EXPERIMENT OF YOUR OWN.', final: true },
+  { target: '.board', text: "NEXT, EVERYONE'S SCORE: HOW MANY OF THE OTHER PLAYERS' SONGS THEY MATCHED RIGHT.", look: true },
+  { target: '.awards', text: `THEN THE AWARDS: ${badges.worst} FOR THE WORST GUESSER AND ${badges.blamed} FOR WHOEVER GOT BLAMED THE MOST.`, look: true },
+  { target: '.file', text: `EACH FILE IS ONE PERSON'S SONGS, WHO ADDED THEM AND WHAT PERCENT OF THE CREW GUESSED THEM. A STAMP LIKE ${stamps[0]} FLAGS THE EXTREMES.`, look: true },
+  { target: '.file .head', text: 'FINALLY, TAP A FILE TO SEE EXACTLY WHO GUESSED WHAT.', when: '.file.open' },
+  { target: 'a.btn', text: 'NOW START A REAL EXPERIMENT OF YOUR OWN.', final: true },
 ]
 
 export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {

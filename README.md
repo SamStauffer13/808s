@@ -39,13 +39,13 @@ Keep it in step when the experiment data, the screens or the server calls they m
 - `src/practice/steps.ts` has the prompts for each journey and the CSS selectors they point at: update them when a screen's markup changes.
 - `src/practice/backend.ts` answers the server calls. A call it has no answer for throws "not available in the practice
   round" and never reaches the real server, so a new call needs a handler there.
-- `src/practice/data.ts` has the fake experiment; `seed.ts` fails to load if a stamp in `src/lib/stamps.ts` is never earned by a set.
+- `src/practice/data.ts` has the fake experiment; `seed.ts` fails to load if a stamp in `src/lib/stamps.ts` is never earned by a set. Its guesses are chosen so the scoreboard also shows both crew awards (a tie for last and a most-blamed player), which the results steps point at: change them with care.
 - `npm run check` catches a changed type.
 
 Practice checks the screens, not the server: a broken Edge Function or permission rule will not show up in it. Before
 a big release, play one real experiment with two browsers (normal and incognito) as two players, one connected to Spotify as
 host: create a room, join from the invite link, add songs in both, begin the experiment, guess in both, and check the
-scoreboard opens by itself for both and the song-by-song results and playlist look right. Also try `FORCE NEXT PHASE` (see below) on a
+scoreboard opens by itself for both and the files, awards and playlist look right. Also try `FORCE NEXT PHASE` (see below) on a
 throwaway room.
 
 If the build says "Cannot find native binding" on Windows: `npm install --no-save @rolldown/binding-win32-x64-msvc`.
@@ -81,7 +81,8 @@ In the app the guessing round is called "the Experiment", and the host begins it
 3. **Experiment:** the host presses `BEGIN THE EXPERIMENT`, which builds a shuffled playlist in their Spotify.
 4. **Guess:** each player matches every other player's songs to whoever added them.
 5. **Reveal:** it opens by itself when the last guess is in (only the admin override can open it early), and everyone lands on the
-   scoreboard first: the winner, how the room did, and each song with who added it and who guessed what. REPLAY THE FINDINGS
+   scoreboard first: the winner, everyone's score, the crew awards, and a file per person with their songs, who added them and the percent
+   of the crew who guessed them (tap one to see who guessed what). REPLAY THE FINDINGS
    walks through the dramatic song-by-song reveal at the player's own pace; their place is saved on their device.
 
 Each file on the scoreboard can get a stamp (`MARKED`, `ANONYMOUS`, `PROXIED`), and people get badges: `L33T` (a great guesser), `N00B` (a bad one) and `HONEYPOT` (blamed wrongly most). Every one of these words lives in `src/lib/stamps.ts`: the stamp rules in one short table, the badges in `badges`. Rename them there.

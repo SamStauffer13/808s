@@ -26,7 +26,7 @@
 
 <div class="wave"></div>
 <div class="label">SUBJECT PERFORMANCE</div>
-<div class="stack">
+<div class="stack board">
   {#each r.scores as s, n}
     <div class="score">
       <span>{String(n + 1).padStart(2, '0')}</span>
@@ -46,7 +46,7 @@
     <div class="muted">{r.verdict.note}</div>
   </div>
 {/if}
-<p class="muted">EACH CARD IS ONE PERSON'S SONGS · MOST GUESSED ON TOP · TAP ONE TO SEE WHO GUESSED WHAT</p>
+<p class="muted">EACH FILE IS ONE PERSON'S SONGS · MOST GUESSED ON TOP · TAP ONE TO SEE WHO GUESSED WHAT</p>
 <div class="files">
   {#each r.files as file, rank (file.id)}<SubjectFile {file} {rank} />{/each}
 </div>
