@@ -61,7 +61,7 @@
 </div>
 
 <div class="wave"></div>
-<div class="label">LEADERBOARD · BOXES GUESSED RIGHT</div>
+<div class="label">SUBJECT PERFORMANCE</div>
 <Notice scope="scores" />
 <div class="stack">
   {#each scores as s, n}
