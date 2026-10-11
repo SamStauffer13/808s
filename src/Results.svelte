@@ -40,14 +40,13 @@
       return mine ? [{ i, song: s.pack.songs[0], owner: s.owner, pick: mine.guessed_player_id, hit: mine.guessed_player_id === s.owner }] : []
     }),
   )
-  const verdict = $derived.by(() => {
-    const n = calls.length
-    const share = n ? hits / n : 0
-    if (n > 1 && hits === n) return { extreme: true, tag: 'MIND READER', note: 'EVERY SINGLE ONE. ARE YOU IN THEIR HEADS?' }
-    if (n > 1 && hits === 0) return { extreme: true, tag: 'COMPLETE STRANGER', note: 'NOT ONE. YOU DO NOT KNOW THESE PEOPLE.' }
-    if (share >= 0.5) return { extreme: false, tag: 'DECENT SIGNAL', note: 'YOU KNOW YOUR CREW. MOSTLY.' }
-    return { extreme: false, tag: 'MOSTLY STATIC', note: 'A FEW LUCKY HITS IN THE NOISE.' }
-  })
+  // only a perfect or a zero earns a title
+  const verdict = $derived(
+    calls.length < 2 ? null
+    : hits === calls.length ? { tag: 'L33T', note: 'EVERY SINGLE ONE. ARE YOU IN THEIR HEADS?' }
+    : hits === 0 ? { tag: 'N00B', note: 'NOT ONE. YOU DO NOT KNOW THESE PEOPLE.' }
+    : null,
+  )
 
   // crew awards, from what everyone guessed
   // a crew-wide tie for last is not an award, so only one or two names qualify
@@ -106,11 +105,13 @@
 {#if calls.length}
   <div class="wave"></div>
   <div class="split"><span class="label">YOUR REPORT</span><span class="good">{hits} OF {calls.length} CRACKED</span></div>
-  <div class="panel framed report">
-    <div class="label good" class:glitch={verdict.extreme} class:lost={verdict.extreme && !hits}>[ {verdict.tag} ]</div>
-    <div class="muted">{verdict.note}</div>
-  </div>
-  <div class="stack">
+  {#if verdict}
+    <div class="panel framed">
+      <div class="label good glitch" class:lost={!hits}>[ {verdict.tag} ]</div>
+      <div class="muted">{verdict.note}</div>
+    </div>
+  {/if}
+  <div class="stack report">
     {#each calls as c}
       <button class="call" class:hit={c.hit} onclick={() => (at = c.i)} aria-label={`${c.song.title}: ${c.hit ? 'you got it' : 'you missed it'}`}>
         <b>{c.hit ? '✓' : '✗'}</b>
