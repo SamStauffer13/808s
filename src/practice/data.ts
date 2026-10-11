@@ -52,13 +52,14 @@ export const setSongs = (set: number): Song[] => {
 
 // What each guesser got wrong, as pairs of sets they swapped (a swap makes both sets wrong, and keeps every
 // guesser's picks valid: a crew member can only be matched to one set). Everything else is guessed correctly.
-// This spread gives the reveal a MARKED set (0), an ANONYMOUS one (5) and a PROXIED one (3).
+// This spread gives the reveal a MARKED set (0), an ANONYMOUS one (5) and a PROXIED one (3), a last place tied between
+// two players (ZERO SIGNAL) and Cole as the person everyone blamed (THE DECOY).
 const swaps: [number, number][][] = [
   [[5, 3]], // you
   [[5, 3]], // Cierra
   [[5, 3]], // Shilo
-  [[5, 1]], // Dalton
-  [[5, 2]], // Matt
+  [[5, 1], [2, 4]], // Dalton: only 1 right, so he and Matt tie for last
+  [[5, 2], [1, 3]], // Matt
   [], // Cole: a perfect ear, so there is one clear winner
 ]
 
