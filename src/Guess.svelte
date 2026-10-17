@@ -19,10 +19,15 @@
   let open = $state<string | null>(null)
   let progress = $state<{ finished: number; total: number }>()
   const waiting = $derived(progress ? progress.total - progress.finished : 0)
+  let slow = $state<string[]>([]) // crew members who still have sets to match
 
   // other players' guesses are private, so their progress is polled instead of arriving live (not while the tab is hidden)
   $effect(() => {
-    const load = () => document.hidden || rpc('guess_progress', { p_room: room.id }).then(([p]) => (progress = p)).catch(() => {})
+    const load = () =>
+      document.hidden ||
+      Promise.all([rpc('guess_progress', { p_room: room.id }), rpc('guess_waiting', { p_room: room.id })])
+        .then(([[p], rows]) => ((progress = p), (slow = rows.map((r: { player_id: string }) => r.player_id).filter((id: string) => id !== me()?.id))))
+        .catch(() => {})
     load()
     const timer = setInterval(load, 5000)
     return () => clearInterval(timer)
@@ -75,6 +80,7 @@
 
 {#if progress}
   <div class="split"><span><i class="rec"></i>CREW FINISHED</span><span class="good">{progress.finished} / {progress.total}</span></div>
+  {#if slow.length}<p class="muted center">/// STILL GUESSING · {slow.map((id) => nameOf(id).toUpperCase()).join(' · ')}</p>{/if}
 {/if}
 
 <div class="wave"></div>

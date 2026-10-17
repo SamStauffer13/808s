@@ -15,6 +15,34 @@ export function vibeOf(songs: Song[], max = 3) {
   return [...counts].sort((a, b) => b[1] - a[1]).slice(0, max).map(([genre]) => genre)
 }
 
+// the two players whose songs share the most genres (ties go to the bigger overlap relative to all their genres, then to names)
+function twinsOf(people: { name: string; genres: Set<string> }[]) {
+  let best: { names: string[]; shared: string[]; score: number } | null = null
+  for (const [i, a] of people.entries()) {
+    for (const b of people.slice(i + 1)) {
+      const shared = [...a.genres].filter((g) => b.genres.has(g))
+      const score = shared.length + shared.length / new Set([...a.genres, ...b.genres]).size
+      if (shared.length && (!best || score > best.score)) best = { names: [a.name, b.name], shared, score }
+    }
+  }
+  return best
+}
+
+// group people by the genre their songs lean on most; anyone alone in theirs (or with no genres) is air-gapped
+function subnetsOf(people: { name: string; songs: Song[] }[]) {
+  const groups = new Map<string, string[]>()
+  const airGapped: string[] = []
+  for (const p of people) {
+    const [top] = vibeOf(p.songs, 1)
+    if (top) groups.set(top, [...(groups.get(top) ?? []), p.name])
+    else airGapped.push(p.name)
+  }
+  const subnets = [...groups].filter(([, names]) => names.length > 1).map(([genre, names]) => ({ genre, names }))
+  for (const [, names] of groups) if (names.length === 1) airGapped.push(names[0])
+  subnets.sort((a, b) => b.names.length - a.names.length || a.genre.localeCompare(b.genre))
+  return { subnets, airGapped: airGapped.sort() }
+}
+
 export function analyze(game: State, meId?: string) {
   const nameOf = (id?: string) => game.players.find((p) => p.id === id)?.name ?? '?'
 
@@ -67,8 +95,15 @@ export function analyze(game: State, meId?: string) {
   for (const f of files) for (const g of f.guesses) if (g.guessed_player_id !== f.id) wrong.set(g.guessed_player_id, (wrong.get(g.guessed_player_id) ?? 0) + 1)
   const most = Math.max(0, ...wrong.values())
 
+  const twins = twinsOf(files.filter((f) => game.owners[f.songs[0].id]).map((f) => ({ name: f.name, genres: new Set(f.songs.flatMap((s) => s.genres ?? [])) })))
+
+  const { subnets, airGapped } = subnetsOf(files.filter((f) => game.owners[f.songs[0].id]))
+
   return {
     files,
+    twins,
+    subnets,
+    airGapped,
     scores,
     top,
     winners: scores.filter((s) => s.correct === top),

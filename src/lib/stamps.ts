@@ -32,6 +32,8 @@ export const badges = {
   best: 'L33T',
   worst: 'N00B',
   blamed: 'HONEYPOT',
+  twins: 'SAME WAVELENGTH',
+  airGapped: 'AIR-GAPPED',
   perfect: 'EVERY SINGLE ONE. ARE YOU IN THEIR HEADS?',
   zero: 'NOT ONE. YOU DO NOT KNOW THESE PEOPLE.',
 }

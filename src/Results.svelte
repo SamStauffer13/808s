@@ -1,5 +1,6 @@
 <script lang="ts">
   import Awards from './Awards.svelte'
+  import Subnets from './Subnets.svelte'
   import Head from './Head.svelte'
   import Playlist from './Playlist.svelte'
   import SubjectFile from './SubjectFile.svelte'
@@ -36,7 +37,8 @@
     </div>
   {/each}
 </div>
-<Awards worst={r.worst} blamed={r.blamed} />
+<Awards worst={r.worst} blamed={r.blamed} twins={r.twins} />
+<Subnets subnets={r.subnets} airGapped={r.airGapped} />
 
 <div class="wave"></div>
 <div class="split"><span class="label">THE FILES</span>{#if r.guessed}<span class="good">YOU CRACKED {r.hits} OF {r.guessed}</span>{/if}</div>
