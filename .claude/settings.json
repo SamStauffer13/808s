@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tour-gate.mjs\"",
+            "timeout": 240,
+            "statusMessage": "Running the tutorial tour..."
+          }
+        ]
+      }
+    ]
+  }
+}
