@@ -35,6 +35,11 @@ EXIT (top of the screen) reloads the page back to where practice was started fro
 To test one screen after a change, open `/?practice` for the host (or `/?practice=submit`, `guess`, `results`), or `/?practice=guest` for the crew member (`guest-submit`, `guest-guess`, `guest-results` jump to a stage) in dev.
 An old `/808s/demo` link starts practice too.
 
+Check the tutorial after a change with `npm run tour` (Playwright, phone-sized Chromium; first time only: `npx playwright install chromium`).
+It opens every practice stage, checks the wizard finds what its first prompt points at, fails on any console error or "not available in
+the practice round", and checks the scoreboard's genre features. Screenshots of each stage land in `test-results/screens/` (not committed):
+look at them, because the test cannot tell that a layout looks wrong. New screens or features go in `tests/tour.spec.ts`.
+
 Keep it in step when the experiment data, the screens or the server calls they make change:
 - `src/practice/steps.ts` has the prompts for each journey and the CSS selectors they point at: update them when a screen's markup changes.
 - `src/practice/backend.ts` answers the server calls. A call it has no answer for throws "not available in the practice

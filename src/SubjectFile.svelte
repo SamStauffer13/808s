@@ -15,13 +15,13 @@
     <span class="songs">
       {#each file.songs as song}<span>♪ {song.title} <span class="dim">· {song.artist}</span></span>{/each}
     </span>
+    {#if file.vibe.length}<span class="dim vibe">VIBE · {file.vibe.join(' · ').toUpperCase()}</span>{/if}
     <span class="who">
       <span class="dim">ADDED BY</span>
       <span class="text"><Scramble text={file.name.toUpperCase()} delay={Math.min(rank * 150, 1200)} /></span>
       {#if file.yours}<span class="tag">YOU</span>{/if}
       {#if file.stamp}<span class="flag" title={noteOf(file.stamp)}>{file.stamp}</span>{/if}
     </span>
-    {#if file.vibe.length}<span class="dim">VIBE � {file.vibe.join(' � ').toUpperCase()}</span>{/if}
     <span class="pct"><b class:good={file.share >= 50}>{file.guessers ? `${file.share}%` : '--'}</b></span>
     <span class="meter"><span class="vs"><i class="r" style:width={`${file.share}%`} style:--n={rank}></i></span></span>
     <span class="dim">{file.right} OF {file.guessers} RIGHT {open ? '▴' : '▾'}</span>
