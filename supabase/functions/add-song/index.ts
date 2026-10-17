@@ -1,5 +1,5 @@
 import { admin, currentUser, handler, HttpError } from '../_shared/http.ts'
-import { appToken, spotify, toTrack } from '../_shared/spotify.ts'
+import { appToken, genresOf, spotify, toTrack } from '../_shared/spotify.ts'
 
 Deno.serve(
   handler(async (req) => {
@@ -9,7 +9,9 @@ Deno.serve(
     if (!/^[A-Za-z0-9]{22}$/.test(String(spotify_id ?? ''))) throw new HttpError(400, 'bad track id')
 
     // re-read the track from Spotify so a client cannot make up titles
-    const track = toTrack(await spotify(await appToken(), `/tracks/${spotify_id}`))
+    const token = await appToken()
+    const raw = await spotify(token, `/tracks/${spotify_id}`)
+    const track = toTrack(raw)
     if (track.blocked) throw new HttpError(400, "don't be boring/basic")
 
     const { data, error } = await admin().rpc('add_song', {
@@ -19,6 +21,7 @@ Deno.serve(
       p_title: track.title,
       p_artist: track.artist,
       p_art: track.art,
+      p_genres: await genresOf(token, raw),
     })
     if (error) throw new HttpError(400, error.message)
     return { song: data }

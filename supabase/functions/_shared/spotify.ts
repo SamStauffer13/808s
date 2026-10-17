@@ -104,3 +104,15 @@ export function toTrack(t: any): Track {
     blocked: tooEasyToTrace.test(artist),
   }
 }
+
+// Spotify keeps genres on the artist, not the track. This is best effort: no genres is fine, so a failed lookup is not an error.
+export async function genresOf(token: string, rawTrack: any): Promise<string[]> {
+  const ids = (rawTrack.artists ?? []).map((a: any) => a.id).filter(Boolean).slice(0, 5)
+  if (!ids.length) return []
+  try {
+    const { artists } = await spotify(token, `/artists?ids=${ids.join(',')}`)
+    return [...new Set<string>((artists ?? []).flatMap((a: any) => a?.genres ?? []))]
+  } catch {
+    return []
+  }
+}

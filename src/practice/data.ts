@@ -10,21 +10,21 @@ export const me = players[0]
 export const theme = 'songs that sound like a road trip at 2am'
 export const playlist = 'https://open.spotify.com/playlist/73MeoOPlro0bLPf2ScEvvZ'
 
-// A one-time snapshot (titles, artists, cover art) of that playlist, so rows look like real ones.
+// A one-time snapshot (titles, artists, cover art, genres) of that playlist, so rows look like real ones.
 // Set i (one song) belongs to player i and is track i; the rest are there to search for. Yours is whichever you pick.
 export const tracks = [
-  { id: '47oI62sCBPLsCVgcD2tr2z', title: 'Damaged Goods', artist: 'La Dispute', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02a33cf1cbd5cd623a7d3c8e56' },
-  { id: '31Hx0pInhn2tSq5gdhWv0d', title: 'Such Small Hands', artist: 'La Dispute', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02a33cf1cbd5cd623a7d3c8e56' },
-  { id: '6p4jnIWFWyLz0zUo2RD9iu', title: "Baby, You Wouldn't Last A Minute On The Creek", artist: 'Chiodos', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02565a166b9f44fc0250f5769e' },
-  { id: '6GKhlcZeyEW9Y5ZLZ37HZ3', title: 'The Words "Best Friend" Become Redefined', artist: 'Chiodos', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02565a166b9f44fc0250f5769e' },
-  { id: '2D4LEUzvLRCQOLMxnajH72', title: "If I'm James Dean, You're Audrey Hepburn", artist: 'Sleeping With Sirens', art: 'https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02032fd22bde573d0746c87352' },
-  { id: '2Tc9VznHtQUmfOgE3L1RdN', title: "If You Can't Hang", artist: 'Sleeping With Sirens', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02800934f8144df91dae16b6e4' },
-  { id: '6fTgbkBiMITtHUmik95ClX', title: 'MakeDamnSure', artist: 'Taking Back Sunday', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02cf43956aaef45eb4b1283e5a' },
-  { id: '5wQnmLuC1W7ATsArWACrgW', title: 'Welcome to the Black Parade', artist: 'My Chemical Romance', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02663b6ce496144fa5c3670ac0' },
-  { id: '23DHUWJ7iEieNPMPKvjzBV', title: 'Ohio Is For Lovers', artist: 'Hawthorne Heights', art: 'https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02b4b59e1dd1a9c0fa4dc27c61' },
-  { id: '31hUonEmUsEVd0FMRv1s5r', title: 'Not Your Fault', artist: 'AWOLNATION', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e0232f1572738340ddc9569c54b' },
-  { id: '7MoHtlRxZ2cN9gfKg15eBg', title: 'Not The American Average', artist: 'Asking Alexandria', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02426885adbae74402b2faed65' },
-  { id: '1XDleb5NksSab3NmUAlvz6', title: 'To Plant a Seed', artist: 'We Came As Romans', art: 'https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e021a8ba9aa6ad6b8e8a15bd751' },
+  { id: '47oI62sCBPLsCVgcD2tr2z', title: 'Damaged Goods', artist: 'La Dispute', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02a33cf1cbd5cd623a7d3c8e56', genres: ['post-hardcore', 'screamo', 'emo'] },
+  { id: '31Hx0pInhn2tSq5gdhWv0d', title: 'Such Small Hands', artist: 'La Dispute', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02a33cf1cbd5cd623a7d3c8e56', genres: ['post-hardcore', 'screamo', 'emo'] },
+  { id: '6p4jnIWFWyLz0zUo2RD9iu', title: "Baby, You Wouldn't Last A Minute On The Creek", artist: 'Chiodos', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02565a166b9f44fc0250f5769e', genres: ['post-hardcore', 'screamo', 'metalcore'] },
+  { id: '6GKhlcZeyEW9Y5ZLZ37HZ3', title: 'The Words "Best Friend" Become Redefined', artist: 'Chiodos', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02565a166b9f44fc0250f5769e', genres: ['post-hardcore', 'screamo', 'metalcore'] },
+  { id: '2D4LEUzvLRCQOLMxnajH72', title: "If I'm James Dean, You're Audrey Hepburn", artist: 'Sleeping With Sirens', art: 'https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02032fd22bde573d0746c87352', genres: ['post-hardcore', 'pop punk', 'emo'] },
+  { id: '2Tc9VznHtQUmfOgE3L1RdN', title: "If You Can't Hang", artist: 'Sleeping With Sirens', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02800934f8144df91dae16b6e4', genres: ['post-hardcore', 'pop punk', 'emo'] },
+  { id: '6fTgbkBiMITtHUmik95ClX', title: 'MakeDamnSure', artist: 'Taking Back Sunday', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02cf43956aaef45eb4b1283e5a', genres: ['emo', 'pop punk', 'alternative rock'] },
+  { id: '5wQnmLuC1W7ATsArWACrgW', title: 'Welcome to the Black Parade', artist: 'My Chemical Romance', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02663b6ce496144fa5c3670ac0', genres: ['emo', 'pop punk', 'alternative rock'] },
+  { id: '23DHUWJ7iEieNPMPKvjzBV', title: 'Ohio Is For Lovers', artist: 'Hawthorne Heights', art: 'https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02b4b59e1dd1a9c0fa4dc27c61', genres: ['emo', 'screamo', 'pop punk'] },
+  { id: '31hUonEmUsEVd0FMRv1s5r', title: 'Not Your Fault', artist: 'AWOLNATION', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e0232f1572738340ddc9569c54b', genres: ['alternative rock', 'indie rock', 'electropop'] },
+  { id: '7MoHtlRxZ2cN9gfKg15eBg', title: 'Not The American Average', artist: 'Asking Alexandria', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02426885adbae74402b2faed65', genres: ['metalcore', 'post-hardcore', 'screamo'] },
+  { id: '1XDleb5NksSab3NmUAlvz6', title: 'To Plant a Seed', artist: 'We Came As Romans', art: 'https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e021a8ba9aa6ad6b8e8a15bd751', genres: ['metalcore', 'post-hardcore', 'deathcore'] },
 ]
 
 export const sets = players.map((_, i) => i)
@@ -47,7 +47,7 @@ const trackOf = (set: number) => (set === 0 && tracks.find((t) => t.id === chose
 
 export const setSongs = (set: number): Song[] => {
   const t = trackOf(set)
-  return [{ id: songId(set), pack: packId(set), spotify_id: t.id, title: t.title, artist: t.artist, art_url: t.art }]
+  return [{ id: songId(set), pack: packId(set), spotify_id: t.id, title: t.title, artist: t.artist, art_url: t.art, genres: t.genres }]
 }
 
 // What each guesser got wrong, as pairs of sets they swapped (a swap makes both sets wrong, and keeps every

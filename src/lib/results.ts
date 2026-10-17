@@ -8,6 +8,13 @@ type State = { players: Player[]; songs: Song[]; owners: Record<string, string>;
 
 const pct = (n: number, of: number) => (of ? Math.round((n / of) * 100) : 0)
 
+// a person's vibe: the genres that turn up most across their songs (ties keep the order they were added in)
+export function vibeOf(songs: Song[], max = 3) {
+  const counts = new Map<string, number>()
+  for (const g of songs.flatMap((s) => s.genres ?? [])) counts.set(g, (counts.get(g) ?? 0) + 1)
+  return [...counts].sort((a, b) => b[1] - a[1]).slice(0, max).map(([genre]) => genre)
+}
+
 export function analyze(game: State, meId?: string) {
   const nameOf = (id?: string) => game.players.find((p) => p.id === id)?.name ?? '?'
 
@@ -24,6 +31,7 @@ export function analyze(game: State, meId?: string) {
         name: nameOf(owner),
         yours: owner === meId,
         songs: pack.songs,
+        vibe: vibeOf(pack.songs),
         guesses,
         stamp: stampFor(stats),
         ...stats,

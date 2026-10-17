@@ -2,6 +2,7 @@
   import Art from './Art.svelte'
   import { decrypt } from './lib/decrypt'
   import { game, me, nameOf, packsOf } from './lib/game.svelte'
+  import { vibeOf } from './lib/results'
   import { noteOf, statsOf, stampFor } from './lib/stamps'
 
   // index is the set being shown; go moves this player (and only this player) to another one
@@ -14,6 +15,7 @@
   const stamp = $derived(stampFor(statsOf(guesses, owner)))
   const mine = $derived(guesses.find((g) => g.guesser_id === me()?.id))
   const yours = $derived(owner === me()?.id)
+  const vibe = $derived(vibeOf(pack?.songs ?? []))
 
   const source = $derived(nameOf(owner).toUpperCase())
   let name = $state('')
@@ -61,6 +63,7 @@
 
     <!-- always laid out, only faded in, so the buttons below never jump when the name resolves -->
     <div class="veil" class:veiled={!solved} aria-hidden={!solved}>
+      {#if vibe.length}<p class="verdict dim">VIBE · {vibe.join(' · ').toUpperCase()}</p>{/if}
       {#if yours}
         <p class="verdict muted">YOUR SONGS</p>
       {:else if !mine}

@@ -12,7 +12,7 @@ export type Room = {
   playlist_url: string | null
 }
 export type Player = { id: string; user_id: string; name: string }
-export type Song = { id: string; pack: string | null; spotify_id: string; title: string; artist: string; art_url: string | null }
+export type Song = { id: string; pack: string | null; spotify_id: string; title: string; artist: string; art_url: string | null; genres: string[] }
 export type Track = { id: string; title: string; artist: string; art: string | null; blocked: boolean }
 export type Guess = { song_id: string; guesser_id: string; guessed_player_id: string }
 export type Pack = { id: string; songs: Song[] }
@@ -104,7 +104,7 @@ async function refresh() {
   const [room, players, songs, owners, guesses, counts] = await Promise.all([
     supabase.from('rooms').select('*').eq('id', id).single(),
     supabase.from('players').select('id, user_id, name').eq('room_id', id).order('joined_at'),
-    supabase.from('songs').select('id, pack, spotify_id, title, artist, art_url').eq('room_id', id).order('position'),
+    supabase.from('songs').select('id, pack, spotify_id, title, artist, art_url, genres').eq('room_id', id).order('position'),
     supabase.from('song_owners').select('song_id, player_id').eq('room_id', id),
     supabase.from('guesses').select('song_id, guesser_id, guessed_player_id').eq('room_id', id),
     submitting ? supabase.rpc('submission_counts', { p_room: id }) : { data: [] },

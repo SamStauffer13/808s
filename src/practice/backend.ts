@@ -37,7 +37,7 @@ const handlers: Fake = {
   'add-song': ({ spotify_id }) => {
     const t = tracks.find((x) => x.id === spotify_id)!
     chosen.set(t.id)
-    const song: Song = { id: `added-${t.id}`, pack: null, spotify_id: t.id, title: t.title, artist: t.artist, art_url: t.art }
+    const song: Song = { id: `added-${t.id}`, pack: null, spotify_id: t.id, title: t.title, artist: t.artist, art_url: t.art, genres: t.genres }
     game.songs = [...game.songs, song]
     game.owners = { ...game.owners, [song.id]: me.id }
     game.counts = { ...game.counts, [me.id]: (game.counts[me.id] ?? 0) + 1 }

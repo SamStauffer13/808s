@@ -21,6 +21,7 @@
       {#if file.yours}<span class="tag">YOU</span>{/if}
       {#if file.stamp}<span class="flag" title={noteOf(file.stamp)}>{file.stamp}</span>{/if}
     </span>
+    {#if file.vibe.length}<span class="dim">VIBE · {file.vibe.join(' · ').toUpperCase()}</span>{/if}
     <span class="pct"><b class:good={file.share >= 50}>{file.guessers ? `${file.share}%` : '--'}</b></span>
     <span class="meter"><span class="vs"><i class="r" style:width={`${file.share}%`} style:--n={rank}></i></span></span>
     <span class="dim">{file.right} OF {file.guessers} RIGHT {open ? 'â–´' : 'â–¾'}</span>
