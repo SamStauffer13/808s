@@ -45,7 +45,7 @@
   <div class="progress" aria-hidden="true">
     {#each { length: total } as _, i}<i class:seen={i <= index}></i>{/each}
   </div>
-  {#if index === 0}<p class="muted center">/// SEE WHO ADDED EACH SET OF SONGS · GO AT YOUR OWN PACE · COME BACK ANY TIME</p>{/if}
+  {#if index === 0}<p class="muted prose center">/// See who added each set of songs. Go at your own pace and come back any time.</p>{/if}
 
   {#if pack}
     {#each pack.songs as song}

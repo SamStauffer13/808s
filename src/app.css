@@ -51,13 +51,17 @@ h1 { margin: 0; font-size: 26px; font-weight: 500; letter-spacing: 0.04em; }
 p { margin: 0; }
 a { color: var(--accent); }
 .muted { color: var(--text-secondary); font-size: 13px; letter-spacing: 0.1em; }
+/* long explanations read as sentences; caps and wide tracking stay for labels, buttons and stamps */
+.muted.prose { letter-spacing: 0.02em; line-height: 1.5; }
+.files-toggle { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 12px 14px; border: 1px dashed var(--accent); border-radius: var(--radius); background: var(--surface); color: var(--text-secondary); font: inherit; font-size: 12px; letter-spacing: 0.1em; cursor: pointer; }
+.files-toggle:hover { background: var(--surface-hover); }
 .label { font-size: 12px; line-height: 1; letter-spacing: 0.14em; color: var(--text-secondary); }
 .grow { flex-grow: 1; }
 .center { text-align: center; }
 .good { color: var(--accent); }
 .text { color: var(--text); }
 .big { font-size: 16px; }
-.tag { font-size: 10px; color: var(--accent); }
+.tag { font-size: 11px; color: var(--accent); }
 .stamp { font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: var(--accent); }
 
 .tagline { text-align: center; font-size: 13px; line-height: 1.8; letter-spacing: 0.14em; color: var(--text-secondary); }
@@ -205,7 +209,7 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .field input.secret { -webkit-text-security: disc; text-security: disc; }
 
 .pads, .chips { display: flex; gap: 8px; }
-.chips { flex-wrap: wrap; }
+.chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } /* an even grid, so the names line up whether or not a chip carries a note */
 .pad, .chip {
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -214,10 +218,13 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
   cursor: pointer;
 }
 .pad { flex: 1; height: var(--control); font-size: 15px; }
-.chip { height: 44px; padding: 0 14px; font-size: 13px; letter-spacing: 0.06em; }
+.chip { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; min-height: 48px; min-width: 0; padding: 6px 12px; font-size: 13px; letter-spacing: 0.06em; text-align: left; }
 .pad:hover, .chip:hover { background: var(--surface-hover); color: var(--text); }
 .pad.on, .chip.on { border-color: var(--accent); background: var(--accent-tint); color: var(--text); font-weight: 700; }
-.chip.used { opacity: 0.5; }
+.chip.used { opacity: 0.7; }
+.chip .dim { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; letter-spacing: 0.04em; color: var(--text-secondary); }
+.placed-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; font-size: 12px; letter-spacing: 0.08em; color: var(--text-secondary); }
+.placed-strip .pip.on { color: var(--accent); }
 
 .score { display: grid; grid-template-columns: 24px 88px 1fr 24px; align-items: center; gap: 10px; font-size: 12px; letter-spacing: 0.1em; color: var(--text-secondary); }
 .score b { text-align: right; }
@@ -240,7 +247,7 @@ button.row:disabled { cursor: default; border-color: var(--accent); background: 
 .file .head:hover { background: var(--surface-hover); }
 .file .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .file .who .text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.file .flag { flex: none; padding: 1px 5px; border: 1px solid var(--accent); border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: var(--accent); }
+.file .flag { flex: none; padding: 1px 5px; border: 1px solid var(--accent); border-radius: 3px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent); }
 .file .pct { display: flex; align-items: baseline; gap: 8px; }
 .file .pct b { font-size: 22px; letter-spacing: 0.04em; }
 .file .dim { font-size: 11px; color: var(--text-secondary); }

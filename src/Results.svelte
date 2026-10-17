@@ -11,6 +11,7 @@
   let { replay }: { replay: () => void } = $props()
 
   const r = $derived(analyze(game, me()?.id))
+  let showFiles = $state(false) // the files are the long part of the scoreboard, so they start tucked away
 </script>
 
 <Head step="EXPERIMENT COMPLETE" />
@@ -41,17 +42,23 @@
 <Subnets subnets={r.subnets} airGapped={r.airGapped} />
 
 <div class="wave"></div>
-<div class="split"><span class="label">THE FILES</span>{#if r.guessed}<span class="good">YOU CRACKED {r.hits} OF {r.guessed}</span>{/if}</div>
 {#if r.verdict}
   <div class="panel framed">
     <div class="label good glitch" class:lost={!r.hits}>[ {r.verdict.tag} ]</div>
     <div class="muted">{r.verdict.note}</div>
   </div>
 {/if}
-<p class="muted">EACH FILE IS ONE PERSON'S SONGS · MOST GUESSED ON TOP · TAP ONE TO SEE WHO GUESSED WHAT</p>
-<div class="files">
-  {#each r.files as file, rank (file.id)}<SubjectFile {file} {rank} />{/each}
-</div>
+<button class="files-toggle" aria-expanded={showFiles} onclick={() => (showFiles = !showFiles)}>
+  <span class="label">THE FILES · {r.files.length}</span>
+  {#if r.guessed}<span class="good">YOU CRACKED {r.hits} OF {r.guessed}</span>{/if}
+  <span>{showFiles ? '▴' : '▾'}</span>
+</button>
+{#if showFiles}
+  <p class="muted prose">Each file is one person's songs, most guessed on top. Tap one to see who guessed what.</p>
+  <div class="files">
+    {#each r.files as file, rank (file.id)}<SubjectFile {file} {rank} />{/each}
+  </div>
+{/if}
 
 <Playlist />
 

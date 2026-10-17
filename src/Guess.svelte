@@ -4,7 +4,7 @@
   import Head from './Head.svelte'
   import Notice from './Notice.svelte'
   import Playlist from './Playlist.svelte'
-  import { attempt, game, isHost, me, nameOf, packsOf, refreshSoon, type Pack } from './lib/game.svelte'
+  import { attempt, game, isHost, me, nameOf, notify, packsOf, refreshSoon, type Pack } from './lib/game.svelte'
   import { rpc } from './lib/supabase'
 
   const room = $derived(game.room!)
@@ -14,7 +14,15 @@
   const guessFor = (pack: Pack) => game.guesses.find((g) => g.song_id === pack.songs[0].id && g.guesser_id === me()?.id)?.guessed_player_id
   const todo = $derived(packs.filter((p) => !isMine(p)))
   const done = $derived(todo.filter((p) => guessFor(p)).length)
-  const matchedElsewhere = (pack: Pack, playerId: string) => todo.some((p) => p !== pack && guessFor(p) === playerId)
+  // the set a crew member is already matched to (other than this one), so the chips can say where everyone is
+  const placedOn = (pack: Pack, playerId: string) => todo.find((p) => p !== pack && guessFor(p) === playerId)
+  const label = (pack: Pack) => {
+    const title = pack.songs[0].title
+    return `"${title.length > 30 ? `${title.slice(0, 29)}…` : title}"`
+  }
+  const left = $derived(crew.filter((p) => !todo.some((t) => guessFor(t) === p.id))) // crew members not matched to any set yet
+  const openSets = $derived(todo.filter((p) => !guessFor(p)))
+  const lastOne = $derived(openSets.length === 1 && left.length === 1 ? { pack: openSets[0], player: left[0] } : null)
 
   let open = $state<string | null>(null)
   let progress = $state<{ finished: number; total: number }>()
@@ -38,11 +46,15 @@
     open = null
     const meId = me()!.id
     const ids = new Set(pack.songs.map((s) => s.id))
+    const from = placedOn(pack, playerId)
     game.guesses = [
       ...game.guesses.filter((g) => !(g.guesser_id === meId && (ids.has(g.song_id) || g.guessed_player_id === playerId))),
       ...pack.songs.map((s) => ({ song_id: s.id, guesser_id: meId, guessed_player_id: playerId })),
     ]
-    await attempt(pack.id, () => rpc('submit_guess', { p_pack: pack.id, p_guessed: playerId }))
+    const saved = attempt(pack.id, () => rpc('submit_guess', { p_pack: pack.id, p_guessed: playerId }))
+    // each person is on one set, so say so when choosing them takes them off another
+    if (from) notify(pack.id, `${nameOf(playerId).toUpperCase()} MOVED HERE FROM ${label(from)} · THAT SET IS OPEN AGAIN`)
+    await saved
     refreshSoon()
   }
 
@@ -63,7 +75,16 @@
 {/if}
 
 {#if todo.length}
-  <p class="muted center"><Eq />/// LISTEN TO THE PLAYLIST, THEN FOR EACH SET OF SONGS PICK THE CREW MEMBER WHO ADDED THEM · EACH CREW MEMBER MATCHES ONE SET</p>
+  <p class="muted prose center"><Eq />/// Listen to the playlist, then match every crew member to the set of songs they added. Each person added exactly one set, so each name goes on a different set.</p>
+  <div class="placed-strip" aria-label="Crew members still to place">
+    {#each crew as p}
+      {@const placed = !left.includes(p)}
+      <span class="pip" class:on={placed}>{placed ? '✓' : '○'} {p.name.toUpperCase()}</span>
+    {/each}
+  </div>
+  {#if lastOne}
+    <button class="btn ghost plain" onclick={() => pick(lastOne.pack, lastOne.player.id)}>ONLY {lastOne.player.name.toUpperCase()} IS LEFT · PLACE THEM ON {label(lastOne.pack)}</button>
+  {/if}
 {/if}
 
 {#if todo.length && done === todo.length}
@@ -103,8 +124,9 @@
       {#if open === pack.id}
         <div class="chips" role="radiogroup" aria-label="Who added these songs">
           {#each crew as p}
-            <button class="chip" role="radio" aria-checked={guessFor(pack) === p.id} class:on={guessFor(pack) === p.id} class:used={matchedElsewhere(pack, p.id)} onclick={() => pick(pack, p.id)}>
-              {guessFor(pack) === p.id ? '✓ ' : ''}{p.name.toUpperCase()}
+            {@const elsewhere = placedOn(pack, p.id)}
+            <button class="chip" role="radio" aria-checked={guessFor(pack) === p.id} class:on={guessFor(pack) === p.id} class:used={elsewhere} onclick={() => pick(pack, p.id)}>
+              <span>{guessFor(pack) === p.id ? '✓ ' : ''}{p.name.toUpperCase()}</span>{#if elsewhere}<span class="dim">on {label(elsewhere)}</span>{/if}
             </button>
           {/each}
         </div>

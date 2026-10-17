@@ -88,7 +88,7 @@
     <p class="muted">/// PLAYLIST GOES TO {spotifyName.toUpperCase()}'S SPOTIFY</p>
     <button type="button" class="link" onclick={disconnect}>NOT YOU? DISCONNECT</button>
   {:else}
-    <p class="muted">/// AUTHENTICATE VIA SPOTIFY TO MAKE PLAYLISTS · DON'T WORRY, THE LOGIN RUNS ON SPOTIFY'S ENCRYPTED AND SECURE HTTPS PAGE, SO PASSWORDS NEVER TOUCH THIS APP</p>
+    <p class="muted prose">/// Connect Spotify so the experiment can make your playlist. The login happens on Spotify's own secure page, so your password never touches this app.</p>
   {/if}
   <Notice scope="create" />
   <button class="btn">{spotifyName ? 'INITIALIZE THE EXPERIMENT' : 'CONNECT SPOTIFY'}</button>

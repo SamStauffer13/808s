@@ -57,7 +57,7 @@
 {#if alone}<p class="muted center">/// SEND THE INVITE LINK TO YOUR CREW</p>{/if}
 <Share />
 {#if left > 0}
-  <p class="muted center">/// ADD {left} MORE SONG{left > 1 ? 'S' : ''} THAT FIT THE VIBE · NOBODY SEES WHO ADDED WHAT UNTIL THE RESULTS</p>
+  <p class="muted prose center">/// Add {left} more song{left > 1 ? 's' : ''} that fit the vibe. Nobody sees who added what until the results.</p>
 {/if}
 
 {#each slots as s, i}
@@ -76,7 +76,7 @@
 {#if mine.length >= room.songs_per_player}
   <p class="center good">{everyoneIn ? (isHost() ? "EVERYONE'S IN · PRESS BEGIN THE EXPERIMENT BELOW" : "EVERYONE'S IN") : waiting > 0 ? `SONGS ADDED · WAITING ON ${waiting} MORE CREW MEMBER${waiting > 1 ? 'S' : ''}` : 'SONGS ADDED'}</p>
   {#if !isHost()}
-    <p class="muted center">/// {everyoneIn ? `WAITING ON ${hostName} TO BEGIN THE EXPERIMENT` : `WHEN EVERYONE'S DONE, ${hostName} BEGINS THE EXPERIMENT`} · THE ROUND WHERE YOU GUESS WHO ADDED WHAT</p>
+    <p class="muted prose center">/// {everyoneIn ? `Waiting on ${hostName} to begin the experiment.` : `When everyone's done, ${hostName} begins the experiment.`} That's the round where you guess who added what.</p>
   {/if}
 {/if}
 

@@ -38,7 +38,10 @@ for (const [role, stage, url] of stages) {
 
 test('results: scoreboard shows the genre features', async ({ page }) => {
   await open(page, '/?practice=results')
-  for (const sel of ['.board', '.awards', '.subnets', '.file']) await expect(page.locator(sel).first()).toBeAttached()
+  for (const sel of ['.board', '.awards', '.subnets', '.files-toggle']) await expect(page.locator(sel).first()).toBeAttached()
+  await expect(page.locator('.file')).toHaveCount(0) // tucked away until opened
+  await page.locator('.files-toggle').dispatchEvent('click') // the wizard's overlay sits on top, so click the element directly
+  await expect(page.locator('.file').first()).toBeAttached()
   await expect(page.locator('.awards')).toContainText('SAME WAVELENGTH')
   await expect(page.locator('.subnets')).toContainText('THE CREW BY SUBNET')
   await expect(page.locator('.file').first()).toContainText('VIBE ·')
@@ -48,4 +51,15 @@ test('guess: shows who is still guessing', async ({ page }) => {
   await open(page, '/?practice=guess')
   await expect(page.getByText('CREW FINISHED')).toBeVisible()
   await expect(page.getByText(/STILL GUESSING · COLE/)).toBeAttached()
+})
+
+test('guess: shows who is left to place, and says when a pick moves someone', async ({ page }) => {
+  await open(page, '/?practice=guess')
+  await expect(page.locator('.placed-strip .pip')).toHaveCount(5)
+  await expect(page.locator('.placed-strip .pip.on').first()).toBeAttached() // some are placed already
+  await page.locator('.panel .row:not(.on)').first().dispatchEvent('click') // a set with nobody picked yet
+  const used = page.locator('.chip.used').first()
+  await expect(used).toContainText(/on "/) // says where that person already is
+  await used.dispatchEvent('click')
+  await expect(page.getByText(/MOVED HERE FROM ".*" · THAT SET IS OPEN AGAIN/)).toBeVisible()
 })
