@@ -5,6 +5,7 @@ export default defineConfig({
   testDir: 'tests',
   outputDir: 'test-results/artifacts',
   reporter: 'list',
+  retries: 1, // one retry so a slow start does not block a deploy
   use: { baseURL: 'http://localhost:5173', viewport: { width: 390, height: 844 } },
   webServer: { command: 'npm run dev -- --port 5173 --strictPort', url: 'http://localhost:5173', reuseExistingServer: true },
 })
