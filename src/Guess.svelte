@@ -1,13 +1,15 @@
 <script lang="ts">
-  import Art from './Art.svelte'
+  import Credits from './Credits.svelte'
   import Eq from './Eq.svelte'
   import Head from './Head.svelte'
+  import ItemRow from './ItemRow.svelte'
   import Notice from './Notice.svelte'
   import Playlist from './Playlist.svelte'
-  import { attempt, game, isHost, me, nameOf, notify, packsOf, refreshSoon, type Pack } from './lib/game.svelte'
+  import { attempt, game, isHost, kindOf, me, nameOf, notify, packsOf, refreshSoon, words, type Pack } from './lib/game.svelte'
   import { rpc } from './lib/supabase'
 
   const room = $derived(game.room!)
+  const w = $derived(words())
   const crew = $derived(game.players.filter((p) => p.id !== me()?.id))
   const packs = $derived(packsOf(game.songs))
   const isMine = (pack: Pack) => pack.songs.some((s) => game.owners[s.id] === me()?.id)
@@ -75,7 +77,7 @@
 {/if}
 
 {#if todo.length}
-  <p class="muted prose center"><Eq />/// Listen to the playlist, then match every crew member to the set of songs they added. Each person added exactly one set, so each name goes on a different set.</p>
+  <p class="muted prose center"><Eq />/// {w.guessIntro}</p>
   <div class="placed-strip" aria-label="Crew members still to place">
     {#each crew as p}
       {@const placed = !left.includes(p)}
@@ -91,12 +93,14 @@
   <p class="center good">ALL GUESSED · {waiting > 0 ? `WAITING ON ${waiting} MORE CREW MEMBER${waiting > 1 ? 'S' : ''}` : 'OPENING THE RESULTS'}</p>
   <p class="muted center">/// THE RESULTS OPEN WHEN THE WHOLE CREW IS DONE · COME BACK ANY TIME</p>
 {:else if !todo.length}
-  <p class="center good">NOTHING TO GUESS · THESE ARE ALL YOUR SONGS</p>
+  <p class="center good">NOTHING TO GUESS · THESE ARE ALL YOUR {w.nouns.toUpperCase()}</p>
 {/if}
 
-<div class="framed">
-  <iframe title="Playlist" src={`https://open.spotify.com/embed/playlist/${room.playlist_id}?theme=0`} allow="encrypted-media" loading="lazy"></iframe>
-</div>
+{#if room.playlist_id}
+  <div class="framed">
+    <iframe title="Playlist" src={`https://open.spotify.com/embed/playlist/${room.playlist_id}?theme=0`} allow="encrypted-media" loading="lazy"></iframe>
+  </div>
+{/if}
 <Playlist />
 
 {#if progress}
@@ -108,21 +112,18 @@
 
 {#each packs as pack}
   {#if isMine(pack)}
-    <div class="panel muted">YOUR SONGS · {pack.songs.map((s) => s.title).join(' · ')}</div>
+    <div class="panel muted">YOUR {w.nouns.toUpperCase()} · {pack.songs.map((s) => s.title).join(' · ')}</div>
   {:else}
     <div class="panel stack">
       {#each pack.songs as s}
-        <a class="line" href={`https://open.spotify.com/track/${s.spotify_id}`} target="_blank" rel="noopener">
-          <Art src={s.art_url} />
-          <div class="grow-text"><div>{s.title}</div><div class="dim">{s.artist}</div></div>
-        </a>
+        <ItemRow song={s} />
       {/each}
       <button class="row" class:on={guessFor(pack)} onclick={() => (open = open === pack.id ? null : pack.id)}>
         <span class="grow">{guessFor(pack) ? nameOf(guessFor(pack)).toUpperCase() : 'WHO ADDED THESE?'}</span>
         <span>{open === pack.id ? '▴' : '▾'}</span>
       </button>
       {#if open === pack.id}
-        <div class="chips" role="radiogroup" aria-label="Who added these songs">
+        <div class="chips" role="radiogroup" aria-label={`Who added these ${w.nouns}`}>
           {#each crew as p}
             {@const elsewhere = placedOn(pack, p.id)}
             <button class="chip" role="radio" aria-checked={guessFor(pack) === p.id} class:on={guessFor(pack) === p.id} class:used={elsewhere} onclick={() => pick(pack, p.id)}>
@@ -137,3 +138,4 @@
 {/each}
 
 <div class="grow"></div>
+{#if kindOf() === 'movies'}<Credits full />{/if}

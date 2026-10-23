@@ -4,11 +4,12 @@
   import Head from './Head.svelte'
   import Playlist from './Playlist.svelte'
   import SubjectFile from './SubjectFile.svelte'
-  import { game, me } from './lib/game.svelte'
+  import { game, me, words } from './lib/game.svelte'
   import { analyze } from './lib/results'
   import { badges } from './lib/stamps'
 
   let { replay }: { replay: () => void } = $props()
+  const w = $derived(words())
 
   const r = $derived(analyze(game, me()?.id))
   let showFiles = $state(false) // the files are the long part of the scoreboard, so they start tucked away
@@ -54,7 +55,7 @@
   <span>{showFiles ? '▴' : '▾'}</span>
 </button>
 {#if showFiles}
-  <p class="muted prose">Each file is one person's songs, most guessed on top. Tap one to see who guessed what.</p>
+  <p class="muted prose">Each file is one person's {w.nouns}, most guessed on top. Tap one to see who guessed what.</p>
   <div class="files">
     {#each r.files as file, rank (file.id)}<SubjectFile {file} {rank} />{/each}
   </div>

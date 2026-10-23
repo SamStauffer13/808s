@@ -1,9 +1,11 @@
 <script lang="ts">
   import Art from './Art.svelte'
   import { decrypt } from './lib/decrypt'
-  import { game, me, nameOf, packsOf } from './lib/game.svelte'
+  import { game, me, nameOf, packsOf, words } from './lib/game.svelte'
   import { vibeOf } from './lib/results'
   import { noteOf, statsOf, stampFor } from './lib/stamps'
+
+  const w = $derived(words())
 
   // index is the set being shown; go moves this player (and only this player) to another one
   let { index, total, go }: { index: number; total: number; go: (to: number) => void } = $props()
@@ -45,12 +47,12 @@
   <div class="progress" aria-hidden="true">
     {#each { length: total } as _, i}<i class:seen={i <= index}></i>{/each}
   </div>
-  {#if index === 0}<p class="muted prose center">/// See who added each set of songs. Go at your own pace and come back any time.</p>{/if}
+  {#if index === 0}<p class="muted prose center">/// See who added each set of {w.nouns}. Go at your own pace and come back any time.</p>{/if}
 
   {#if pack}
     {#each pack.songs as song}
       <div class="row">
-        <Art src={song.art_url} />
+        <Art src={song.art_url} poster={w.poster} title={song.title} />
         <div class="grow-text"><div>{song.title}</div><div class="dim">{song.artist}</div></div>
       </div>
     {/each}
@@ -65,7 +67,7 @@
     <div class="veil" class:veiled={!solved} aria-hidden={!solved}>
       {#if vibe.length}<p class="verdict dim">VIBE · {vibe.join(' · ').toUpperCase()}</p>{/if}
       {#if yours}
-        <p class="verdict muted">YOUR SONGS</p>
+        <p class="verdict muted">YOUR {w.nouns.toUpperCase()}</p>
       {:else if !mine}
         <p class="verdict muted">YOU DIDN'T GUESS THIS ONE</p>
       {:else if mine.guessed_player_id === owner}

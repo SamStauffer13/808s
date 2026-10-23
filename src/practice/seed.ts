@@ -4,23 +4,26 @@ import { practice, practiceCode, type Stage } from '../lib/practice.svelte'
 import { stampFor, stamps, statsOf } from '../lib/stamps'
 import { guessesBy, me, order, players, playlist, sets, setSongs, songId, theme } from './data'
 
+// the movie round has no playlist: its lineup is the screen itself
 const room = (phase: Room['phase']): Room => ({
   id: 'practice',
   code: practiceCode,
   host_user_id: players[practice.role === 'guest' ? 1 : 0].user_id, // a crew member's host is Cierra
-  theme,
+  theme: theme(),
   songs_per_player: 1,
   phase,
-  playlist_id: playlist.split('/').pop()!,
-  playlist_url: playlist,
+  playlist_id: practice.kind === 'movies' ? null : playlist.split('/').pop()!,
+  playlist_url: practice.kind === 'movies' ? null : playlist,
+  kind: practice.kind,
 })
 
-const songsInOrder = order.flatMap(setSongs)
+// read when a stage opens, not once: the round's picks depend on the kind chosen on the home screen
+const songsInOrder = () => order.flatMap(setSongs)
 const ownersOf = (among: number[]) => Object.fromEntries(among.map((set) => [songId(set), players[set].id]))
 
 // the finished game: everyone has guessed every set, and every owner is known
 const everyGuess = sets.flatMap((g) => guessesBy(g, sets))
-const finished = () => ({ room: room('reveal'), songs: songsInOrder, owners: ownersOf(sets), guesses: everyGuess })
+const finished = () => ({ room: room('reveal'), songs: songsInOrder(), owners: ownersOf(sets), guesses: everyGuess })
 
 // (game.songs holds just your own songs while adding, the whole playlist while guessing.)
 const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
@@ -32,7 +35,7 @@ const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
     counts: Object.fromEntries(players.map((p, i) => [p.id, i === 0 ? 0 : 1])),
   }),
   // everyone else has guessed everything; you have matched 3 of your 5, and only the right two crew members are left to pick
-  guess: () => ({ room: room('guess'), songs: songsInOrder, owners: ownersOf([0]), guesses: guessesBy(0, [3, 5, 2]) }),
+  guess: () => ({ room: room('guess'), songs: songsInOrder(), owners: ownersOf([0]), guesses: guessesBy(0, [3, 5, 2]) }),
   results: finished,
 }
 

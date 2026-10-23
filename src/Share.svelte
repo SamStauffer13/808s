@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { game } from './lib/game.svelte'
+  import { game, words } from './lib/game.svelte'
 
   let copied = $state(false)
 
@@ -9,7 +9,8 @@
   async function share() {
     const url = `${location.origin}${location.pathname}#/${game.room!.code}`
     if (sheet) {
-      await navigator.share({ title: '808s', text: `Join my 808s experiment: ${game.room!.theme}`, url }).catch(() => {})
+      const { title } = words()
+      await navigator.share({ title, text: `Join my ${title} experiment: ${game.room!.theme}`, url }).catch(() => {})
       return
     }
     await navigator.clipboard.writeText(url)

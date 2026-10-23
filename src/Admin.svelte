@@ -1,13 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import Notice from './Notice.svelte'
-  import { attempt, notify, once } from './lib/game.svelte'
+  import { attempt, notify, once, words } from './lib/game.svelte'
+  import { kinds, type Kind } from './lib/kinds'
   import { practice } from './lib/practice.svelte'
   import { call } from './lib/supabase'
 
   // The owner's override: five taps on the logo open it, and the admin key, entered once, stays on this device.
   // The server checks the key on every use. With a room code it moves that room, otherwise it asks for one.
-  let { code = '', big = false } = $props()
+  // The logo follows the kind: the home screen and the invite say which one they are for, a room already knows.
+  let { code = '', big = false, kind = undefined }: { code?: string; big?: boolean; kind?: Kind } = $props()
+  const logo = $derived(kind ? kinds[kind].logo : words().logo)
 
   const read = () => {
     try {
@@ -85,7 +88,7 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="logo" class:big class:mark={!big} onclick={tap}>808<small>s</small></div>
+<div class="logo" class:big class:mark={!big} onclick={tap}>{logo[0]}<small>{logo[1]}</small></div>
 <Notice scope="admin" />
 
 {#if !key && open}

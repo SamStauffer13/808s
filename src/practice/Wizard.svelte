@@ -3,7 +3,7 @@
   import { tour, titles } from './steps'
 
   // there is no skip button: the way forward is doing what the card says, which moves the real game along
-  const steps = $derived(tour[practice.role][practice.stage] ?? [])
+  const steps = $derived(tour(practice.kind)[practice.role][practice.stage] ?? [])
   const i = $derived(Math.min(practice.step, steps.length - 1))
   const step = $derived(steps[i])
 
@@ -146,7 +146,7 @@
   <div class="practice-spot" style:top="{hole.top}px" style:left="{hole.left}px" style:width="{hole.width}px" style:height="{hole.height}px"></div>
   {#if card}
     <div class="practice-card {card.side}" bind:clientHeight={cardHeight} style:top="{card.top}px" style:--arrow="{card.arrow}px">
-      <div class="meta"><span>STEP {i + 1} OF {steps.length}</span><span>{titles[practice.stage]}</span></div>
+      <div class="meta"><span>STEP {i + 1} OF {steps.length}</span><span>{titles(practice.kind)[practice.stage]}</span></div>
       <p class="say" aria-live="polite">{typeof step.text === 'function' ? step.text() : step.text}</p>
       {#if step.look}
         <button type="button" class="btn" onclick={advance}>GOT IT</button>

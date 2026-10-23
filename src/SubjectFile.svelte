@@ -1,8 +1,10 @@
 <script lang="ts">
   import Scramble from './Scramble.svelte'
-  import { me, nameOf } from './lib/game.svelte'
+  import { me, nameOf, words } from './lib/game.svelte'
   import type { Analysis } from './lib/results'
   import { noteOf } from './lib/stamps'
+
+  const w = $derived(words())
 
   // One subject: the songs they added, who they are, and how much of the crew cracked them. A tap shows who guessed what.
   let { file, rank }: { file: Analysis['files'][number]; rank: number } = $props()
@@ -13,7 +15,7 @@
 <div class="file" class:open class:hit={file.call?.hit} class:miss={file.call && !file.call.hit}>
   <button class="head" aria-expanded={open} onclick={() => (open = !open)}>
     <span class="songs">
-      {#each file.songs as song}<span>♪ {song.title} <span class="dim">· {song.artist}</span></span>{/each}
+      {#each file.songs as song}<span>{w.glyph} {song.title} <span class="dim">· {song.artist}</span></span>{/each}
     </span>
     {#if file.vibe.length}<span class="dim vibe">VIBE · {file.vibe.join(' · ').toUpperCase()}</span>{/if}
     <span class="who">
@@ -28,7 +30,7 @@
     {#if file.call}
       <span class="you">YOU {file.call.hit ? '✓ NAILED IT' : `✗ SAID ${upper(file.call.pick)}`}</span>
     {:else if file.yours}
-      <span class="you">YOUR SONGS</span>
+      <span class="you">YOUR {w.nouns.toUpperCase()}</span>
     {/if}
   </button>
   {#if open}

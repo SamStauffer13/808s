@@ -5,10 +5,12 @@
   import Notice from './Notice.svelte'
   import Share from './Share.svelte'
   import Slot from './Slot.svelte'
-  import { attempt, game, isHost, me, nameOf, once, refreshCounts, refreshSoon, type Track } from './lib/game.svelte'
+  import { attempt, game, isHost, me, nameOf, once, refreshCounts, refreshSoon, words, type Track } from './lib/game.svelte'
   import { call, rpc } from './lib/supabase'
 
   const room = $derived(game.room!)
+  const w = $derived(words())
+  const NOUNS = $derived(w.nouns.toUpperCase())
   const mine = $derived(game.songs.filter((s) => game.owners[s.id] === me()?.id))
   const slots = $derived(Array.from({ length: room.songs_per_player }, (_, i) => mine[i]))
   const total = $derived(Object.values(game.counts).reduce((a, b) => a + b, 0))
@@ -19,9 +21,9 @@
   const hostName = $derived(nameOf(game.players.find((p) => p.user_id === room.host_user_id)?.id).toUpperCase())
   const waiting = $derived(game.players.length - locked) // players still adding songs
   const steps = $derived([
-    { text: `ADD YOUR SONGS · ${mine.length} / ${room.songs_per_player}`, done: left === 0 },
+    { text: `ADD YOUR ${NOUNS} · ${mine.length} / ${room.songs_per_player}`, done: left === 0 },
     { text: `INVITE THE CREW · ${game.players.length - 1} JOINED`, done: !alone },
-    { text: `WAIT FOR EVERYONE'S SONGS · ${locked} / ${game.players.length}`, done: everyoneIn },
+    { text: `WAIT FOR EVERYONE'S ${NOUNS} · ${locked} / ${game.players.length}`, done: everyoneIn },
     { text: 'BEGIN THE EXPERIMENT', done: false },
   ])
 
@@ -41,7 +43,7 @@
   const startGuessing = once(() => attempt('start', () => call('start-guess', { room_id: room.id })))
 </script>
 
-<Head step={`SONGS ADDED ${mine.length} / ${room.songs_per_player}`} title="Add your songs" />
+<Head step={`${NOUNS} ADDED ${mine.length} / ${room.songs_per_player}`} title={`Add your ${w.nouns}`} />
 
 {#if isHost()}
   <div class="panel stack">
@@ -52,20 +54,20 @@
   </div>
 {/if}
 
-<div class="panel"><div class="label">THE PLAYLIST VIBE</div><div class="good big">{room.theme}</div></div>
+<div class="panel"><div class="label">{w.vibeLabel}</div><div class="good big">{room.theme}</div></div>
 
 {#if alone}<p class="muted center">/// SEND THE INVITE LINK TO YOUR CREW</p>{/if}
 <Share />
 {#if left > 0}
-  <p class="muted prose center">/// Add {left} more song{left > 1 ? 's' : ''} that fit the vibe. Nobody sees who added what until the results.</p>
+  <p class="muted prose center">/// Add {left} more {w.noun}{left > 1 ? 's' : ''} that fit the vibe. Nobody sees who added what until the results.</p>
 {/if}
 
 {#each slots as s, i}
   {#if s}
     <div class="row" in:fade={{ duration: 150 }}>
-      <Art src={s.art_url} />
+      <Art src={s.art_url} poster={w.poster} title={s.title} />
       <div class="grow-text"><div>{s.title}</div><div class="dim">{s.artist}</div></div>
-      <button class="round" onclick={() => remove(s.id)} aria-label="Remove song">×</button>
+      <button class="round" onclick={() => remove(s.id)} aria-label={`Remove ${w.noun}`}>×</button>
     </div>
   {:else}
     <Slot n={i + 1} {taken} onpick={add} />
@@ -74,7 +76,7 @@
 <Notice scope="songs" />
 
 {#if mine.length >= room.songs_per_player}
-  <p class="center good">{everyoneIn ? (isHost() ? "EVERYONE'S IN · PRESS BEGIN THE EXPERIMENT BELOW" : "EVERYONE'S IN") : waiting > 0 ? `SONGS ADDED · WAITING ON ${waiting} MORE CREW MEMBER${waiting > 1 ? 'S' : ''}` : 'SONGS ADDED'}</p>
+  <p class="center good">{everyoneIn ? (isHost() ? "EVERYONE'S IN · PRESS BEGIN THE EXPERIMENT BELOW" : "EVERYONE'S IN") : waiting > 0 ? `${NOUNS} ADDED · WAITING ON ${waiting} MORE CREW MEMBER${waiting > 1 ? 'S' : ''}` : `${NOUNS} ADDED`}</p>
   {#if !isHost()}
     <p class="muted prose center">/// {everyoneIn ? `Waiting on ${hostName} to begin the experiment.` : `When everyone's done, ${hostName} begins the experiment.`} That's the round where you guess who added what.</p>
   {/if}
@@ -97,9 +99,9 @@
 {#if isHost()}
   <Notice scope="start" />
   {#if everyoneIn}
-    <p class="muted center">/// {total} TRACKS · EVERYONE'S WAITING ON YOU</p>
+    <p class="muted center">/// {total} {w.item.toUpperCase()}S · EVERYONE'S WAITING ON YOU</p>
     <button class="btn" onclick={startGuessing}>BEGIN THE EXPERIMENT</button>
   {:else}
-    <button class="btn" disabled>{alone ? 'WAITING FOR THE CREW TO JOIN' : `WAITING ON ${waiting} TO ADD SONGS`}</button>
+    <button class="btn" disabled>{alone ? 'WAITING FOR THE CREW TO JOIN' : `WAITING ON ${waiting} TO ADD ${NOUNS}`}</button>
   {/if}
 {/if}

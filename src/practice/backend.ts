@@ -2,9 +2,9 @@
 // name, so the real screens work end to end without a network. Each handler does what the real server would,
 // including moving to the next stage when the real game would move on.
 import { game, packsOf, savedName, type Song } from '../lib/game.svelte'
-import { goStage, practiceCode, spotifyKey } from '../lib/practice.svelte'
+import { goStage, practice, practiceCode, spotifyKey } from '../lib/practice.svelte'
 import { fake, type Fake } from '../lib/supabase'
-import { chosen, me, players, searchable, theme, tracks } from './data'
+import { chosen, me, players, pool, searchable, theme } from './data'
 
 // have you matched every set that is not yours?
 const finished = () =>
@@ -24,7 +24,7 @@ const handlers: Fake = {
   'create-room': () => (goStage('submit'), { room: { code: practiceCode } }), // next you add songs, as the host
 
   // invite (a crew member's journey)
-  room_preview: () => [{ theme, phase: 'submit' }],
+  room_preview: () => [{ theme: theme(), phase: 'submit', kind: practice.kind }],
   join_room: () => (goStage('submit'), { code: practiceCode }),
 
   // adding songs
@@ -35,9 +35,9 @@ const handlers: Fake = {
     return { tracks: (found.length ? found : searchable()).slice(0, 6).map((t) => ({ id: t.id, title: t.title, artist: t.artist, art: t.art, blocked: false })) }
   },
   'add-song': ({ spotify_id }) => {
-    const t = tracks.find((x) => x.id === spotify_id)!
+    const t = pool().find((x) => x.id === spotify_id)!
     chosen.set(t.id)
-    const song: Song = { id: `added-${t.id}`, pack: null, spotify_id: t.id, title: t.title, artist: t.artist, art_url: t.art, genres: t.genres }
+    const song: Song = { id: `added-${t.id}`, pack: null, spotify_id: t.id, title: t.title, artist: t.artist, art_url: t.art, genres: t.genres, watch: t.watch }
     game.songs = [...game.songs, song]
     game.owners = { ...game.owners, [song.id]: me.id }
     game.counts = { ...game.counts, [me.id]: (game.counts[me.id] ?? 0) + 1 }

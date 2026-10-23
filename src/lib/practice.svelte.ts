@@ -1,6 +1,8 @@
 // Practice mode: the real screens, run on a fake game and a fake server (src/practice) while a wizard walks the
 // player through them. One flag turns it on; leaving reloads the page, which throws all of it away.
 // There are two journeys: the host's (start a game) and a crew member's (join one from an invite link).
+import type { Kind } from './kinds'
+
 export type Role = 'host' | 'guest'
 export type Stage = 'home' | 'invite' | 'submit' | 'guess' | 'results'
 export const journeys: Record<Role, readonly Stage[]> = {
@@ -16,7 +18,7 @@ export const practiceCode = 'PRACTICE'
 
 // kept for the tab, so a reload (or the trip through the fake Spotify login) lands on the same step
 const key = '808s-practice'
-type Saved = { role: Role; stage: Stage; step: number; returnTo: string }
+type Saved = { role: Role; stage: Stage; step: number; returnTo: string; kind: Kind }
 
 const saved = (): Partial<Saved> => {
   try {
@@ -28,11 +30,11 @@ const saved = (): Partial<Saved> => {
 const start = saved()
 const role = start.role ?? 'host'
 
-export const practice = $state({ on: !!start.returnTo, role, stage: start.stage ?? journeys[role][0], step: start.step ?? 0, returnTo: start.returnTo ?? '' })
+export const practice = $state({ on: !!start.returnTo, role, stage: start.stage ?? journeys[role][0], step: start.step ?? 0, returnTo: start.returnTo ?? '', kind: start.kind ?? ('music' as Kind) })
 
 const save = () => {
   try {
-    sessionStorage.setItem(key, JSON.stringify({ role: practice.role, stage: practice.stage, step: practice.step, returnTo: practice.returnTo }))
+    sessionStorage.setItem(key, JSON.stringify({ role: practice.role, stage: practice.stage, step: practice.step, returnTo: practice.returnTo, kind: practice.kind }))
   } catch {}
 }
 
@@ -40,8 +42,14 @@ const save = () => {
 let installed: Promise<void> | undefined
 export const installPractice = () => (installed ??= import('../practice/backend').then((m) => m.install()))
 
-export function startPractice(role: Role = 'host', stage: Stage = journeys[role][0], returnTo = location.href) {
-  Object.assign(practice, { on: true, role, stage, step: 0, returnTo })
+export function startPractice(role: Role = 'host', stage: Stage = journeys[role][0], returnTo = location.href, kind: Kind = 'music') {
+  Object.assign(practice, { on: true, role, stage, step: 0, returnTo, kind })
+  save()
+}
+
+// the home screen's toggle, while practicing: the rest of the round follows it
+export function setKind(kind: Kind) {
+  practice.kind = kind
   save()
 }
 
@@ -66,14 +74,16 @@ export function exitPractice() {
 }
 
 // /?practice opens the host's journey and /?practice=guest the crew member's; /?practice=guess or =guest-guess jumps
-// to one stage (so does an old #/demo link). Handy for testing one screen.
+// to one stage (so does an old #/demo link). Handy for testing one screen. Add &kind=movies for the movie round.
 export function startFromAddress() {
-  const asked = new URLSearchParams(location.search).get('practice')
+  const params = new URLSearchParams(location.search)
+  const asked = params.get('practice')
+  const kind: Kind = params.get('kind') === 'movies' ? 'movies' : 'music'
   const old = /^#\/demo(?:-(\w+))?$/.exec(location.hash)
   if (asked === null && !old) return
   const [, guest, name] = /^(guest-?)?(\w*)$/.exec(asked ?? old?.[1] ?? '') ?? []
   const role: Role = guest || name === 'invite' ? 'guest' : 'host'
   const stage = journeys[role].find((s) => s === name)
   history.replaceState(null, '', location.pathname)
-  startPractice(role, stage, location.origin + location.pathname)
+  startPractice(role, stage, location.origin + location.pathname, kind)
 }

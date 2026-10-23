@@ -2,13 +2,15 @@
   import Admin from './Admin.svelte'
   import Notice from './Notice.svelte'
   import { attempt, joinGame, savedName } from './lib/game.svelte'
+  import { kinds, type Kind } from './lib/kinds'
   import { practice, startPractice } from './lib/practice.svelte'
   import { rpc } from './lib/supabase'
 
   let { code, onjoin } = $props()
 
   let name = $state(savedName())
-  let preview = $state<{ theme: string; phase: string } | null>()
+  let preview = $state<{ theme: string; phase: string; kind?: Kind } | null>()
+  const w = $derived(kinds[preview?.kind ?? 'music'])
 
   $effect(() => {
     attempt('preview', async () => (preview = (await rpc('room_preview', { p_code: code }))[0] ?? null))
@@ -19,7 +21,7 @@
   }
 </script>
 
-<Admin big {code} />
+<Admin big {code} kind={preview?.kind} />
 
 <div class="form">
   {#if preview === undefined}
@@ -37,8 +39,8 @@
       <div class="panel stack">
         <div class="label">MISSION BRIEFING</div>
         <div class="line"><b class="good">1</b><span>ENTER YOUR NAME BELOW AND JOIN</span></div>
-        <div class="line"><b class="good">2</b><span>ADD YOUR SONGS THAT FIT THE THEME</span></div>
-        <div class="line"><b class="good">3</b><span>ONCE THE CREW IS IN, LISTEN TO THE PLAYLIST AND GUESS WHO ADDED WHAT</span></div>
+        <div class="line"><b class="good">2</b><span>ADD YOUR {w.nouns.toUpperCase()} THAT FIT THE THEME</span></div>
+        <div class="line"><b class="good">3</b><span>{w.inviteWatch}</span></div>
         <div class="line"><b class="good">4</b><span>SEE WHO WON</span></div>
       </div>
       <p class="muted center">/// RETURNING? USE THE SAME NAME TO TAKE YOUR SEAT</p>

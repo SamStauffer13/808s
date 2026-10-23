@@ -35,6 +35,12 @@ EXIT (top of the screen) reloads the page back to where practice was started fro
 To test one screen after a change, open `/?practice` for the host (or `/?practice=submit`, `guess`, `results`), or `/?practice=guest` for the crew member (`guest-submit`, `guest-guess`, `guest-results` jump to a stage) in dev.
 An old `/808s/demo` link starts practice too.
 
+**Movie preview (35mm).** The Songs / Movies toggle on Home picks what the practice round is made of. Movies are only a guided preview on the fake
+server: no room is created and nothing reaches Supabase or any movie service. Open `/?practice&kind=movies` (or `/?kind=movies` for Home with Movies
+selected) to jump to it. What a screen says depends on the kind: the wording lives in `src/lib/kinds.ts`, the 12 sample movies (drawn as title cards,
+with made-up where-to-watch rows, one with none) in `src/practice/movies.ts`, and `ItemRow`, `WatchRow` and `Credits` draw a pick, its where-to-watch
+link and its data credit. A room with no `kind` is music, so the real game is unchanged.
+
 Check the tutorial after a change with `npm run tour` (Playwright, phone-sized Chromium; first time only: `npx playwright install chromium`).
 It opens every practice stage, checks the wizard finds what its first prompt points at, fails on any console error or "not available in
 the practice round", and checks the scoreboard's genre features. Screenshots of each stage land in `test-results/screens/` (not committed):
@@ -44,7 +50,7 @@ Keep it in step when the experiment data, the screens or the server calls they m
 - `src/practice/steps.ts` has the prompts for each journey and the CSS selectors they point at: update them when a screen's markup changes.
 - `src/practice/backend.ts` answers the server calls. A call it has no answer for throws "not available in the practice
   round" and never reaches the real server, so a new call needs a handler there.
-- `src/practice/data.ts` has the fake experiment; `seed.ts` fails to load if a stamp in `src/lib/stamps.ts` is never earned by a set. Its guesses are chosen so the scoreboard also shows both crew awards (a tie for last and a most-blamed player), which the results steps point at: change them with care.
+- `src/practice/data.ts` has the fake experiment (and `movies.ts` the movie round's picks, chosen by `pool()`); `seed.ts` fails to load if a stamp in `src/lib/stamps.ts` is never earned by a set. Its guesses are chosen so the scoreboard also shows both crew awards (a tie for last and a most-blamed player), which the results steps point at: change them with care.
 - `npm run check` catches a changed type.
 
 Practice checks the screens, not the server: a broken Edge Function or permission rule will not show up in it. Before

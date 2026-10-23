@@ -1,18 +1,22 @@
-// What the practice game is made of: you and five crew members, and 12 tracks of a public Spotify playlist. Each player adds one song.
+// What the practice game is made of: you and five crew members, and 12 tracks of a public Spotify playlist (or 12 movies, in
+// the movie round: see movies.ts). Each player adds one pick.
 // Pure data, nothing here talks to a server.
 import type { Guess, Song } from '../lib/game.svelte'
+import { practice } from '../lib/practice.svelte'
+import { movies, movieTheme, type Pick } from './movies'
 
 // you are the host; seed() swaps in the name the player typed
 const names = ['Rookie', 'Cierra', 'Shilo', 'Dalton', 'Matt', 'Cole']
 export const players = names.map((name, i) => ({ id: `p${i}`, user_id: `u${i}`, name }))
 export const me = players[0]
 
-export const theme = 'songs that sound like a road trip at 2am'
+const musicTheme = 'songs that sound like a road trip at 2am'
+export const theme = () => (practice.kind === 'movies' ? movieTheme : musicTheme)
 export const playlist = 'https://open.spotify.com/playlist/73MeoOPlro0bLPf2ScEvvZ'
 
 // A one-time snapshot (titles, artists, cover art, genres) of that playlist, so rows look like real ones.
 // Set i (one song) belongs to player i and is track i; the rest are there to search for. Yours is whichever you pick.
-export const tracks = [
+const musicTracks: Pick[] = [
   { id: '47oI62sCBPLsCVgcD2tr2z', title: 'Damaged Goods', artist: 'La Dispute', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02a33cf1cbd5cd623a7d3c8e56', genres: ['screamo', 'post-hardcore', 'emo'] },
   { id: '31Hx0pInhn2tSq5gdhWv0d', title: 'Such Small Hands', artist: 'La Dispute', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02a33cf1cbd5cd623a7d3c8e56', genres: ['screamo', 'post-hardcore', 'emo'] },
   { id: '6p4jnIWFWyLz0zUo2RD9iu', title: "Baby, You Wouldn't Last A Minute On The Creek", artist: 'Chiodos', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02565a166b9f44fc0250f5769e', genres: ['post-hardcore', 'screamo', 'metalcore'] },
@@ -26,6 +30,9 @@ export const tracks = [
   { id: '7MoHtlRxZ2cN9gfKg15eBg', title: 'Not The American Average', artist: 'Asking Alexandria', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02426885adbae74402b2faed65', genres: ['metalcore', 'post-hardcore', 'screamo'] },
   { id: '1XDleb5NksSab3NmUAlvz6', title: 'To Plant a Seed', artist: 'We Came As Romans', art: 'https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e021a8ba9aa6ad6b8e8a15bd751', genres: ['metalcore', 'post-hardcore', 'deathcore'] },
 ]
+
+// the picks of the round being practiced
+export const pool = () => (practice.kind === 'movies' ? movies : musicTracks)
 
 export const sets = players.map((_, i) => i)
 const packId = (set: number) => `pack-${set}`
@@ -41,13 +48,13 @@ export const chosen = {
   set: (id: string) => sessionStorage.setItem(chosenKey, id),
 }
 // the songs a search may offer: everything except what your crew already added
-export const searchable = () => tracks.filter((t, i) => i === 0 || i >= sets.length)
+export const searchable = () => pool().filter((t, i) => i === 0 || i >= sets.length)
 
-const trackOf = (set: number) => (set === 0 && tracks.find((t) => t.id === chosen.get())) || tracks[set]
+const trackOf = (set: number) => (set === 0 && pool().find((t) => t.id === chosen.get())) || pool()[set]
 
 export const setSongs = (set: number): Song[] => {
   const t = trackOf(set)
-  return [{ id: songId(set), pack: packId(set), spotify_id: t.id, title: t.title, artist: t.artist, art_url: t.art, genres: t.genres }]
+  return [{ id: songId(set), pack: packId(set), spotify_id: t.id, title: t.title, artist: t.artist, art_url: t.art, genres: t.genres, watch: t.watch }]
 }
 
 // What each guesser got wrong, as pairs of sets they swapped (a swap makes both sets wrong, and keeps every

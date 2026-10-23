@@ -1,3 +1,4 @@
+import { kinds, type Kind } from './kinds'
 import { practice } from './practice.svelte'
 import { rpc, signIn, supabase } from './supabase'
 
@@ -10,9 +11,13 @@ export type Room = {
   phase: 'submit' | 'guess' | 'reveal' | 'done'
   playlist_id: string | null
   playlist_url: string | null
+  kind?: Kind // rooms made before movies have none: they are music
 }
 export type Player = { id: string; user_id: string; name: string }
-export type Song = { id: string; pack: string | null; spotify_id: string; title: string; artist: string; art_url: string | null; genres: string[] }
+// where a movie can be watched, grouped by how: its link goes to the page that lists them all
+export type Watch = { link: string; stream?: Provider[]; free?: Provider[]; rent?: Provider[]; buy?: Provider[] }
+export type Provider = { name: string; logo?: string }
+export type Song = { id: string; pack: string | null; spotify_id: string; title: string; artist: string; art_url: string | null; genres: string[]; watch?: Watch | null }
 export type Track = { id: string; title: string; artist: string; art: string | null; blocked: boolean }
 export type Guess = { song_id: string; guesser_id: string; guessed_player_id: string }
 export type Pack = { id: string; songs: Song[] }
@@ -82,6 +87,9 @@ export function packsOf(songs: Song[]): Pack[] {
   for (const s of songs) packs.set(s.pack!, [...(packs.get(s.pack!) ?? []), s])
   return [...packs].map(([id, list]) => ({ id, songs: list }))
 }
+
+export const kindOf = (): Kind => game.room?.kind ?? 'music'
+export const words = () => kinds[kindOf()]
 
 export const me = () => game.players.find((p) => p.user_id === game.userId)
 export const isHost = () => game.room?.host_user_id === game.userId
