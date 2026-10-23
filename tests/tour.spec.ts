@@ -125,8 +125,10 @@ test('home: audio or video is asked first, the form follows it, and changing kee
   await expect(page.getByText('1 VIDEO EACH')).toBeVisible() // video is one each, with nothing to change
   await expect(page.getByRole('button', { name: /EACH · CHANGE/ })).toHaveCount(0)
   await page.getByLabel('YOUR NAME').fill('Tester')
-  await page.locator('.chosen').dispatchEvent('click') // CHANGE: back to the question
+  await expect(page.locator('.rain')).toHaveCount(0, { timeout: 4000 }) // the choice plays the rain first
+  await page.locator('.chosen').dispatchEvent('click') // CHANGE: back to the question, with no rain
   await expect(page.getByLabel('YOUR NAME')).toHaveCount(0)
+  await expect(page.locator('.rain')).toHaveCount(0)
   await page.getByRole('button', { name: /AUDIO/ }).dispatchEvent('click')
   await expect(page.getByLabel('YOUR NAME')).toHaveValue('Tester') // nothing typed is lost
   await expect(page.getByRole('button', { name: 'CONNECT SPOTIFY' })).toBeVisible()
@@ -139,8 +141,11 @@ test('home: a first visit asks, and the answer is remembered so the next one goe
   await expect(page.locator('.choices')).toBeVisible()
   await expect(page.getByLabel('YOUR NAME')).toHaveCount(0)
   await page.getByRole('button', { name: /VIDEO/ }).click()
+  await expect(page.locator('.rain')).toBeVisible() // the same matrix rain as every other phase, with the form opening under it
+  await page.waitForTimeout(1100)
+  await page.screenshot({ path: 'test-results/screens/home-rain.png' })
+  await expect(page.locator('.rain')).toHaveCount(0, { timeout: 4000 })
   await expect(page.getByLabel('YOUR NAME')).toBeVisible()
-  await page.waitForTimeout(500)
   await page.screenshot({ path: 'test-results/screens/home-chosen.png', fullPage: true })
   await page.reload()
   await expect(page.getByLabel('YOUR NAME')).toBeVisible() // remembered: no question this time

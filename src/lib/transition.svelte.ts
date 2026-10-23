@@ -4,6 +4,9 @@ import { reduced } from './motion'
 export const transition = $state({ playing: false, title: '', glyphs: '', run: 0 })
 
 const phases: Record<string, { title: string; glyphs: string }> = {
+  // the host's first choice on Home, named by its source
+  spotify: { title: 'AUDIO SIGNAL LOCKED', glyphs: 'CHOOSE YOUR SIGNAL EVERYONE ADDS A SET GUESS WHO ADDED WHAT' },
+  youtube: { title: 'VIDEO SIGNAL LOCKED', glyphs: 'CHOOSE YOUR SIGNAL EVERYONE ADDS A SET GUESS WHO ADDED WHAT' },
   guess: { title: 'THE EXPERIMENT BEGINS', glyphs: 'SUBJECTS LOCKED IN MATCH EVERY SET TO ITS OWNER TRUST NO ONE' },
   results: { title: 'DECRYPTING THE RESULTS', glyphs: 'ALL GUESSES RECEIVED THE FINDINGS ARE IN SIGNAL LOCKED' },
 }

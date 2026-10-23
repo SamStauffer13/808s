@@ -230,7 +230,6 @@ a.row { color: inherit; text-decoration: none; }
 .choice:hover .glyph, .choice:focus-visible .glyph { background: var(--accent); color: var(--accent-text); text-shadow: none; }
 .choice:hover em, .choice:focus-visible em { transform: translateX(4px); }
 .choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.form.fresh { animation: reveal 450ms steps(20); } /* the form wipes in once a choice opens it */
 
 .pads, .chips { display: flex; gap: 8px; }
 .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } /* an even grid, so the names line up whether or not a chip carries a note */

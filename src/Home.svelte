@@ -7,6 +7,7 @@
   import { sourceOf, sources, wordsOf, type Source } from './lib/sources'
   import * as account from './lib/spotify-account'
   import { call } from './lib/supabase'
+  import { playTransition, transition } from './lib/transition.svelte'
 
   const tagline = ["EVERYONE ADDS AUDIO OR VIDEO.", "GUESS WHO ADDED WHAT.", "WINNERS GET CREDS."]
 
@@ -38,13 +39,19 @@
     }
   }
   let source = $state<Source | null>(draft?.source ?? remembered())
-  let fresh = $state(false) // the form has just been revealed by a choice
   const kind = $derived<Source>(source ?? 'spotify')
   const info = $derived(sourceOf(kind))
   const w = $derived(wordsOf(kind))
+  // The form opens behind the matrix rain, like every other phase change, once the rain covers the screen (the title
+  // shows from about 600ms). Going back to the question with CHANGE is instant.
+  let picking = false
   const pick = (choice: Source) => {
-    source = choice
-    fresh = true
+    if (picking) return // a double tap
+    playTransition(choice)
+    if (transition.playing) {
+      picking = true
+      setTimeout(() => ((source = choice), (picking = false)), 600)
+    } else source = choice // no rain: reduced motion, or the tab is hidden
     if (practice.on) return
     try {
       localStorage.setItem('808s-source', choice)
@@ -105,7 +112,7 @@
     <span class="dim">CHANGE</span>
   </button>
 
-  <form class="form" class:fresh autocomplete="off" onsubmit={(e) => (e.preventDefault(), spotifyName || !info.playlist ? create() : connect())}>
+  <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), spotifyName || !info.playlist ? create() : connect())}>
     <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
     <label class="field">
       <span class="label">THE {info.vibe} VIBE</span>
@@ -131,12 +138,10 @@
     {:else}
       <p class="muted">/// {songs} {w.NOUN} EACH</p>
     {/if}
-    {#if !info.playlist}
-      <p class="muted prose">/// {info.blurb}</p>
-    {:else if spotifyName}
+    {#if info.playlist && spotifyName}
       <p class="muted">/// PLAYLIST GOES TO {spotifyName.toUpperCase()}'S SPOTIFY</p>
       <button type="button" class="link" onclick={disconnect}>NOT YOU? DISCONNECT</button>
-    {:else}
+    {:else if info.playlist}
       <p class="muted prose">/// Connect Spotify so the experiment can make your playlist. The login happens on Spotify's own secure page, so your password never touches this app.</p>
     {/if}
     <Notice scope="create" />

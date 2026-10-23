@@ -23,7 +23,6 @@ export type SourceInfo = {
   placeholder: string // the search box
   vibe: string // "THE PLAYLIST VIBE": what the host's theme is a vibe for
   vibePlaceholder: string
-  blurb: string // what to tell a host when there is no account to connect
   verb: string // what players do to take it in: "listen", "watch"
   consume: string // that, as the instruction before guessing: "Listen to the playlist"
   picks: number[] // how many each player may add, to choose from on Home (one entry means it is fixed)
@@ -45,7 +44,6 @@ export const sources: Record<Source, SourceInfo> = {
     placeholder: 'search tracks or artists',
     vibe: 'PLAYLIST',
     vibePlaceholder: 'e.g. your favorite angsty teenager songs',
-    blurb: '',
     verb: 'listen',
     consume: 'Listen to the playlist',
     picks: [1, 2, 3, 4, 5],
@@ -65,7 +63,6 @@ export const sources: Record<Source, SourceInfo> = {
     placeholder: 'search videos or channels',
     vibe: 'VIDEO',
     vibePlaceholder: 'e.g. your favorite music video or scifi short',
-    blurb: 'Players search YouTube for a full movie or any goofy video. Nobody needs a YouTube account.',
     verb: 'watch',
     consume: 'Watch the videos',
     picks: [1],
