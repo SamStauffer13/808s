@@ -1,6 +1,8 @@
+import { reduced } from './motion'
+
 const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 const frames = 25
-const still = matchMedia('(prefers-reduced-motion: reduce)').matches
+const still = reduced()
 
 // Shows the text scrambled and resolves it left to right in about a second. Returns a stop function.
 export function decrypt(text: string, show: (shown: string) => void) {

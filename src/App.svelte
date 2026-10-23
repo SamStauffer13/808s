@@ -3,6 +3,7 @@
   import Home from './Home.svelte'
   import Rain from './Rain.svelte'
   import Room from './Room.svelte'
+  import { reduced } from './lib/motion'
   import { transition } from './lib/transition.svelte'
   import { installPractice, practice, practiceCode, startFromAddress } from './lib/practice.svelte'
 
@@ -13,7 +14,7 @@
   let code = $state(read())
 
   // a short terminal intro, once per visit, only on the home screen
-  let booting = $state(!practice.on && !read() && !sessionStorage.getItem('808s-booted') && !matchMedia('(prefers-reduced-motion: reduce)').matches)
+  let booting = $state(!practice.on && !read() && !sessionStorage.getItem('808s-booted') && !reduced())
   const booted = () => {
     sessionStorage.setItem('808s-booted', '1')
     booting = false
@@ -38,6 +39,6 @@
   <Home />
 {/if}
 
-{#if transition.title}
+{#if transition.playing}
   {#key transition.run}<Rain title={transition.title} glyphs={transition.glyphs} />{/key}
 {/if}
