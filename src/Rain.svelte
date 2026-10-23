@@ -10,7 +10,7 @@
 
   $effect(() => {
     const ctx = canvas.getContext('2d')!
-    const dpr = devicePixelRatio || 1
+    const dpr = Math.min(devicePixelRatio || 1, 2) // a 3x phone gains nothing from the extra pixels
     const { innerWidth: width, innerHeight: height } = window
     canvas.width = width * dpr
     canvas.height = height * dpr
@@ -26,6 +26,11 @@
       offset: Math.floor(Math.random() * letters.length),
     }))
     const glyph = (offset: number, row: number) => letters[(offset + Math.max(0, Math.floor(row)) + letters.length) % letters.length]
+
+    const px = Math.min(22, (width - 48) / title.length / 0.62) // the title shrinks to fit a narrow phone
+    const titleFont = `bold ${px}px 'JetBrains Mono', monospace`
+    ctx.font = titleFont
+    const box = ctx.measureText(title).width + 40
 
     let id = 0
     let last = 0
@@ -52,9 +57,7 @@
       })
       if (t > 0.35) {
         ctx.globalAlpha = Math.min((t - 0.35) / 0.3, 1)
-        const px = Math.min(22, ((width - 48) / title.length) / 0.62) // shrinks to fit a narrow phone
-        ctx.font = `bold ${px}px 'JetBrains Mono', monospace`
-        const box = ctx.measureText(title).width + 40
+        ctx.font = titleFont
         ctx.fillStyle = bg
         ctx.fillRect(width / 2 - box / 2, height / 2 - 28, box, 56)
         ctx.fillStyle = accent

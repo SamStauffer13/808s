@@ -11,6 +11,7 @@ const phases: Record<string, { title: string; glyphs: string }> = {
 // the room's 'reveal' and 'done' phases both open the results
 export function playTransition(phase: string) {
   const next = phases[phase === 'reveal' || phase === 'done' ? 'results' : phase]
-  if (!next || reduced()) return
+  if (!next || reduced() || document.hidden) return
   Object.assign(transition, next, { playing: true, run: transition.run + 1 })
+  navigator.vibrate?.(25) // a short buzz on phones that allow it, so the change is felt as well as seen
 }
