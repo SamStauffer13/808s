@@ -30,8 +30,8 @@ export type Prompt = { target: string; text: string | (() => string); look?: boo
 
 // the words for what the experiment is about: songs, or videos when the host chose that on Home
 const words = () => wordsOf(practice.source)
-// what the toggle on Home is set to right now (the room does not exist yet, so practice.source cannot say)
-const picked = () => (document.querySelector('[aria-label="What are you adding"] [aria-checked="true"]')?.textContent === 'VIDEO' ? 'VIDEOS' : 'SONGS')
+// what the host chose on Home (the room does not exist yet, so practice.source cannot say)
+const picked = () => (document.querySelector('.chosen')?.getAttribute('data-source') === 'youtube' ? 'VIDEOS' : 'SONGS')
 const search = (text: (w: ReturnType<typeof words>) => string): Prompt => ({ target: 'label.field input', text: () => text(words()), when: 'button.row:not([disabled])' })
 const addSong: Prompt = { target: 'button.row:not([disabled])', text: () => `NEXT, TAP YOUR ${words().NOUN} TO ADD IT; NOBODY SEES WHO ADDED WHAT UNTIL THE RESULTS.` }
 
@@ -54,9 +54,10 @@ const results: Prompt[] = [
 export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
   host: {
     home: [
-      { target: 'form label.field:nth-of-type(1) input', text: 'ENTER YOUR NAME SO YOUR CREW KNOWS WHO YOU ARE.' },
-      // what the crew adds: the choice made here is the one the rest of the tutorial follows (see 'create-room' in backend.ts)
-      { target: '[aria-label="What are you adding"]', text: 'NEXT, CHOOSE WHAT YOUR CREW WILL ADD: AUDIO OR VIDEO. THE REST OF THE TUTORIAL FOLLOWS YOUR CHOICE.' },
+      // what the crew adds comes first and the form opens after it: the choice made here is the one the rest of the
+      // tutorial follows (see 'create-room' in backend.ts)
+      { target: '.choices', text: 'FIRST, CHOOSE WHAT YOUR CREW WILL ADD: AUDIO OR VIDEO. THE REST OF THE TUTORIAL FOLLOWS YOUR CHOICE.' },
+      { target: 'form label.field:nth-of-type(1) input', text: 'NEXT, ENTER YOUR NAME SO YOUR CREW KNOWS WHO YOU ARE.' },
       { target: 'form label.field:nth-of-type(2) input', text: () => `THEN, ENTER A THEME FOR WHAT KINDS OF ${picked()} YOU WANT.` },
       // only audio makes a playlist, so only audio has a name to give it
       { target: 'form label.field:nth-of-type(3) input', text: 'NEXT, GIVE THE PLAYLIST A DOPE NAME BASED OFF THAT THEME.', required: true, skip: () => !document.querySelector('form label.field:nth-of-type(3) input') },

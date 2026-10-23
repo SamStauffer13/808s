@@ -22,7 +22,7 @@ const handlers: Fake = {
     const connected = sessionStorage.getItem(spotifyKey) !== null
     return { connected, name: connected ? savedName() || me.name : null }
   },
-  // next you add songs, as the host; the toggle on Home picks what the experiment is about
+  // next you add songs, as the host; the choice on Home picks what the experiment is about
   'create-room': ({ source }) => ((practice.source = isSource(source) ? source : 'spotify'), goStage('submit'), { room: { code: practiceCode } }),
 
   // invite (a crew member's journey)

@@ -19,6 +19,7 @@
     const style = getComputedStyle(document.documentElement)
     const accent = style.getPropertyValue('--accent').trim()
     const bg = style.getPropertyValue('--bg').trim()
+    const light = style.getPropertyValue('--accent-light').trim()
     const letters = glyphs.replace(/\s+/g, ' ')
     const streams = Array.from({ length: Math.ceil(width / size) }, () => ({
       speed: 36 + Math.random() * 54, // rows per second
@@ -50,7 +51,7 @@
         const row = start + seconds * speed
         if (row < 0 || row > height / size + 2) return
         const x = c * size + size / 2
-        ctx.fillStyle = '#d9ffe6' // the bright head of the stream
+        ctx.fillStyle = light // the bright head of the stream
         ctx.fillText(glyph(offset, row), x, row * size)
         ctx.fillStyle = accent
         ctx.fillText(glyph(offset, row - 1), x, (row - 1) * size)

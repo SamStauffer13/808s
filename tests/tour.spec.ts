@@ -77,6 +77,29 @@ test('submit: beginning the experiment plays the matrix rain, then clears', asyn
   await expect(page.locator('.rain')).toHaveCount(0, { timeout: 4000 })
 })
 
+test('theme: the matrix rain is drawn in the chosen color, not green', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('808s-theme', '#ff4fd8'))
+  await open(page, '/?practice=submit')
+  await page.getByPlaceholder('search tracks or artists').fill('the')
+  await page.locator('button.row:not([disabled])').first().dispatchEvent('click')
+  await page.getByRole('button', { name: 'BEGIN THE EXPERIMENT' }).dispatchEvent('click')
+  await expect(page.locator('.rain')).toBeVisible()
+  await page.waitForTimeout(1100)
+  await page.screenshot({ path: 'test-results/screens/rain-magenta.png' })
+  // the trails dim toward the background, so count the strongest pixels: magenta has red and blue well above green
+  const hue = await page.locator('canvas.rain').evaluate((c: HTMLCanvasElement) => {
+    const { data } = c.getContext('2d')!.getImageData(0, 0, c.width, c.height)
+    let magenta = 0
+    let green = 0
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i] > 120 && data[i + 2] > 90 && data[i + 1] < 0.7 * data[i]) magenta++
+      if (data[i + 1] > 120 && data[i] < 0.7 * data[i + 1] && data[i + 2] < 0.9 * data[i + 1]) green++
+    }
+    return { magenta, green }
+  })
+  expect(hue.magenta).toBeGreaterThan(hue.green)
+})
+
 // a video experiment: the same screens, about YouTube videos
 for (const stage of ['submit', 'guess', 'results']) {
   test(`videos ${stage}: draws, throws nothing`, async ({ page }) => {
@@ -90,28 +113,52 @@ for (const stage of ['submit', 'guess', 'results']) {
   })
 }
 
-test('home: choosing videos drops the playlist name and the Spotify login', async ({ page }) => {
+test('home: audio or video is asked first, the form follows it, and changing keeps what was typed', async ({ page }) => {
   await open(page, '/?practice=home')
-  await expect(page.getByRole('button', { name: 'CONNECT SPOTIFY' })).toBeVisible()
-  await expect(page.getByText('PLAYLIST NAME')).toBeVisible()
-  await page.getByRole('radio', { name: 'VIDEO' }).dispatchEvent('click')
+  await expect(page.getByRole('button', { name: /AUDIO/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /VIDEO/ })).toBeVisible()
+  await expect(page.getByLabel('YOUR NAME')).toHaveCount(0) // nothing else until one is chosen
+  await page.screenshot({ path: 'test-results/screens/home-choose.png', fullPage: true })
+  await page.getByRole('button', { name: /VIDEO/ }).dispatchEvent('click')
   await expect(page.getByRole('button', { name: 'INITIALIZE THE EXPERIMENT' })).toBeVisible()
   await expect(page.getByText('PLAYLIST NAME')).toHaveCount(0)
   await expect(page.getByText('1 VIDEO EACH')).toBeVisible() // video is one each, with nothing to change
-  await expect(page.getByRole('button', { name: /CHANGE/ })).toHaveCount(0)
-  await page.getByRole('radio', { name: 'AUDIO' }).dispatchEvent('click')
+  await expect(page.getByRole('button', { name: /EACH · CHANGE/ })).toHaveCount(0)
+  await page.getByLabel('YOUR NAME').fill('Tester')
+  await page.locator('.chosen').dispatchEvent('click') // CHANGE: back to the question
+  await expect(page.getByLabel('YOUR NAME')).toHaveCount(0)
+  await page.getByRole('button', { name: /AUDIO/ }).dispatchEvent('click')
+  await expect(page.getByLabel('YOUR NAME')).toHaveValue('Tester') // nothing typed is lost
+  await expect(page.getByRole('button', { name: 'CONNECT SPOTIFY' })).toBeVisible()
+  await expect(page.getByText('PLAYLIST NAME')).toBeVisible()
   await expect(page.getByRole('button', { name: '2 SONGS EACH · CHANGE' })).toBeVisible() // audio keeps its choice of 1 to 5
 })
 
+test('home: a first visit asks, and the answer is remembered so the next one goes straight to the form', async ({ page }) => {
+  const problems = await open(page, '/')
+  await expect(page.locator('.choices')).toBeVisible()
+  await expect(page.getByLabel('YOUR NAME')).toHaveCount(0)
+  await page.getByRole('button', { name: /VIDEO/ }).click()
+  await expect(page.getByLabel('YOUR NAME')).toBeVisible()
+  await page.waitForTimeout(500)
+  await page.screenshot({ path: 'test-results/screens/home-chosen.png', fullPage: true })
+  await page.reload()
+  await expect(page.getByLabel('YOUR NAME')).toBeVisible() // remembered: no question this time
+  await expect(page.locator('.choices')).toHaveCount(0)
+  await expect(page.locator('.chosen')).toContainText('VIDEO')
+  expect(problems.filter((p) => !/favicon/.test(p))).toEqual([])
+})
+
 // The wizard dims everything but what it points at, so this goes through it with real clicks (the other tests click
-// the element directly, which gets past the dimming and would never notice a toggle nobody can reach).
+// the element directly, which gets past the dimming and would never notice a choice nobody can reach).
 test('tutorial: the wizard lets you choose video, then skips the playlist name', async ({ page }) => {
   await open(page, '/?practice=home')
   const card = page.locator('.practice-card')
+  await expect(card).toContainText('AUDIO OR VIDEO')
+  await page.getByRole('button', { name: /VIDEO/ }).click() // a real click: the choice is the lit spot
+  await expect(card).toContainText('ENTER YOUR NAME')
   await page.getByLabel('YOUR NAME').fill('Tester')
   await card.getByRole('button', { name: 'NEXT' }).click()
-  await expect(card).toContainText('AUDIO OR VIDEO')
-  await page.getByRole('radio', { name: 'VIDEO' }).click() // a real click: the toggle is the lit spot
   await expect(card).toContainText('KINDS OF VIDEOS')
   await page.getByLabel('THE VIDEO VIBE').fill('goofy shorts')
   await card.getByRole('button', { name: 'NEXT' }).click()
@@ -166,3 +213,36 @@ for (const [source, other] of [['spotify', /\bvideos?\b/i], ['youtube', /\bsongs
     })
   }
 }
+
+test('theme: tapping the logo cycles the colors, survives a reload, and the fifth tap opens the admin instead', async ({ page }) => {
+  const problems = await open(page, '/')
+  const accent = () => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim())
+  const logo = page.locator('.logo.big')
+  expect(await accent()).toBe('#1db954')
+  await logo.click()
+  expect(await accent()).toBe('#22d3ee')
+  expect(await page.locator('link[rel="icon"]').getAttribute('href')).toContain('%2322d3ee') // the tab icon follows too
+  await page.waitForTimeout(300)
+  await page.screenshot({ path: 'test-results/screens/theme-cyan.png', fullPage: true })
+  await page.reload()
+  expect(await accent()).toBe('#22d3ee')
+  await logo.click()
+  expect(await accent()).toBe('#ff4fd8')
+  await logo.click()
+  expect(await accent()).toBe('#e8e8e8')
+  await logo.click()
+  expect(await accent()).toBe('#1db954')
+  await logo.click()
+  expect(await accent()).toBe('#22d3ee') // four taps since the reload: once round the colors, back where it started
+  await expect(page.getByText('ADMIN KEY')).toHaveCount(0)
+  await logo.click() // the fifth tap in a row
+  await expect(page.getByText('ADMIN KEY')).toBeVisible()
+  expect(await accent()).toBe('#22d3ee')
+  expect(problems.filter((p) => !/favicon/.test(p))).toEqual([])
+})
+
+test('theme: a color saved by an older picker falls back to green', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('808s-theme', '#ffb000'))
+  await open(page, '/')
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim())).toBe('#1db954')
+})

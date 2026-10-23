@@ -5,8 +5,9 @@
   import { practice } from './lib/practice.svelte'
   import * as account from './lib/spotify-account'
   import { call } from './lib/supabase'
+  import { cycleTheme } from './lib/theme.svelte'
 
-  // The owner's override: five taps on the logo open it, and the admin key, entered once, stays on this device.
+  // The logo changes the app's color on each tap. The owner's override: five taps on the logo open it, and the admin key, entered once, stays on this device.
   // The server checks the key on every use. With a room code it moves that room, otherwise it asks for one.
   let { code = '', big = false } = $props()
 
@@ -32,11 +33,12 @@
 
   const room = $derived((code || typed).trim().toUpperCase())
 
+  // Each tap also changes the color. Four taps go once round the four colors, so the fifth, which opens the admin, changes nothing.
   const tap = () => {
-    if (practice.on) return // practice has no admin
+    if (practice.on) return cycleTheme() // practice has no admin
     clearTimeout(idle)
     idle = setTimeout(() => (taps = 0), 2000)
-    if (++taps < 5) return
+    if (++taps < 5) return cycleTheme()
     taps = 0
     open = !open
   }

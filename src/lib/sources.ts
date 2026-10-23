@@ -15,7 +15,8 @@ export type Embed = { src: string; wide?: boolean }
 
 export type SourceInfo = {
   name: string // "SPOTIFY": who it is from
-  label: string // the toggle on Home
+  label: string // the choice on Home
+  pitch: string // under the label on that choice: what picking it means, in plain words
   noun: string // "song": the word the screens use for one item
   nouns: string // "songs"
   icon: string // marks one item in a list
@@ -37,6 +38,7 @@ export const sources: Record<Source, SourceInfo> = {
   spotify: {
     name: 'SPOTIFY',
     label: 'AUDIO',
+    pitch: 'Build a Spotify playlist together',
     noun: 'song',
     nouns: 'songs',
     icon: '♪',
@@ -56,6 +58,7 @@ export const sources: Record<Source, SourceInfo> = {
   youtube: {
     name: 'YOUTUBE',
     label: 'VIDEO',
+    pitch: 'Build a YouTube playlist together',
     noun: 'video',
     nouns: 'videos',
     icon: '▶',

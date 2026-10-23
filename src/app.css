@@ -8,6 +8,7 @@
   --border: #343a36;
   --accent: #1db954;
   --accent-hover: #1ed760;
+  --accent-light: #d9ffe6;
   --accent-text: #090b0a;
   --accent-tint: rgba(29, 185, 84, 0.14);
   --miss: #ff5c6c;
@@ -88,7 +89,9 @@ a { color: var(--accent); }
   75% { text-shadow: none; transform: none; }
 }
 .logo.big small { font-size: 40px; }
-.logo.mark { font-size: 18px; opacity: 0.55; cursor: default; user-select: none; -webkit-tap-highlight-color: transparent; }
+/* the big and small logos are tapped: each tap changes the color (src/Admin.svelte) */
+.logo.big, .logo.mark { cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.logo.mark { font-size: 18px; opacity: 0.55; }
 .logo.mark small { font-size: 11px; }
 /* a name shrinks to fit its panel: --len is the longest name's letter count, each letter is about 0.92em wide */
 .logo .tag { display: block; margin-top: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; color: var(--accent); } /* YOU beside a big name */
@@ -211,6 +214,24 @@ a.row { color: inherit; text-decoration: none; }
 .field input:focus-visible { outline-offset: -1px; }
 .field input.secret { -webkit-text-security: disc; text-security: disc; }
 
+/* the first question on Home: two big cards, each says in plain words what picking it means */
+.choice { all: unset; position: relative; box-sizing: border-box; display: flex; align-items: center; gap: 16px; min-height: 104px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); cursor: pointer; }
+.choice .glyph { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--accent-tint); font-size: 24px; color: var(--accent); text-shadow: 0 0 10px var(--accent); transition: background-color 150ms, color 150ms; }
+.choice .what { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.choice b { font-size: 20px; letter-spacing: 0.16em; }
+.choice .what span { font-size: 13px; line-height: 1.4; letter-spacing: 0.02em; color: var(--text-secondary); }
+.choice em { flex: none; font-style: normal; font-size: 22px; color: var(--accent); transition: transform 150ms; }
+/* the corner brackets of a framed panel, drawn when the card is hovered or focused */
+.choice::before, .choice::after { content: ''; position: absolute; width: 14px; height: 14px; border: 2px solid var(--accent); opacity: 0; pointer-events: none; transition: opacity 150ms; }
+.choice::before { left: -1px; top: -1px; border-right: 0; border-bottom: 0; }
+.choice::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+.choice:hover, .choice:focus-visible { border-color: var(--accent); background: var(--accent-tint); box-shadow: 0 0 18px var(--accent-tint); }
+.choice:hover::before, .choice:hover::after, .choice:focus-visible::before, .choice:focus-visible::after { opacity: 1; }
+.choice:hover .glyph, .choice:focus-visible .glyph { background: var(--accent); color: var(--accent-text); text-shadow: none; }
+.choice:hover em, .choice:focus-visible em { transform: translateX(4px); }
+.choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.form.fresh { animation: reveal 450ms steps(20); } /* the form wipes in once a choice opens it */
+
 .pads, .chips { display: flex; gap: 8px; }
 .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } /* an even grid, so the names line up whether or not a chip carries a note */
 .pad, .chip {
@@ -289,6 +310,7 @@ a.row { color: inherit; text-decoration: none; }
 .dock .prev { flex: none; width: 56px; }
 .split .link { margin-block: -16px; } /* a 44px touch area that adds no extra space */
 
+
 /* practice mode (src/practice/Wizard.svelte): a spotlight on the next thing to touch, and a card that says what to do */
 body.practicing #app { padding-top: 56px; }
 .practice-pill { position: fixed; top: 10px; left: 50%; z-index: 30; display: flex; align-items: center; gap: 4px; height: 32px; padding: 0 4px 0 12px; transform: translateX(-50%); border: 1px solid var(--accent); border-radius: 16px; background: var(--bg); font-size: 11px; letter-spacing: 0.14em; color: var(--accent); white-space: nowrap; }
@@ -315,7 +337,7 @@ iframe.wide { height: auto; aspect-ratio: 16 / 9; }
 .link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 
-.btn, .row, .chip, .pad, .round, .field input, .link { transition: background-color 150ms, border-color 150ms, color 150ms; }
+.btn, .row, .choice, .chip, .pad, .round, .field input, .link { transition: background-color 150ms, border-color 150ms, color 150ms; }
 /* signal details: live equalizer, recording dot, waveform divider, the Spotify mark, the intro */
 .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; margin-right: 8px; vertical-align: -1px; }
 .eq i { width: 3px; height: 3px; background: var(--accent); animation: eq 800ms ease-in-out infinite alternate; }
