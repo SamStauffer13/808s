@@ -97,6 +97,10 @@ test('home: choosing videos drops the playlist name and the Spotify login', asyn
   await page.getByRole('radio', { name: 'VIDEO' }).dispatchEvent('click')
   await expect(page.getByRole('button', { name: 'INITIALIZE THE EXPERIMENT' })).toBeVisible()
   await expect(page.getByText('PLAYLIST NAME')).toHaveCount(0)
+  await expect(page.getByText('1 VIDEO EACH')).toBeVisible() // video is one each, with nothing to change
+  await expect(page.getByRole('button', { name: /CHANGE/ })).toHaveCount(0)
+  await page.getByRole('radio', { name: 'AUDIO' }).dispatchEvent('click')
+  await expect(page.getByRole('button', { name: '2 SONGS EACH · CHANGE' })).toBeVisible() // audio keeps its choice of 1 to 5
 })
 
 // The wizard dims everything but what it points at, so this goes through it with real clicks (the other tests click

@@ -25,6 +25,8 @@ export type SourceInfo = {
   blurb: string // what to tell a host when there is no account to connect
   verb: string // what players do to take it in: "listen", "watch"
   consume: string // that, as the instruction before guessing: "Listen to the playlist"
+  picks: number[] // how many each player may add, to choose from on Home (one entry means it is fixed)
+  defaultPicks: number
   playlist: boolean // the host connects an account and the experiment makes a playlist there
   link: (id: string) => string // opens one item at its source
   embed: (room: Room, songs: Song[]) => Embed | null // plays the whole list in order, when the source has a way to
@@ -44,6 +46,8 @@ export const sources: Record<Source, SourceInfo> = {
     blurb: '',
     verb: 'listen',
     consume: 'Listen to the playlist',
+    picks: [1, 2, 3, 4, 5],
+    defaultPicks: 2,
     playlist: true,
     link: (id) => `https://open.spotify.com/track/${id}`,
     embed: (room) => (room.playlist_id ? { src: `https://open.spotify.com/embed/playlist/${room.playlist_id}?theme=0` } : null),
@@ -61,6 +65,8 @@ export const sources: Record<Source, SourceInfo> = {
     blurb: 'Players search YouTube for a full movie or any goofy video. Nobody needs a YouTube account.',
     verb: 'watch',
     consume: 'Watch the videos',
+    picks: [1],
+    defaultPicks: 1,
     playlist: false,
     link: (id) => `https://www.youtube.com/watch?v=${id}`,
     // no playlist exists on YouTube, but its embed plays a list of video ids one after another (no login needed)

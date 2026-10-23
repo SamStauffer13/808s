@@ -14,6 +14,8 @@ export type Db = ReturnType<typeof admin>
 export type Provider = {
   // the host connects an account to make the experiment's list in; without one they cannot start a room
   needsHostAccount: boolean
+  // the most items one player may add; a room asks for up to this many each
+  maxPicks: number
   isId(id: string): boolean
   search(q: string): Promise<Item[]>
   // re-reads an item from its source so a client cannot make up titles; null when it does not exist

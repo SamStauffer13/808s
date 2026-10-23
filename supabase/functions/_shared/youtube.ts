@@ -26,6 +26,7 @@ const thumb = (s: any) => (s.thumbnails?.medium ?? s.thumbnails?.default)?.url ?
 // "Ideas not built" in the README.)
 export const youtubeProvider: Provider = {
   needsHostAccount: false,
+  maxPicks: 1, // one video each: a video takes minutes to watch, where a song takes seconds
   isId: (id) => /^[A-Za-z0-9_-]{11}$/.test(id),
 
   async search(q) {

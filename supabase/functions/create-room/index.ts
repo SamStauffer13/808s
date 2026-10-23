@@ -6,10 +6,10 @@ Deno.serve(
     const user = await currentUser(req)
     if (!user) throw new HttpError(401, 'sign in first')
     const { name, theme, title, songs_per_player, source = 'spotify' } = await req.json()
-    providerFor(source)
+    const provider = providerFor(source)
 
     // a source that makes a list (a Spotify playlist) needs the host's account to make it in
-    if (providerFor(source).needsHostAccount) {
+    if (provider.needsHostAccount) {
       const { data: account } = await admin().from('spotify_accounts').select('user_id').eq('user_id', user.id).maybeSingle()
       if (!account) throw new HttpError(400, 'connect your Spotify account first')
     }
@@ -21,7 +21,7 @@ Deno.serve(
       p_name: name,
       p_theme: theme,
       p_title: title,
-      p_songs: Number(songs_per_player) || 3,
+      p_songs: Math.min(Number(songs_per_player) || 3, provider.maxPicks),
       p_max: 20,
       p_source: source,
     })

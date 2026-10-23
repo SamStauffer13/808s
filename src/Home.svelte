@@ -28,7 +28,8 @@
   let source = $state<Source>(draft?.source ?? 'spotify')
   const info = $derived(sourceOf(source))
   const w = $derived(wordsOf(source))
-  let songs = $state(draft?.songs ?? 2)
+  let wanted = $state<number>(draft?.songs ?? 0) // how many each, as chosen (0: not chosen yet)
+  const songs = $derived(info.picks.includes(wanted) ? wanted : info.defaultPicks) // what the source allows
   let editingSongs = $state(false)
   let spotifyName = $state<string | null>(null)
 
@@ -88,13 +89,15 @@
     <div class="field">
       <span class="label">{w.NOUNS} EACH</span>
       <div class="pads" role="radiogroup" aria-label={`${w.nouns} each`}>
-        {#each [1, 2, 3, 4, 5] as n}
-          <button type="button" role="radio" aria-checked={songs === n} class="pad" class:on={songs === n} onclick={() => ((songs = n), (editingSongs = false))}>{n}</button>
+        {#each info.picks as n}
+          <button type="button" role="radio" aria-checked={songs === n} class="pad" class:on={songs === n} onclick={() => ((wanted = n), (editingSongs = false))}>{n}</button>
         {/each}
       </div>
     </div>
-  {:else}
+  {:else if info.picks.length > 1}
     <button type="button" class="link" onclick={() => (editingSongs = true)}>{songs} {songs > 1 ? w.NOUNS : w.NOUN} EACH · CHANGE</button>
+  {:else}
+    <p class="muted">/// {songs} {w.NOUN} EACH</p>
   {/if}
   {#if !info.playlist}
     <p class="muted prose">/// {info.blurb}</p>

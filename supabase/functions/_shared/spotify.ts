@@ -120,6 +120,7 @@ export async function genresOf(token: string, rawTrack: any): Promise<string[]> 
 // for making the playlist.
 export const spotifyProvider: Provider = {
   needsHostAccount: true,
+  maxPicks: 5,
   isId: (id) => /^[A-Za-z0-9]{22}$/.test(id),
 
   async search(q) {
