@@ -67,8 +67,18 @@ export function once<A extends unknown[]>(fn: (...args: A) => Promise<unknown>) 
   }
 }
 
-export const savedName = () => localStorage.getItem('808s-name') ?? ''
-export const saveName = (name: string) => localStorage.setItem('808s-name', name.trim())
+export const savedName = () => {
+  try {
+    return localStorage.getItem('808s-name') ?? ''
+  } catch {
+    return ''
+  }
+}
+export const saveName = (name: string) => {
+  try {
+    localStorage.setItem('808s-name', name.trim())
+  } catch {}
+}
 
 // returns the room code once joined
 export const joinGame = (code: string, name: string) =>

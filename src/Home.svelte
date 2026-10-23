@@ -77,6 +77,20 @@
 
   const disconnect = () => attempt('create', async () => (await account.disconnect(), (spotifyName = null)))
 
+  // The form is checked here, not by the browser's own pop-up, so the message sits under the box that needs it. A name
+  // or vibe of only spaces counts as empty (the pattern), and a box practice insists on is covered by :invalid too.
+  let tried = $state(false)
+  const submit = (e: SubmitEvent) => {
+    e.preventDefault()
+    const form = e.currentTarget as HTMLFormElement
+    if (!form.checkValidity()) {
+      tried = true
+      form.querySelector<HTMLInputElement>('input:invalid')?.focus()
+      return
+    }
+    spotifyName || !info.playlist ? create() : connect()
+  }
+
   const create = once(() =>
     attempt('create', async () => {
       const { room } = await call<{ room: { code: string } }>('create-room', { name, theme: vibe, title: info.playlist ? title : '', songs_per_player: songs, source: kind })
@@ -112,11 +126,16 @@
     <span class="dim">CHANGE</span>
   </button>
 
-  <form class="form" autocomplete="off" onsubmit={(e) => (e.preventDefault(), spotifyName || !info.playlist ? create() : connect())}>
-    <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
+  <form class="form" class:tried novalidate autocomplete="off" onsubmit={submit}>
+    <label class="field">
+      <span class="label">YOUR NAME</span>
+      <input bind:value={name} maxlength="16" pattern=".*\S.*" required />
+      {#if tried && !name.trim()}<span class="err">/// ENTER YOUR NAME</span>{/if}
+    </label>
     <label class="field">
       <span class="label">THE {info.vibe} VIBE</span>
-      <input bind:value={vibe} maxlength="140" placeholder={info.vibePlaceholder} required />
+      <input bind:value={vibe} maxlength="140" pattern=".*\S.*" placeholder={info.vibePlaceholder} required />
+      {#if tried && !vibe.trim()}<span class="err">/// ADD A VIBE FOR YOUR CREW</span>{/if}
     </label>
     {#if info.playlist}
       <label class="field">
@@ -135,8 +154,6 @@
       </div>
     {:else if info.picks.length > 1}
       <button type="button" class="link" onclick={() => (editingSongs = true)}>{songs} {songs > 1 ? w.NOUNS : w.NOUN} EACH · CHANGE</button>
-    {:else}
-      <p class="muted">/// {songs} {w.NOUN} EACH</p>
     {/if}
     {#if info.playlist && spotifyName}
       <p class="muted">/// PLAYLIST GOES TO {spotifyName.toUpperCase()}'S SPOTIFY</p>

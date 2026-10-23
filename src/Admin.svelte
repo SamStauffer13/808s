@@ -5,7 +5,7 @@
   import { practice } from './lib/practice.svelte'
   import * as account from './lib/spotify-account'
   import { call } from './lib/supabase'
-  import { cycleTheme } from './lib/theme.svelte'
+  import { cycleTheme } from './lib/theme'
 
   // The logo changes the app's color on each tap. The owner's override: five taps on the logo open it, and the admin key, entered once, stays on this device.
   // The server checks the key on every use. With a room code it moves that room, otherwise it asks for one.

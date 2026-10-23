@@ -78,26 +78,26 @@ test('submit: beginning the experiment plays the matrix rain, then clears', asyn
 })
 
 test('theme: the matrix rain is drawn in the chosen color, not green', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('808s-theme', '#ff4fd8'))
+  await page.addInitScript(() => localStorage.setItem('808s-theme', '#975eab'))
   await open(page, '/?practice=submit')
   await page.getByPlaceholder('search tracks or artists').fill('the')
   await page.locator('button.row:not([disabled])').first().dispatchEvent('click')
   await page.getByRole('button', { name: 'BEGIN THE EXPERIMENT' }).dispatchEvent('click')
   await expect(page.locator('.rain')).toBeVisible()
   await page.waitForTimeout(1100)
-  await page.screenshot({ path: 'test-results/screens/rain-magenta.png' })
-  // the trails dim toward the background, so count the strongest pixels: magenta has red and blue well above green
+  await page.screenshot({ path: 'test-results/screens/rain-purple.png' })
+  // the trails dim toward the background, so count the strongest pixels: purple has red and blue well above green
   const hue = await page.locator('canvas.rain').evaluate((c: HTMLCanvasElement) => {
     const { data } = c.getContext('2d')!.getImageData(0, 0, c.width, c.height)
-    let magenta = 0
+    let purple = 0
     let green = 0
     for (let i = 0; i < data.length; i += 4) {
-      if (data[i] > 120 && data[i + 2] > 90 && data[i + 1] < 0.7 * data[i]) magenta++
+      if (data[i] > 120 && data[i + 2] > 90 && data[i + 1] < 0.7 * data[i]) purple++
       if (data[i + 1] > 120 && data[i] < 0.7 * data[i + 1] && data[i + 2] < 0.9 * data[i + 1]) green++
     }
-    return { magenta, green }
+    return { purple, green }
   })
-  expect(hue.magenta).toBeGreaterThan(hue.green)
+  expect(hue.purple).toBeGreaterThan(hue.green)
 })
 
 // a video experiment: the same screens, about YouTube videos
@@ -122,8 +122,7 @@ test('home: audio or video is asked first, the form follows it, and changing kee
   await page.getByRole('button', { name: /VIDEO/ }).dispatchEvent('click')
   await expect(page.getByRole('button', { name: 'INITIALIZE THE EXPERIMENT' })).toBeVisible()
   await expect(page.getByText('PLAYLIST NAME')).toHaveCount(0)
-  await expect(page.getByText('1 VIDEO EACH')).toBeVisible() // video is one each, with nothing to change
-  await expect(page.getByRole('button', { name: /EACH · CHANGE/ })).toHaveCount(0)
+  await expect(page.getByText(/VIDEOS? EACH/)).toHaveCount(0) // video is one each, with nothing to choose or explain
   await page.getByLabel('YOUR NAME').fill('Tester')
   await expect(page.locator('.rain')).toHaveCount(0, { timeout: 4000 }) // the choice plays the rain first
   await page.locator('.chosen').dispatchEvent('click') // CHANGE: back to the question, with no rain
@@ -134,6 +133,32 @@ test('home: audio or video is asked first, the form follows it, and changing kee
   await expect(page.getByRole('button', { name: 'CONNECT SPOTIFY' })).toBeVisible()
   await expect(page.getByText('PLAYLIST NAME')).toBeVisible()
   await expect(page.getByRole('button', { name: '2 SONGS EACH · CHANGE' })).toBeVisible() // audio keeps its choice of 1 to 5
+})
+
+test('home: the form will not go on without a name and a vibe, and says which one is missing', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('808s-source', 'youtube'))
+  const problems = await open(page, '/')
+  const created: string[] = []
+  page.on('request', (r) => r.url().includes('create-room') && created.push(r.url()))
+  const go = page.getByRole('button', { name: 'INITIALIZE THE EXPERIMENT' })
+  const name = page.getByLabel('YOUR NAME')
+  const vibe = page.getByLabel('THE VIDEO VIBE')
+  await expect(page.getByText(/\/\/\/ ENTER YOUR NAME/)).toHaveCount(0) // nothing is red before a try
+  await go.click()
+  await expect(page.getByText('/// ENTER YOUR NAME')).toBeVisible()
+  await expect(page.getByText('/// ADD A VIBE FOR YOUR CREW')).toBeVisible()
+  await expect(name).toBeFocused() // the first box that needs filling
+  await page.screenshot({ path: 'test-results/screens/home-invalid.png', fullPage: true })
+  await name.fill('   ') // spaces are not a name
+  await go.click()
+  await expect(page.getByText('/// ENTER YOUR NAME')).toBeVisible()
+  await name.fill('Tester') // typing clears that message at once
+  await expect(page.getByText('/// ENTER YOUR NAME')).toHaveCount(0)
+  await expect(page.getByText('/// ADD A VIBE FOR YOUR CREW')).toBeVisible()
+  await go.click()
+  await expect(vibe).toBeFocused()
+  expect(created).toEqual([]) // nothing was sent
+  expect(problems.filter((p) => !/favicon/.test(p))).toEqual([])
 })
 
 test('home: a first visit asks, and the answer is remembered so the next one goes straight to the form', async ({ page }) => {
@@ -225,24 +250,24 @@ test('theme: tapping the logo cycles the colors, survives a reload, and the fift
   const logo = page.locator('.logo.big')
   expect(await accent()).toBe('#1db954')
   await logo.click()
-  expect(await accent()).toBe('#22d3ee')
-  expect(await page.locator('link[rel="icon"]').getAttribute('href')).toContain('%2322d3ee') // the tab icon follows too
+  expect(await accent()).toBe('#579bd5')
+  expect(await page.locator('link[rel="icon"]').getAttribute('href')).toContain('%23579bd5') // the tab icon follows too
   await page.waitForTimeout(300)
-  await page.screenshot({ path: 'test-results/screens/theme-cyan.png', fullPage: true })
+  await page.screenshot({ path: 'test-results/screens/theme-blue.png', fullPage: true })
   await page.reload()
-  expect(await accent()).toBe('#22d3ee')
+  expect(await accent()).toBe('#579bd5')
   await logo.click()
-  expect(await accent()).toBe('#ff4fd8')
+  expect(await accent()).toBe('#975eab')
   await logo.click()
-  expect(await accent()).toBe('#e8e8e8')
+  expect(await accent()).toBe('#eaeaea')
   await logo.click()
   expect(await accent()).toBe('#1db954')
   await logo.click()
-  expect(await accent()).toBe('#22d3ee') // four taps since the reload: once round the colors, back where it started
+  expect(await accent()).toBe('#579bd5') // four taps since the reload: once round the colors, back where it started
   await expect(page.getByText('ADMIN KEY')).toHaveCount(0)
   await logo.click() // the fifth tap in a row
   await expect(page.getByText('ADMIN KEY')).toBeVisible()
-  expect(await accent()).toBe('#22d3ee')
+  expect(await accent()).toBe('#579bd5')
   expect(problems.filter((p) => !/favicon/.test(p))).toEqual([])
 })
 

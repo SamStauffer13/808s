@@ -54,6 +54,10 @@ a { color: var(--accent); }
 .muted { color: var(--text-secondary); font-size: 13px; letter-spacing: 0.1em; }
 /* long explanations read as sentences; caps and wide tracking stay for labels, buttons and stamps */
 .muted.prose { letter-spacing: 0.02em; line-height: 1.5; }
+.dim { color: var(--text-secondary); }
+.form.tried input:invalid { border-color: var(--miss); }
+.form.tried input:invalid:focus-visible { outline-color: var(--miss); }
+.field .err { font-size: 12px; letter-spacing: 0.1em; color: var(--miss); }
 .files-toggle { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 12px 14px; border: 1px dashed var(--accent); border-radius: var(--radius); background: var(--surface); color: var(--text-secondary); font: inherit; font-size: 12px; letter-spacing: 0.1em; cursor: pointer; }
 .files-toggle:hover { background: var(--surface-hover); }
 .label { font-size: 12px; line-height: 1; letter-spacing: 0.14em; color: var(--text-secondary); }
@@ -94,7 +98,6 @@ a { color: var(--accent); }
 .logo.mark { font-size: 18px; opacity: 0.55; }
 .logo.mark small { font-size: 11px; }
 /* a name shrinks to fit its panel: --len is the longest name's letter count, each letter is about 0.92em wide */
-.logo .tag { display: block; margin-top: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; color: var(--accent); } /* YOU beside a big name */
 .logo.name { font-size: clamp(18px, calc(100cqw / (var(--len, 6) * 0.92)), 52px); letter-spacing: 0.04em; overflow-wrap: anywhere; }
 
 .panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 10px 14px; }
@@ -109,7 +112,7 @@ a { color: var(--accent); }
 .stack { display: flex; flex-direction: column; gap: 8px; }
 .form { display: flex; flex-direction: column; gap: 20px; }
 .label + .stack, .split + .stack { margin-top: -12px; } /* a section header sits with its own list */
-.form .link { margin-block: -16px; } /* a 44px touch area that adds no extra space between fields */
+.form .link, .split .link { margin-block: -16px; } /* a 44px touch area that adds no extra space between fields */
 .split { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 12px; letter-spacing: 0.1em; color: var(--text-secondary); }
 
 .row {
@@ -125,8 +128,6 @@ a { color: var(--accent); }
   letter-spacing: 0.06em;
 }
 .row.on { border-color: var(--accent); background: var(--accent-tint); }
-.row.hit { border-color: var(--accent); }
-.row .dim { color: var(--text-secondary); }
 button.row { width: 100%; cursor: pointer; text-align: left; }
 button.row:hover:not(:disabled) { background: var(--surface-hover); }
 .row.blocked { border-style: dashed; opacity: 0.6; }
@@ -245,7 +246,7 @@ a.row { color: inherit; text-decoration: none; }
 .pad:hover, .chip:hover { background: var(--surface-hover); color: var(--text); }
 .pad.on, .chip.on { border-color: var(--accent); background: var(--accent-tint); color: var(--text); font-weight: 700; }
 .chip.used { opacity: 0.7; }
-.chip .dim { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; letter-spacing: 0.04em; color: var(--text-secondary); }
+.chip .dim { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; letter-spacing: 0.04em; }
 .placed-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; font-size: 12px; letter-spacing: 0.08em; color: var(--text-secondary); }
 .placed-strip .pip.on { color: var(--accent); }
 
@@ -273,7 +274,7 @@ a.row { color: inherit; text-decoration: none; }
 .file .flag { flex: none; padding: 1px 5px; border: 1px solid var(--accent); border-radius: 3px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent); }
 .file .pct { display: flex; align-items: baseline; gap: 8px; }
 .file .pct b { font-size: 22px; letter-spacing: 0.04em; }
-.file .dim { font-size: 11px; color: var(--text-secondary); }
+.file .dim { font-size: 11px; }
 .file .songs { grid-column: 1 / -1; display: grid; gap: 2px; font-size: 13px; letter-spacing: 0.04em; color: var(--text); }
 .file .vibe { grid-column: 1 / -1; }
 .file .songs > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -289,13 +290,13 @@ a.row { color: inherit; text-decoration: none; }
 @keyframes charge { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
 .award { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; border: 1px dashed var(--accent); border-radius: var(--radius); background: var(--surface); font-size: 14px; letter-spacing: 0.1em; }
 .award .stamp { font-size: 12px; }
-.award .dim { font-size: 11px; color: var(--text-secondary); }
+.award .dim { font-size: 11px; }
 .guesses { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .guess { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; min-height: 40px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; letter-spacing: 0.06em; }
 .guess > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .guess.hit { border-color: var(--accent); }
 .guess.me { background: var(--accent-tint); }
-.guess .dim { font-size: 11px; color: var(--text-secondary); }
+.guess .dim { font-size: 11px; }
 
 /* short phone screens: trim the source card so the result line stays above the buttons */
 @media (max-height: 640px) {
@@ -307,8 +308,6 @@ a.row { color: inherit; text-decoration: none; }
 .dock { position: sticky; bottom: 0; display: flex; gap: 8px; padding: 14px 0 max(0px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 35%); }
 .dock .btn { flex: 1; width: auto; }
 .dock .prev { flex: none; width: 56px; }
-.split .link { margin-block: -16px; } /* a 44px touch area that adds no extra space */
-
 
 /* practice mode (src/practice/Wizard.svelte): a spotlight on the next thing to touch, and a card that says what to do */
 body.practicing #app { padding-top: 56px; }
@@ -334,7 +333,6 @@ iframe.wide { height: auto; aspect-ratio: 16 / 9; }
 .link:hover { color: var(--accent); }
 .link.center { justify-content: center; align-self: center; }
 .link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
 
 .btn, .row, .choice, .chip, .pad, .round, .field input, .link { transition: background-color 150ms, border-color 150ms, color 150ms; }
 /* signal details: live equalizer, recording dot, waveform divider, the Spotify mark, the intro */
