@@ -1,7 +1,9 @@
 <script lang="ts">
   import Boot from './Boot.svelte'
   import Home from './Home.svelte'
+  import Rain from './Rain.svelte'
   import Room from './Room.svelte'
+  import { transition } from './lib/transition.svelte'
   import { installPractice, practice, practiceCode, startFromAddress } from './lib/practice.svelte'
 
   startFromAddress()
@@ -34,4 +36,8 @@
   {#key code}<Room {code} />{/key}
 {:else}
   <Home />
+{/if}
+
+{#if transition.title}
+  {#key transition.run}<Rain title={transition.title} glyphs={transition.glyphs} />{/key}
 {/if}

@@ -1,6 +1,8 @@
 // Practice mode: the real screens, run on a fake game and a fake server (src/practice) while a wizard walks the
 // player through them. One flag turns it on; leaving reloads the page, which throws all of it away.
 // There are two journeys: the host's (start a game) and a crew member's (join one from an invite link).
+import { playTransition } from './transition.svelte'
+
 export type Role = 'host' | 'guest'
 export type Stage = 'home' | 'invite' | 'submit' | 'guess' | 'results'
 export const journeys: Record<Role, readonly Stage[]> = {
@@ -46,6 +48,7 @@ export function startPractice(role: Role = 'host', stage: Stage = journeys[role]
 }
 
 export function goStage(stage: Stage) {
+  if (stage === 'guess' || stage === 'results') playTransition(stage)
   Object.assign(practice, { stage, step: 0 })
   save()
 }

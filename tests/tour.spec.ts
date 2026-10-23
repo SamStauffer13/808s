@@ -63,3 +63,14 @@ test('guess: shows who is left to place, and says when a pick moves someone', as
   await used.dispatchEvent('click')
   await expect(page.getByText(/MOVED HERE FROM ".*" · THAT SET IS OPEN AGAIN/)).toBeVisible()
 })
+
+test('submit: beginning the experiment plays the matrix rain, then clears', async ({ page }) => {
+  await open(page, '/?practice=submit')
+  await page.getByPlaceholder('search tracks or artists').fill('the')
+  await page.locator('button.row:not([disabled])').first().dispatchEvent('click') // the host's own song: now everyone is in
+  await page.getByRole('button', { name: 'BEGIN THE EXPERIMENT' }).dispatchEvent('click')
+  await expect(page.locator('.rain')).toBeVisible()
+  await page.waitForTimeout(1100) // mid-fall, with the title showing
+  await page.screenshot({ path: 'test-results/screens/rain.png' })
+  await expect(page.locator('.rain')).toHaveCount(0, { timeout: 4000 })
+})

@@ -7,6 +7,7 @@
   import Results from './Results.svelte'
   import { game, open, packsOf } from './lib/game.svelte'
   import { practice } from './lib/practice.svelte'
+  import { playTransition } from './lib/transition.svelte'
 
   let { code } = $props()
   let stranger = $state(false)
@@ -21,6 +22,14 @@
   $effect(() => {
     load()
     return () => stop?.()
+  })
+
+  // a phase change while this screen is open (not the first load) plays the rain; practice plays its own from goStage
+  let seen: string | undefined
+  $effect(() => {
+    const phase = game.room?.phase
+    if (seen && phase && phase !== seen && !practice.on) playTransition(phase)
+    seen = phase
   })
 
   // The scoreboard opens for everyone once the last guess is in. REPLAY THE FINDINGS on it walks through the reveal
