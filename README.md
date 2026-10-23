@@ -13,6 +13,7 @@ each set of songs: who added it? Live at https://samstauffer.net/808s/
 | Frontend | Svelte 5 + Vite + TypeScript. Only `svelte` and `@supabase/supabase-js` at runtime. |
 
 Secrets live only in Supabase (`npx supabase secrets list`): `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `ADMIN_KEY`,
+`YOUTUBE_API_KEY` (a Google Cloud API key for YouTube Data API v3: every video search uses this one shared key and counts against its 10,000 units a day; nobody logs in to YouTube, see "Ideas not built"),
 (`SPOTIFY_REFRESH_TOKEN` is no longer used and can be removed.) `.env` holds the Supabase URL and publishable key, which are public.
 
 ## Run it
@@ -92,6 +93,20 @@ In the app the guessing round is called "the Experiment", and the host begins it
 
 Each file on the scoreboard can get a stamp (`MARKED`, `ANONYMOUS`, `PROXIED`), and people get badges: `L33T` (a great guesser), `N00B` (a bad one) and `HONEYPOT` (blamed wrongly most). Every one of these words lives in `src/lib/stamps.ts`: the stamp rules in one short table, the badges in `badges`. Rename them there.
 
+## Songs or videos (sources)
+
+An experiment is about one source, chosen on Home: `rooms.source` is `spotify` or `youtube`, and each song row keeps its own `songs.source` and
+`item_id` (a Spotify track id or a YouTube video id). Guessing, packs and hidden owners do not care which. What differs lives in two matching
+places, so adding a source means one entry in each:
+- Server: `supabase/functions/_shared/providers.ts` (search, look an item up, make a playlist if the source has one). `media-search`, `add-song` and
+  `beginGuess` only ask the room's provider. YouTube is `_shared/youtube.ts` and needs the `YOUTUBE_API_KEY` secret (YouTube Data API v3).
+- Screens: `src/lib/sources.ts` (wording, link, icon, embed, credit, whether a playlist is made). Screens ask `sourceOf()` and `wordsOf()` and never check which source it is.
+- Database: one row in the `sources` table (rooms and songs point at it). The name also goes in `src/lib/source-ids.ts`; a test in `tests/tour.spec.ts` fails if the three lists differ.
+
+A video experiment makes no playlist, so its host never connects Spotify. The guess screen has one embedded player (`embed` in `sources.ts`) that plays the whole shuffled list in order
+(YouTube's embed takes a list of video ids), and every video also opens on YouTube from its row. A video that cannot be embedded (a rented movie, say) is skipped by the player; its row still links out.
+A video's duplicate key is its id (a song's is title plus first artist). A YouTube category stands in for a song's genres, so the vibe, subnets and awards still work. Practice runs a video experiment at `/?practice=submit&source=youtube`.
+
 ## Runs by itself
 
 - Nightly (04:00 UTC) pg_cron job `808s-cleanup` deletes experiments older than 28 days that never made a playlist, and
@@ -137,5 +152,17 @@ Each file on the scoreboard can get a stamp (`MARKED`, `ANONYMOUS`, `PROXIED`), 
 
 ## Ideas not built
 
+- **YouTube login for the host (get the app off the shared API key and onto the user).** Today YouTube runs on one API key of ours: searches and lookups
+  count against our quota, no video is saved to anyone's YouTube, and there is no host login. Spotify works the other way for playlists (the host connects
+  their account and the playlist is made in it). The same could be done for YouTube, and would make the quota and the playlist belong to the host:
+  - Add Google OAuth with a YouTube scope, copying the Spotify shape: a `youtube-account` function (or generalize `spotify-account` and `spotify-callback` into
+    one `provider-account`), a table for the refresh token like `spotify_accounts` (only Edge Functions read it), a signed `state`, and the Google redirect URI.
+  - Set `needsHostAccount: true` on the YouTube provider and have its `publish` create a real playlist in the host's channel (`playlists.insert`, then
+    `playlistItems.insert` per video), returning its id and url. Then `playlist_id` and `playlist_url` are set for video rooms like audio ones, and `embed`
+    can use `embed/videoseries?list=<id>` instead of the list of ids.
+  - Search could then use the host's token too, which moves the quota off our key. It cannot be players' tokens: players never log in.
+  - Watch out for: refresh tokens in a Google OAuth app left in "Testing" expire after 7 days, and a monthly game cannot live with that, so the app has to be
+    published (an unverified app shows Google's warning screen; sensitive scopes need Google's verification past about 100 users). The host needs a YouTube
+    channel. Each playlist and playlist-item insert costs about 50 quota units. Check Google's current OAuth policies before building, since these rules change.
 - Optional deadline line on the add-songs screen (informational, e.g. "submissions close Friday").
 - Sound effects, a guess countdown, glitch transitions between screens.

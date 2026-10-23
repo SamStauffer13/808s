@@ -2,9 +2,10 @@
 // name, so the real screens work end to end without a network. Each handler does what the real server would,
 // including moving to the next stage when the real game would move on.
 import { game, packsOf, savedName, type Song } from '../lib/game.svelte'
-import { goStage, practiceCode, spotifyKey } from '../lib/practice.svelte'
+import { goStage, practice, practiceCode, spotifyKey } from '../lib/practice.svelte'
+import { isSource } from '../lib/source-ids'
 import { fake, type Fake } from '../lib/supabase'
-import { chosen, me, players, searchable, theme, tracks } from './data'
+import { chosen, items, me, players, searchable, theme } from './data'
 
 // have you matched every set that is not yours?
 const finished = () =>
@@ -21,23 +22,24 @@ const handlers: Fake = {
     const connected = sessionStorage.getItem(spotifyKey) !== null
     return { connected, name: connected ? savedName() || me.name : null }
   },
-  'create-room': () => (goStage('submit'), { room: { code: practiceCode } }), // next you add songs, as the host
+  // next you add songs, as the host; the toggle on Home picks what the experiment is about
+  'create-room': ({ source }) => ((practice.source = isSource(source) ? source : 'spotify'), goStage('submit'), { room: { code: practiceCode } }),
 
   // invite (a crew member's journey)
-  room_preview: () => [{ theme, phase: 'submit' }],
+  room_preview: () => [{ theme: theme(), phase: 'submit', source: practice.source }],
   join_room: () => (goStage('submit'), { code: practiceCode }),
 
   // adding songs
-  'spotify-search': ({ q }) => {
+  'media-search': ({ q }) => {
     const text = String(q).toLowerCase()
     const found = searchable().filter((t) => `${t.title} ${t.artist}`.toLowerCase().includes(text))
     // the practice search never comes up empty, so a new player is never left with nothing to tap
-    return { tracks: (found.length ? found : searchable()).slice(0, 6).map((t) => ({ id: t.id, title: t.title, artist: t.artist, art: t.art, blocked: false })) }
+    return { items: (found.length ? found : searchable()).slice(0, 6).map((t) => ({ id: t.id, title: t.title, artist: t.artist, art: t.art, blocked: false })) }
   },
-  'add-song': ({ spotify_id }) => {
-    const t = tracks.find((x) => x.id === spotify_id)!
+  'add-song': ({ item_id }) => {
+    const t = items().find((x) => x.id === item_id)!
     chosen.set(t.id)
-    const song: Song = { id: `added-${t.id}`, pack: null, spotify_id: t.id, title: t.title, artist: t.artist, art_url: t.art, genres: t.genres }
+    const song: Song = { id: `added-${t.id}`, pack: null, source: practice.source, item_id: t.id, title: t.title, artist: t.artist, art_url: t.art, genres: t.genres }
     game.songs = [...game.songs, song]
     game.owners = { ...game.owners, [song.id]: me.id }
     game.counts = { ...game.counts, [me.id]: (game.counts[me.id] ?? 0) + 1 }

@@ -3,12 +3,13 @@
   import Notice from './Notice.svelte'
   import { attempt, joinGame, savedName } from './lib/game.svelte'
   import { practice, startPractice } from './lib/practice.svelte'
+  import { sourceOf, wordsOf, type Source } from './lib/sources'
   import { rpc } from './lib/supabase'
 
   let { code, onjoin } = $props()
 
   let name = $state(savedName())
-  let preview = $state<{ theme: string; phase: string } | null>()
+  let preview = $state<{ theme: string; phase: string; source: Source } | null>()
 
   $effect(() => {
     attempt('preview', async () => (preview = (await rpc('room_preview', { p_code: code }))[0] ?? null))
@@ -37,8 +38,8 @@
       <div class="panel stack">
         <div class="label">MISSION BRIEFING</div>
         <div class="line"><b class="good">1</b><span>ENTER YOUR NAME BELOW AND JOIN</span></div>
-        <div class="line"><b class="good">2</b><span>ADD YOUR SONGS THAT FIT THE THEME</span></div>
-        <div class="line"><b class="good">3</b><span>ONCE THE CREW IS IN, LISTEN TO THE PLAYLIST AND GUESS WHO ADDED WHAT</span></div>
+        <div class="line"><b class="good">2</b><span>ADD YOUR {wordsOf(preview.source).NOUNS} THAT FIT THE THEME</span></div>
+        <div class="line"><b class="good">3</b><span>ONCE THE CREW IS IN, {sourceOf(preview.source).consume.toUpperCase()} AND GUESS WHO ADDED WHAT</span></div>
         <div class="line"><b class="good">4</b><span>SEE WHO WON</span></div>
       </div>
       <p class="muted center">/// RETURNING? USE THE SAME NAME TO TAKE YOUR SEAT</p>
@@ -51,6 +52,6 @@
       <Notice scope="join" />
       <button class="btn">JOIN THE EXPERIMENT</button>
     </form>
-    {#if !practice.on}<button type="button" class="link center" onclick={() => startPractice('guest')}>NEW HERE? TRY THE TUTORIAL →</button>{/if}
+    {#if !practice.on}<button type="button" class="link center" onclick={() => startPractice('guest', undefined, undefined, preview?.source)}>NEW HERE? TRY THE TUTORIAL →</button>{/if}
   {/if}
 </div>

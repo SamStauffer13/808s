@@ -7,20 +7,22 @@ import { guessesBy, me, order, players, playlist, sets, setSongs, songId, theme 
 const room = (phase: Room['phase']): Room => ({
   id: 'practice',
   code: practiceCode,
+  source: practice.source,
   host_user_id: players[practice.role === 'guest' ? 1 : 0].user_id, // a crew member's host is Cierra
-  theme,
+  theme: theme(),
   songs_per_player: 1,
   phase,
-  playlist_id: playlist.split('/').pop()!,
-  playlist_url: playlist,
+  playlist_id: playlist()?.split('/').pop() ?? null,
+  playlist_url: playlist(),
 })
 
-const songsInOrder = order.flatMap(setSongs)
+// read when a stage opens, not at load: the experiment can turn out to be about videos after this file has loaded
+const songsInOrder = () => order.flatMap(setSongs)
 const ownersOf = (among: number[]) => Object.fromEntries(among.map((set) => [songId(set), players[set].id]))
 
 // the finished game: everyone has guessed every set, and every owner is known
 const everyGuess = sets.flatMap((g) => guessesBy(g, sets))
-const finished = () => ({ room: room('reveal'), songs: songsInOrder, owners: ownersOf(sets), guesses: everyGuess })
+const finished = () => ({ room: room('reveal'), songs: songsInOrder(), owners: ownersOf(sets), guesses: everyGuess })
 
 // (game.songs holds just your own songs while adding, the whole playlist while guessing.)
 const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
@@ -32,7 +34,7 @@ const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
     counts: Object.fromEntries(players.map((p, i) => [p.id, i === 0 ? 0 : 1])),
   }),
   // everyone else has guessed everything; you have matched 3 of your 5, and only the right two crew members are left to pick
-  guess: () => ({ room: room('guess'), songs: songsInOrder, owners: ownersOf([0]), guesses: guessesBy(0, [3, 5, 2]) }),
+  guess: () => ({ room: room('guess'), songs: songsInOrder(), owners: ownersOf([0]), guesses: guessesBy(0, [3, 5, 2]) }),
   results: finished,
 }
 

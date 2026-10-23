@@ -1,10 +1,11 @@
 <script lang="ts">
   import Scramble from './Scramble.svelte'
-  import { me, nameOf } from './lib/game.svelte'
+  import { game, me, nameOf } from './lib/game.svelte'
+  import { sourceOf, wordsOf } from './lib/sources'
   import type { Analysis } from './lib/results'
   import { noteOf } from './lib/stamps'
 
-  // One subject: the songs they added, who they are, and how much of the crew cracked them. A tap shows who guessed what.
+  // One subject: the songs or videos they added, who they are, and how much of the crew cracked them. A tap shows who guessed what.
   let { file, rank }: { file: Analysis['files'][number]; rank: number } = $props()
   let open = $state(false)
   const upper = (id?: string) => nameOf(id).toUpperCase()
@@ -13,7 +14,7 @@
 <div class="file" class:open class:hit={file.call?.hit} class:miss={file.call && !file.call.hit}>
   <button class="head" aria-expanded={open} onclick={() => (open = !open)}>
     <span class="songs">
-      {#each file.songs as song}<span>♪ {song.title} <span class="dim">· {song.artist}</span></span>{/each}
+      {#each file.songs as song}<span>{sourceOf(song.source).icon} {song.title} <span class="dim">· {song.artist}</span></span>{/each}
     </span>
     {#if file.vibe.length}<span class="dim vibe">VIBE · {file.vibe.join(' · ').toUpperCase()}</span>{/if}
     <span class="who">
@@ -28,10 +29,19 @@
     {#if file.call}
       <span class="you">YOU {file.call.hit ? '✓ NAILED IT' : `✗ SAID ${upper(file.call.pick)}`}</span>
     {:else if file.yours}
-      <span class="you">YOUR SONGS</span>
+      <span class="you">YOUR {wordsOf().NOUNS}</span>
     {/if}
   </button>
   {#if open}
+    <div class="links">
+      {#each file.songs as song}
+        <a class="line" href={sourceOf(song.source).link(song.item_id)} target="_blank" rel="noopener">
+          <span>{sourceOf(song.source).icon}</span>
+          <div class="grow-text"><div>{song.title}</div><div class="dim">{song.artist}</div></div>
+          <span class="open" aria-hidden="true">↗</span>
+        </a>
+      {/each}
+    </div>
     <div class="guesses">
       {#each file.guesses as g}
         {@const hit = g.guessed_player_id === file.id}

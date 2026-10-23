@@ -21,6 +21,7 @@ Deno.serve(
     if ((players?.length ?? 0) < 2) throw new HttpError(400, 'wait for the crew to join')
     if (players!.some((p) => added(p.id) < room.songs_per_player)) throw new HttpError(400, 'wait for everyone to add their songs')
 
-    return { playlist_id: await beginGuess(db, room) }
+    await beginGuess(db, room)
+    return { ok: true }
   }),
 )

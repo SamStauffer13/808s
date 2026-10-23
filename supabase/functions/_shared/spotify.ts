@@ -1,8 +1,7 @@
 import { admin, HttpError } from './http.ts'
+import type { Item, Provider } from './providers.ts'
 
 const API = 'https://api.spotify.com/v1'
-
-type Track = { id: string; title: string; artist: string; art: string | null; blocked: boolean }
 
 // some artists are far too easy to trace back to whoever added them
 const tooEasyToTrace = /taylor swift/i
@@ -93,7 +92,7 @@ export async function spotify(token: string, path: string, init: RequestInit = {
   return body ? JSON.parse(body) : null
 }
 
-export function toTrack(t: any): Track {
+export function toItem(t: any): Item {
   const images = t.album?.images ?? []
   const artist = (t.artists ?? []).map((a: any) => a.name).join(', ')
   return {
@@ -115,4 +114,43 @@ export async function genresOf(token: string, rawTrack: any): Promise<string[]> 
   } catch {
     return []
   }
+}
+
+// The Spotify source. Search and lookups use our app token (players never log in); the host's own account is only
+// for making the playlist.
+export const spotifyProvider: Provider = {
+  needsHostAccount: true,
+  isId: (id) => /^[A-Za-z0-9]{22}$/.test(id),
+
+  async search(q) {
+    const data = await spotify(await appToken(), `/search?type=track&limit=6&q=${encodeURIComponent(q)}`)
+    return (data.tracks?.items ?? []).filter(Boolean).map(toItem)
+  },
+
+  async lookup(id) {
+    const token = await appToken()
+    const raw = await spotify(token, `/tracks/${id}`)
+    return { ...toItem(raw), genres: await genresOf(token, raw) }
+  },
+
+  // the playlist goes into the host's account, or into whoever started the experiment when the host never connected one
+  async publish(db, room, ids, askedBy) {
+    const { data: host } = await db.from('spotify_accounts').select('user_id').eq('user_id', room.host_user_id).maybeSingle()
+    const token = await userToken(host ? room.host_user_id : askedBy)
+    const playlist = await spotify(token, '/me/playlists', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: (room.title ?? `808s: ${room.theme}`).slice(0, 100),
+        description: `${room.theme}. A social experiment: who added what? Guess in the 808s app.`.slice(0, 300),
+        public: true,
+      }),
+    })
+    for (let i = 0; i < ids.length; i += 100) {
+      await spotify(token, `/playlists/${playlist.id}/items`, {
+        method: 'POST',
+        body: JSON.stringify({ uris: ids.slice(i, i + 100).map((id) => `spotify:track:${id}`) }),
+      })
+    }
+    return { id: playlist.id, url: playlist.external_urls?.spotify ?? `https://open.spotify.com/playlist/${playlist.id}` }
+  },
 }

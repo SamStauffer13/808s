@@ -3,6 +3,7 @@
   import Notice from './Notice.svelte'
   import { attempt, notify, once } from './lib/game.svelte'
   import { practice } from './lib/practice.svelte'
+  import * as account from './lib/spotify-account'
   import { call } from './lib/supabase'
 
   // The owner's override: five taps on the logo open it, and the admin key, entered once, stays on this device.
@@ -68,8 +69,7 @@
   const login = once(() =>
     attempt('admin', async () => {
       sessionStorage.setItem(resume, room)
-      const { url } = await call<{ url: string }>('spotify-account', { action: 'login', return_to: location.href })
-      location.href = url
+      location.href = await account.loginUrl(location.href)
     }),
   )
 

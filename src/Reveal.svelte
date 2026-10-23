@@ -3,6 +3,7 @@
   import { decrypt } from './lib/decrypt'
   import { game, me, nameOf, packsOf } from './lib/game.svelte'
   import { vibeOf } from './lib/results'
+  import { sourceOf, wordsOf } from './lib/sources'
   import { noteOf, statsOf, stampFor } from './lib/stamps'
 
   // index is the set being shown; go moves this player (and only this player) to another one
@@ -45,14 +46,15 @@
   <div class="progress" aria-hidden="true">
     {#each { length: total } as _, i}<i class:seen={i <= index}></i>{/each}
   </div>
-  {#if index === 0}<p class="muted prose center">/// See who added each set of songs. Go at your own pace and come back any time.</p>{/if}
+  {#if index === 0}<p class="muted prose center">/// See who added each set of {wordsOf().nouns}. Go at your own pace and come back any time.</p>{/if}
 
   {#if pack}
     {#each pack.songs as song}
-      <div class="row">
+      <a class="row" href={sourceOf(song.source).link(song.item_id)} target="_blank" rel="noopener">
         <Art src={song.art_url} />
         <div class="grow-text"><div>{song.title}</div><div class="dim">{song.artist}</div></div>
-      </div>
+        <span class="open" aria-hidden="true">↗</span>
+      </a>
     {/each}
 
     <div class="panel framed">
@@ -65,7 +67,7 @@
     <div class="veil" class:veiled={!solved} aria-hidden={!solved}>
       {#if vibe.length}<p class="verdict dim">VIBE · {vibe.join(' · ').toUpperCase()}</p>{/if}
       {#if yours}
-        <p class="verdict muted">YOUR SONGS</p>
+        <p class="verdict muted">YOUR {wordsOf().NOUNS}</p>
       {:else if !mine}
         <p class="verdict muted">YOU DIDN'T GUESS THIS ONE</p>
       {:else if mine.guessed_player_id === owner}

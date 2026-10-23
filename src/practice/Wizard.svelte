@@ -62,6 +62,7 @@
         if (box instanceof HTMLInputElement) box.required = true
       }
       const el = document.querySelector(step.target)
+      if (step.skip?.()) advance() // e.g. the playlist name box does not exist when the experiment is about video
       if (el && seenFor !== i) {
         seenFor = i
         // a box that already has something in it is not asked for again

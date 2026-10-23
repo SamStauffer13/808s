@@ -1,18 +1,21 @@
-// What the practice game is made of: you and five crew members, and 12 tracks of a public Spotify playlist. Each player adds one song.
+// What the practice game is made of: you and five crew members, and 12 tracks of a public Spotify playlist
+// (or 12 YouTube videos in a video experiment). Each player adds one item.
 // Pure data, nothing here talks to a server.
 import type { Guess, Song } from '../lib/game.svelte'
+import { practice } from '../lib/practice.svelte'
+import type { Source } from '../lib/source-ids'
 
 // you are the host; seed() swaps in the name the player typed
 const names = ['Rookie', 'Cierra', 'Shilo', 'Dalton', 'Matt', 'Cole']
 export const players = names.map((name, i) => ({ id: `p${i}`, user_id: `u${i}`, name }))
 export const me = players[0]
 
-export const theme = 'songs that sound like a road trip at 2am'
-export const playlist = 'https://open.spotify.com/playlist/73MeoOPlro0bLPf2ScEvvZ'
+export const theme = () => catalogs[practice.source].theme
+export const playlist = () => catalogs[practice.source].playlist
 
 // A one-time snapshot (titles, artists, cover art, genres) of that playlist, so rows look like real ones.
 // Set i (one song) belongs to player i and is track i; the rest are there to search for. Yours is whichever you pick.
-export const tracks = [
+const songs = [
   { id: '47oI62sCBPLsCVgcD2tr2z', title: 'Damaged Goods', artist: 'La Dispute', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02a33cf1cbd5cd623a7d3c8e56', genres: ['screamo', 'post-hardcore', 'emo'] },
   { id: '31Hx0pInhn2tSq5gdhWv0d', title: 'Such Small Hands', artist: 'La Dispute', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02a33cf1cbd5cd623a7d3c8e56', genres: ['screamo', 'post-hardcore', 'emo'] },
   { id: '6p4jnIWFWyLz0zUo2RD9iu', title: "Baby, You Wouldn't Last A Minute On The Creek", artist: 'Chiodos', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02565a166b9f44fc0250f5769e', genres: ['post-hardcore', 'screamo', 'metalcore'] },
@@ -26,6 +29,31 @@ export const tracks = [
   { id: '7MoHtlRxZ2cN9gfKg15eBg', title: 'Not The American Average', artist: 'Asking Alexandria', art: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02426885adbae74402b2faed65', genres: ['metalcore', 'post-hardcore', 'screamo'] },
   { id: '1XDleb5NksSab3NmUAlvz6', title: 'To Plant a Seed', artist: 'We Came As Romans', art: 'https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e021a8ba9aa6ad6b8e8a15bd751', genres: ['metalcore', 'post-hardcore', 'deathcore'] },
 ]
+
+// the same shape for a video experiment: real YouTube ids, so the links and thumbnails work
+const clip = (id: string, title: string, artist: string, genre: string) => ({ id, title, artist, art: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`, genres: [genre] })
+const videos = [
+  clip('3sMdYdZ9xYI', 'Top Gun', 'YouTube Movies', 'film'),
+  clip('dQw4w9WgXcQ', 'Rick Astley - Never Gonna Give You Up', 'Rick Astley', 'music'),
+  clip('FTQbiNvZqaY', 'Toto - Africa', 'TotoVEVO', 'music'),
+  clip('9bZkp7q19f0', 'PSY - GANGNAM STYLE', 'officialpsy', 'music'),
+  clip('kJQP7kiw5Fk', 'Luis Fonsi - Despacito ft. Daddy Yankee', 'Luis Fonsi', 'music'),
+  clip('fJ9rUzIMcZQ', 'Queen - Bohemian Rhapsody', 'Queen Official', 'music'),
+  clip('y6120QOlsfU', 'Darude - Sandstorm', 'Darude', 'music'),
+  clip('L_jWHffIx5E', 'Smash Mouth - All Star', 'Smash Mouth', 'music'),
+  clip('ZZ5LpwO-An4', 'HEYYEYAAEYAAAEYAEYAA', 'DEMONDICE', 'comedy'),
+  clip('hT_nvWreIhg', 'OneRepublic - Counting Stars', 'OneRepublic', 'music'),
+  clip('YQHsXMglC9A', 'Adele - Hello', 'Adele', 'music'),
+  clip('JGwWNGJdvx8', 'Ed Sheeran - Shape of You', 'Ed Sheeran', 'music'),
+]
+
+// what an experiment about each source is made of (a video experiment has no playlist)
+const catalogs: Record<Source, { theme: string; playlist: string | null; items: typeof songs }> = {
+  spotify: { theme: 'songs that sound like a road trip at 2am', playlist: 'https://open.spotify.com/playlist/73MeoOPlro0bLPf2ScEvvZ', items: songs },
+  youtube: { theme: 'the best thing to watch at 2am', playlist: null, items: videos },
+}
+
+export const items = () => catalogs[practice.source].items
 
 export const sets = players.map((_, i) => i)
 const packId = (set: number) => `pack-${set}`
@@ -41,13 +69,13 @@ export const chosen = {
   set: (id: string) => sessionStorage.setItem(chosenKey, id),
 }
 // the songs a search may offer: everything except what your crew already added
-export const searchable = () => tracks.filter((t, i) => i === 0 || i >= sets.length)
+export const searchable = () => items().filter((t, i) => i === 0 || i >= sets.length)
 
-const trackOf = (set: number) => (set === 0 && tracks.find((t) => t.id === chosen.get())) || tracks[set]
+const trackOf = (set: number) => (set === 0 && items().find((t) => t.id === chosen.get())) || items()[set]
 
 export const setSongs = (set: number): Song[] => {
   const t = trackOf(set)
-  return [{ id: songId(set), pack: packId(set), spotify_id: t.id, title: t.title, artist: t.artist, art_url: t.art, genres: t.genres }]
+  return [{ id: songId(set), pack: packId(set), source: practice.source, item_id: t.id, title: t.title, artist: t.artist, art_url: t.art, genres: t.genres }]
 }
 
 // What each guesser got wrong, as pairs of sets they swapped (a swap makes both sets wrong, and keeps every

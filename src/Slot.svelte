@@ -1,26 +1,29 @@
 <script module lang="ts">
-  import type { Track } from './lib/game.svelte'
+  import type { Item } from './lib/game.svelte'
 
-  const cache = new Map<string, Track[]>()
+  const cache = new Map<string, Item[]>()
 </script>
 
 <script lang="ts">
   import { fade } from 'svelte/transition'
   import Art from './Art.svelte'
   import Notice from './Notice.svelte'
-  import Spotify from './Spotify.svelte'
-  import { attempt, clearNotice, notify } from './lib/game.svelte'
+  import Credit from './Credit.svelte'
+  import { attempt, clearNotice, game, notify } from './lib/game.svelte'
+  import { sourceOf, wordsOf } from './lib/sources'
   import { call } from './lib/supabase'
 
-  let { n, taken, onpick }: { n: number; taken: (t: Track) => boolean; onpick: (t: Track, scope: string) => void } = $props()
+  let { n, taken, onpick }: { n: number; taken: (t: Item) => boolean; onpick: (t: Item, scope: string) => void } = $props()
 
   const scope = $derived(`slot-${n}`)
+  // a Spotify room and a YouTube room never share results
+  const key = (text: string) => `${game.room?.source}:${text}`
   let q = $state('')
-  let results = $state<Track[]>([])
+  let results = $state<Item[]>([])
   let shaking = $state<string>()
 
   // a blocked track shakes and gets a comment instead of being added
-  const pick = (t: Track) => {
+  const pick = (t: Item) => {
     if (!t.blocked) return onpick(t, scope)
     notify(scope, "DON'T BE BORING/BASIC")
     shaking = t.id
@@ -32,15 +35,15 @@
       results = []
       return
     }
-    const hit = cache.get(text)
+    const hit = cache.get(key(text))
     if (hit) {
       results = hit
       return
     }
     const timer = setTimeout(async () => {
-      const found = (await attempt(scope, () => call<{ tracks: Track[] }>('spotify-search', { q: text })))?.tracks
+      const found = (await attempt(scope, () => call<{ items: Item[] }>('media-search', { room_id: game.room!.id, q: text })))?.items
       if (!found) return
-      cache.set(text, found)
+      cache.set(key(text), found)
       if (q.trim().toLowerCase() === text) results = found
     }, 350)
     return () => clearTimeout(timer)
@@ -49,8 +52,8 @@
 
 <div class="stack">
   <label class="field">
-    <span class="label">TRACK {n}</span>
-    <input bind:value={q} oninput={() => clearNotice(scope)} autocomplete="off" placeholder="search tracks or artists" />
+    <span class="label">{wordsOf().NOUN} {n}</span>
+    <input bind:value={q} oninput={() => clearNotice(scope)} autocomplete="off" placeholder={sourceOf().placeholder} />
   </label>
   <Notice {scope} />
   {#each results as t (t.id)}
@@ -60,5 +63,5 @@
       <span class="round" class:done={taken(t)}>{t.blocked ? '✗' : taken(t) ? '✓' : '+'}</span>
     </button>
   {/each}
-  {#if results.length}<p class="muted center">RESULTS FROM <Spotify /></p>{/if}
+  {#if results.length}<p class="muted center">RESULTS FROM <Credit /></p>{/if}
 </div>

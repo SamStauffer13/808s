@@ -5,6 +5,7 @@
   import Playlist from './Playlist.svelte'
   import SubjectFile from './SubjectFile.svelte'
   import { game, me } from './lib/game.svelte'
+  import { wordsOf } from './lib/sources'
   import { analyze } from './lib/results'
   import { badges } from './lib/stamps'
 
@@ -54,7 +55,7 @@
   <span>{showFiles ? '▴' : '▾'}</span>
 </button>
 {#if showFiles}
-  <p class="muted prose">Each file is one person's songs, most guessed on top. Tap one to see who guessed what.</p>
+  <p class="muted prose">Each file is one person's {wordsOf().nouns}, most guessed on top. Tap one to see who guessed what.</p>
   <div class="files">
     {#each r.files as file, rank (file.id)}<SubjectFile {file} {rank} />{/each}
   </div>

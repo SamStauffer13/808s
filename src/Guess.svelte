@@ -5,9 +5,13 @@
   import Notice from './Notice.svelte'
   import Playlist from './Playlist.svelte'
   import { attempt, game, isHost, me, nameOf, notify, packsOf, refreshSoon, type Pack } from './lib/game.svelte'
+  import { sourceOf, wordsOf } from './lib/sources'
   import { rpc } from './lib/supabase'
 
   const room = $derived(game.room!)
+  const w = $derived(wordsOf(room.source)) // song/songs, video/videos
+  const info = $derived(sourceOf(room.source))
+  const embed = $derived(info.embed(room, game.songs)) // the songs come in playlist order
   const crew = $derived(game.players.filter((p) => p.id !== me()?.id))
   const packs = $derived(packsOf(game.songs))
   const isMine = (pack: Pack) => pack.songs.some((s) => game.owners[s.id] === me()?.id)
@@ -68,14 +72,14 @@
 {#if isHost()}
   <div class="panel stack">
     <div class="label">HOST CHECKLIST</div>
-    <div class="line"><b class:good={allIn}>{allIn ? '✓' : '○'}</b><span class:muted={allIn}>LISTEN AND GUESS · {done} / {todo.length}</span></div>
+    <div class="line"><b class:good={allIn}>{allIn ? '✓' : '○'}</b><span class:muted={allIn}>{info.verb.toUpperCase()} AND GUESS · {done} / {todo.length}</span></div>
     <div class="line"><b class:good={waiting === 0}>{waiting === 0 ? '✓' : '○'}</b><span class:muted={waiting === 0}>WAIT FOR EVERYONE · {progress ? `${progress.finished} / ${progress.total}` : '...'}</span></div>
     <div class="line"><b>○</b><span>THE RESULTS OPEN BY THEMSELVES · NO BUTTON NEEDED</span></div>
   </div>
 {/if}
 
 {#if todo.length}
-  <p class="muted prose center"><Eq />/// Listen to the playlist, then match every crew member to the set of songs they added. Each person added exactly one set, so each name goes on a different set.</p>
+  <p class="muted prose center"><Eq />/// {info.consume}, then match every crew member to the set of {w.nouns} they added. Each person added exactly one set, so each name goes on a different set. Tap any {w.noun} to open it.</p>
   <div class="placed-strip" aria-label="Crew members still to place">
     {#each crew as p}
       {@const placed = !left.includes(p)}
@@ -91,12 +95,14 @@
   <p class="center good">ALL GUESSED · {waiting > 0 ? `WAITING ON ${waiting} MORE CREW MEMBER${waiting > 1 ? 'S' : ''}` : 'OPENING THE RESULTS'}</p>
   <p class="muted center">/// THE RESULTS OPEN WHEN THE WHOLE CREW IS DONE · COME BACK ANY TIME</p>
 {:else if !todo.length}
-  <p class="center good">NOTHING TO GUESS · THESE ARE ALL YOUR SONGS</p>
+  <p class="center good">NOTHING TO GUESS · THESE ARE ALL YOUR {w.NOUNS}</p>
 {/if}
 
-<div class="framed">
-  <iframe title="Playlist" src={`https://open.spotify.com/embed/playlist/${room.playlist_id}?theme=0`} allow="encrypted-media" loading="lazy"></iframe>
-</div>
+{#if embed}
+  <div class="framed">
+    <iframe title="Player" src={embed.src} class:wide={embed.wide} allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>
+  </div>
+{/if}
 <Playlist />
 
 {#if progress}
@@ -108,13 +114,14 @@
 
 {#each packs as pack}
   {#if isMine(pack)}
-    <div class="panel muted">YOUR SONGS · {pack.songs.map((s) => s.title).join(' · ')}</div>
+    <div class="panel muted">YOUR {w.NOUNS} · {pack.songs.map((s) => s.title).join(' · ')}</div>
   {:else}
     <div class="panel stack">
       {#each pack.songs as s}
-        <a class="line" href={`https://open.spotify.com/track/${s.spotify_id}`} target="_blank" rel="noopener">
+        <a class="line" href={sourceOf(s.source).link(s.item_id)} target="_blank" rel="noopener">
           <Art src={s.art_url} />
           <div class="grow-text"><div>{s.title}</div><div class="dim">{s.artist}</div></div>
+          <span class="open" aria-hidden="true">↗</span>
         </a>
       {/each}
       <button class="row" class:on={guessFor(pack)} onclick={() => (open = open === pack.id ? null : pack.id)}>
@@ -122,7 +129,7 @@
         <span>{open === pack.id ? '▴' : '▾'}</span>
       </button>
       {#if open === pack.id}
-        <div class="chips" role="radiogroup" aria-label="Who added these songs">
+        <div class="chips" role="radiogroup" aria-label={`Who added these ${w.nouns}`}>
           {#each crew as p}
             {@const elsewhere = placedOn(pack, p.id)}
             <button class="chip" role="radio" aria-checked={guessFor(pack) === p.id} class:on={guessFor(pack) === p.id} class:used={elsewhere} onclick={() => pick(pack, p.id)}>
