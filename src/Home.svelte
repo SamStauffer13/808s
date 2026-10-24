@@ -3,6 +3,7 @@
   import Notice from './Notice.svelte'
   import { attempt, notify, once, saveName, savedName } from './lib/game.svelte'
   import { practice, startPractice } from './lib/practice.svelte'
+  import { valid } from './lib/form'
   import { isSource } from './lib/source-ids'
   import { sourceOf, sources, wordsOf, type Source } from './lib/sources'
   import * as account from './lib/spotify-account'
@@ -77,17 +78,10 @@
 
   const disconnect = () => attempt('create', async () => (await account.disconnect(), (spotifyName = null)))
 
-  // The form is checked here, not by the browser's own pop-up, so the message sits under the box that needs it. A name
-  // or vibe of only spaces counts as empty (the pattern), and a box practice insists on is covered by :invalid too.
+  // checked by `valid`: a box practice insists on is covered by :invalid too
   let tried = $state(false)
   const submit = (e: SubmitEvent) => {
-    e.preventDefault()
-    const form = e.currentTarget as HTMLFormElement
-    if (!form.checkValidity()) {
-      tried = true
-      form.querySelector<HTMLInputElement>('input:invalid')?.focus()
-      return
-    }
+    if (!valid(e)) return void (tried = true)
     spotifyName || !info.playlist ? create() : connect()
   }
 

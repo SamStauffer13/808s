@@ -1,6 +1,6 @@
 import { practice } from './practice.svelte'
 import type { Source } from './source-ids'
-import { rpc, signIn, supabase } from './supabase'
+import { call, rpc, signIn, supabase } from './supabase'
 
 export type Room = {
   id: string
@@ -12,6 +12,7 @@ export type Room = {
   source: Source
   playlist_id: string | null
   playlist_url: string | null
+  next_room_id?: string | null // set once the host starts the next experiment with this crew
 }
 export type Player = { id: string; user_id: string; name: string }
 export type Song = { id: string; pack: string | null; source: Source; item_id: string; title: string; artist: string; art_url: string | null; genres: string[] }
@@ -86,6 +87,20 @@ export const joinGame = (code: string, name: string) =>
     const room = await rpc('join_room', { p_code: code, p_name: name })
     saveName(name)
     return room.code as string
+  })
+
+// Play again: the host starts the next experiment from a finished one, and everyone else joins it from their own
+// results screen. Both land in the new room. Joining takes the name each person already had.
+export const playAgain = (from: string, theme: string, title: string) =>
+  attempt('again', async () => {
+    const { room } = await call<{ room: { code: string } }>('create-room', { from_room: from, theme, title })
+    location.hash = `/${room.code}`
+  })
+
+export const joinNext = (old: string) =>
+  attempt('again', async () => {
+    const room = await rpc('join_next_room', { p_old: old })
+    location.hash = `/${room.code}`
   })
 
 // one pack per person: the songs they added, in playlist order

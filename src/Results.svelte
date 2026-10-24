@@ -4,8 +4,11 @@
   import Head from './Head.svelte'
   import Playlist from './Playlist.svelte'
   import SubjectFile from './SubjectFile.svelte'
-  import { game, me } from './lib/game.svelte'
-  import { wordsOf } from './lib/sources'
+  import Notice from './Notice.svelte'
+  import { game, isHost, joinNext, me, once, playAgain } from './lib/game.svelte'
+  import { valid } from './lib/form'
+  import { practice } from './lib/practice.svelte'
+  import { sourceOf, wordsOf } from './lib/sources'
   import { analyze } from './lib/results'
   import { badges } from './lib/stamps'
 
@@ -13,6 +16,18 @@
 
   const r = $derived(analyze(game, me()?.id))
   let showFiles = $state(false) // the files are the long part of the scoreboard, so they start tucked away
+
+  // Play again with this crew. The host gives a new vibe; once the next experiment exists everyone, the host too if they
+  // come back, gets a JOIN. Practice has one game and no next one, so it shows neither.
+  const next = $derived(!practice.on && game.room?.next_room_id)
+  const again = $derived(!practice.on && (next || isHost()))
+  let asking = $state(false)
+  let vibe = $state('')
+  let title = $state('')
+  let tried = $state(false)
+  const start = once(() => playAgain(game.room!.code, vibe, title))
+  const join = once(() => joinNext(game.room!.id))
+  const submit = (e: SubmitEvent) => (valid(e) ? start() : (tried = true))
 </script>
 
 <Head step="EXPERIMENT COMPLETE" />
@@ -64,5 +79,27 @@
 <Playlist />
 
 <div class="grow"></div>
+{#if next}
+  <p class="notice">NEXT EXPERIMENT IS READY</p>
+  <button class="btn" onclick={join}>JOIN THE NEXT EXPERIMENT</button>
+{:else if again && asking}
+  <form class="form" class:tried novalidate autocomplete="off" onsubmit={submit}>
+    <label class="field">
+      <span class="label">THE NEW {sourceOf().vibe} VIBE</span>
+      <input bind:value={vibe} maxlength="140" pattern=".*\S.*" placeholder={sourceOf().vibePlaceholder} required />
+      {#if tried && !vibe.trim()}<span class="err">/// ADD A VIBE FOR YOUR CREW</span>{/if}
+    </label>
+    {#if sourceOf().playlist}
+      <label class="field">
+        <span class="label">PLAYLIST NAME · OPTIONAL</span>
+        <input bind:value={title} maxlength="100" placeholder="e.g. makeup is war paint" />
+      </label>
+    {/if}
+    <button class="btn">START THE NEXT EXPERIMENT</button>
+  </form>
+{:else if again}
+  <button class="btn" onclick={() => (asking = true)}>PLAY AGAIN WITH THIS CREW</button>
+{/if}
+{#if again}<Notice scope="again" />{/if}
 <button class="btn ghost" onclick={replay}>REPLAY THE FINDINGS</button>
-<a class="btn" href="#/">NEW EXPERIMENT</a>
+<a class="btn" class:ghost={again} href="#/">NEW EXPERIMENT</a>

@@ -276,3 +276,92 @@ test('theme: a color saved by an older picker falls back to green', async ({ pag
   await open(page, '/')
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim())).toBe('#1db954')
 })
+
+// Play again only exists in a real game, which practice cannot show and which needs the live server. So this puts the real
+// results screen in front of a pretend Supabase (three players, six songs, everyone's guesses) and records what is sent.
+async function finishedGame(page: Page, { host, next }: { host: boolean; next: boolean }) {
+  const sent: { what: string; body: any }[] = []
+  const players = [
+    { id: 'pl-me', user_id: 'u-me', name: 'Sam' },
+    { id: 'pl-a', user_id: 'u-a', name: 'Cole' },
+    { id: 'pl-b', user_id: 'u-b', name: 'Dalton' },
+  ]
+  const songs = players.flatMap((p, i) => [1, 2].map((n) => ({ id: `s${i}${n}`, pack: `pk-${p.id}`, source: 'spotify', item_id: `t${i}${n}`, title: `Song ${i}${n}`, artist: 'Artist', art_url: null, genres: ['rock'] })))
+  const owners = songs.map((s) => ({ song_id: s.id, player_id: players.find((p) => `pk-${p.id}` === s.pack)!.id }))
+  // a guess is made per set, on its first song: everyone but the owner names the owner right, except Cole, who blames Sam
+  const guesses = players.flatMap((owner, i) => players.filter((g) => g !== owner).map((g) => ({ song_id: `s${i}1`, guesser_id: g.id, guessed_player_id: g.id === 'pl-a' ? 'pl-me' : owner.id })))
+  const room = { id: 'r1', code: 'AB-1234', host_user_id: host ? 'u-me' : 'u-a', theme: 'angsty teenager songs', title: null, songs_per_player: 2, phase: 'reveal', source: 'spotify', playlist_id: null, playlist_url: null, next_room_id: next ? 'r2' : null }
+
+  const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' }
+  await page.route(/\/(rest|auth|functions)\/v1\//, async (route) => {
+    const req = route.request()
+    if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors })
+    const reply = (json: unknown) => route.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify(json) })
+    const { pathname } = new URL(req.url())
+    const asObject = (req.headers().accept ?? '').includes('pgrst.object') // .single(); .maybeSingle() takes a list
+    const rows = (all: unknown[]) => reply(asObject ? all[0] : all)
+    if (pathname.endsWith('/auth/v1/signup')) {
+      const user = { id: 'u-me', aud: 'authenticated', role: 'authenticated', is_anonymous: true, app_metadata: {}, user_metadata: {}, created_at: '2026-10-23T00:00:00Z' }
+      return reply({ access_token: 'a.b.c', token_type: 'bearer', expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, refresh_token: 'r', user })
+    }
+    if (pathname.endsWith('/rest/v1/rooms')) return rows([room])
+    if (pathname.endsWith('/rest/v1/players')) return rows(players)
+    if (pathname.endsWith('/rest/v1/songs')) return rows(songs)
+    if (pathname.endsWith('/rest/v1/song_owners')) return rows(owners)
+    if (pathname.endsWith('/rest/v1/guesses')) return rows(guesses)
+    if (pathname.endsWith('/functions/v1/create-room')) {
+      sent.push({ what: 'create-room', body: req.postDataJSON() })
+      return reply({ room: { ...room, id: 'r2', code: 'NX-0001' } })
+    }
+    if (pathname.endsWith('/rest/v1/rpc/join_next_room')) {
+      sent.push({ what: 'join_next_room', body: req.postDataJSON() })
+      return reply({ ...room, id: 'r2', code: 'NX-0001', phase: 'submit' })
+    }
+    return reply([])
+  })
+  await open(page, '/#/AB-1234')
+  await expect(page.locator('.board')).toBeVisible() // the real results screen, drawn from the pretend game
+  return sent
+}
+
+test('play again: the host gives a new vibe, nothing is sent without one, and it opens the next experiment', async ({ page }) => {
+  const sent = await finishedGame(page, { host: true, next: false })
+  await expect(page.getByRole('button', { name: 'JOIN THE NEXT EXPERIMENT' })).toHaveCount(0)
+  await expect(page.locator('a.btn')).toHaveClass(/ghost/) // NEW EXPERIMENT steps back for the host's main button
+  await page.getByRole('button', { name: 'PLAY AGAIN WITH THIS CREW' }).click()
+  await page.getByRole('button', { name: 'START THE NEXT EXPERIMENT' }).scrollIntoViewIfNeeded()
+  await page.screenshot({ path: 'test-results/screens/results-play-again.png', fullPage: true })
+  await page.getByRole('button', { name: 'START THE NEXT EXPERIMENT' }).click()
+  await expect(page.getByText('/// ADD A VIBE FOR YOUR CREW')).toBeVisible()
+  expect(sent).toEqual([])
+  await page.getByLabel('THE NEW PLAYLIST VIBE').fill('   ') // spaces are not a vibe
+  await page.getByRole('button', { name: 'START THE NEXT EXPERIMENT' }).click()
+  expect(sent).toEqual([])
+  await page.getByLabel('THE NEW PLAYLIST VIBE').fill('songs for a road trip')
+  await page.getByLabel('PLAYLIST NAME').fill('road tripping')
+  await page.getByRole('button', { name: 'START THE NEXT EXPERIMENT' }).click()
+  await expect.poll(() => sent.length).toBe(1)
+  expect(sent[0]).toEqual({ what: 'create-room', body: { from_room: 'AB-1234', theme: 'songs for a road trip', title: 'road tripping' } })
+  await expect(page).toHaveURL(/#\/NX-0001$/) // and the host is in the next one
+})
+
+test('play again: the crew get a join button once the next experiment exists, and joining opens it', async ({ page }) => {
+  const sent = await finishedGame(page, { host: false, next: true })
+  await expect(page.locator('.notice')).toContainText('NEXT EXPERIMENT IS READY')
+  await expect(page.getByRole('button', { name: /PLAY AGAIN/ })).toHaveCount(0) // only the host starts one
+  await page.waitForTimeout(700) // the notice wipes in
+  await page.screenshot({ path: 'test-results/screens/results-join-next.png', fullPage: true })
+  await page.getByRole('button', { name: 'JOIN THE NEXT EXPERIMENT' }).click()
+  await expect.poll(() => sent.length).toBe(1)
+  expect(sent[0]).toEqual({ what: 'join_next_room', body: { p_old: 'r1' } })
+  await expect(page).toHaveURL(/#\/NX-0001$/)
+})
+
+test('play again: the crew see nothing extra until the host starts one, and practice never shows it', async ({ page }) => {
+  await finishedGame(page, { host: false, next: false })
+  await expect(page.getByRole('button', { name: /PLAY AGAIN|JOIN THE NEXT/ })).toHaveCount(0)
+  await expect(page.locator('a.btn')).not.toHaveClass(/ghost/) // NEW EXPERIMENT stays the main button
+  await page.goto('/?practice=results')
+  await expect(page.locator('.board')).toBeAttached()
+  await expect(page.getByRole('button', { name: /PLAY AGAIN|JOIN THE NEXT/ })).toHaveCount(0)
+})
