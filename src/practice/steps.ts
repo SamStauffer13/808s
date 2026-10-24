@@ -74,9 +74,10 @@ export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
       },
     ],
     submit: [
-      { target: '.btn.ghost.plain', text: 'SHARE THIS INVITE LINK WITH YOUR CREW SO THEY CAN JOIN.', look: true },
       search((w) => `FIRST, SEARCH FOR THE ${w.NOUN} YOU WANT TO ADD TO THE EXPERIMENT.`),
       addSong,
+      // the invite sits at the bottom, just above the button that waits on the crew
+      { target: '.btn.ghost.plain', text: 'THEN, SHARE THIS INVITE LINK WITH YOUR CREW SO THEY CAN JOIN.', look: true },
       { target: 'button.btn:not(.ghost):not([disabled])', text: () => `ONCE EVERYONE YOU SHARED THE LINK WITH HAS ADDED THEIR ${words().NOUNS}, CLICK THIS BUTTON TO BEGIN THE EXPERIMENT.` },
     ],
     guess,

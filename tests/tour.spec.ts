@@ -277,20 +277,23 @@ test('theme: a color saved by an older picker falls back to green', async ({ pag
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim())).toBe('#1db954')
 })
 
-// Play again only exists in a real game, which practice cannot show and which needs the live server. So this puts the real
-// results screen in front of a pretend Supabase (three players, six songs, everyone's guesses) and records what is sent.
-async function finishedGame(page: Page, { host, next }: { host: boolean; next: boolean }) {
+// Some things only exist in a real game, which practice cannot show and which needs the live server (play again, the host
+// alone before anyone joins). So this puts the real screen in front of a pretend Supabase and records what is sent. By
+// default it is a finished game with three players, six songs and everyone's guesses; `alone` is the host in the submit
+// phase with nobody else yet (`submitted`: and their own songs already added).
+async function pretendGame(page: Page, { host, next = false, alone = false, submitted = false }: { host: boolean; next?: boolean; alone?: boolean; submitted?: boolean }) {
   const sent: { what: string; body: any }[] = []
-  const players = [
+  const crew = [
     { id: 'pl-me', user_id: 'u-me', name: 'Sam' },
     { id: 'pl-a', user_id: 'u-a', name: 'Cole' },
     { id: 'pl-b', user_id: 'u-b', name: 'Dalton' },
   ]
-  const songs = players.flatMap((p, i) => [1, 2].map((n) => ({ id: `s${i}${n}`, pack: `pk-${p.id}`, source: 'spotify', item_id: `t${i}${n}`, title: `Song ${i}${n}`, artist: 'Artist', art_url: null, genres: ['rock'] })))
+  const players = alone ? crew.slice(0, 1) : crew
+  const songs = alone && !submitted ? [] : players.flatMap((p, i) => [1, 2].map((n) => ({ id: `s${i}${n}`, pack: `pk-${p.id}`, source: 'spotify', item_id: `t${i}${n}`, title: `Song ${i}${n}`, artist: 'Artist', art_url: null, genres: ['rock'] })))
   const owners = songs.map((s) => ({ song_id: s.id, player_id: players.find((p) => `pk-${p.id}` === s.pack)!.id }))
   // a guess is made per set, on its first song: everyone but the owner names the owner right, except Cole, who blames Sam
-  const guesses = players.flatMap((owner, i) => players.filter((g) => g !== owner).map((g) => ({ song_id: `s${i}1`, guesser_id: g.id, guessed_player_id: g.id === 'pl-a' ? 'pl-me' : owner.id })))
-  const room = { id: 'r1', code: 'AB-1234', host_user_id: host ? 'u-me' : 'u-a', theme: 'angsty teenager songs', title: null, songs_per_player: 2, phase: 'reveal', source: 'spotify', playlist_id: null, playlist_url: null, next_room_id: next ? 'r2' : null }
+  const guesses = alone ? [] : players.flatMap((owner, i) => players.filter((g) => g !== owner).map((g) => ({ song_id: `s${i}1`, guesser_id: g.id, guessed_player_id: g.id === 'pl-a' ? 'pl-me' : owner.id })))
+  const room = { id: 'r1', code: 'AB-1234', host_user_id: host ? 'u-me' : 'u-a', theme: 'angsty teenager songs', title: null, songs_per_player: 2, phase: alone ? 'submit' : 'reveal', source: 'spotify', playlist_id: null, playlist_url: null, next_room_id: next ? 'r2' : null }
 
   const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' }
   await page.route(/\/(rest|auth|functions)\/v1\//, async (route) => {
@@ -320,12 +323,12 @@ async function finishedGame(page: Page, { host, next }: { host: boolean; next: b
     return reply([])
   })
   await open(page, '/#/AB-1234')
-  await expect(page.locator('.board')).toBeVisible() // the real results screen, drawn from the pretend game
+  if (!alone) await expect(page.locator('.board')).toBeVisible() // the real results screen, drawn from the pretend game
   return sent
 }
 
 test('play again: the host gives a new vibe, nothing is sent without one, and it opens the next experiment', async ({ page }) => {
-  const sent = await finishedGame(page, { host: true, next: false })
+  const sent = await pretendGame(page, { host: true })
   await expect(page.getByRole('button', { name: 'JOIN THE NEXT EXPERIMENT' })).toHaveCount(0)
   await expect(page.locator('a.btn')).toHaveClass(/ghost/) // NEW EXPERIMENT steps back for the host's main button
   await page.getByRole('button', { name: 'PLAY AGAIN WITH THIS CREW' }).click()
@@ -346,7 +349,7 @@ test('play again: the host gives a new vibe, nothing is sent without one, and it
 })
 
 test('play again: the crew get a join button once the next experiment exists, and joining opens it', async ({ page }) => {
-  const sent = await finishedGame(page, { host: false, next: true })
+  const sent = await pretendGame(page, { host: false, next: true })
   await expect(page.locator('.notice')).toContainText('NEXT EXPERIMENT IS READY')
   await expect(page.getByRole('button', { name: /PLAY AGAIN/ })).toHaveCount(0) // only the host starts one
   await page.waitForTimeout(700) // the notice wipes in
@@ -358,10 +361,27 @@ test('play again: the crew get a join button once the next experiment exists, an
 })
 
 test('play again: the crew see nothing extra until the host starts one, and practice never shows it', async ({ page }) => {
-  await finishedGame(page, { host: false, next: false })
+  await pretendGame(page, { host: false })
   await expect(page.getByRole('button', { name: /PLAY AGAIN|JOIN THE NEXT/ })).toHaveCount(0)
   await expect(page.locator('a.btn')).not.toHaveClass(/ghost/) // NEW EXPERIMENT stays the main button
   await page.goto('/?practice=results')
   await expect(page.locator('.board')).toBeAttached()
   await expect(page.getByRole('button', { name: /PLAY AGAIN|JOIN THE NEXT/ })).toHaveCount(0)
+})
+
+test('submit: a host with nobody else yet is told to share, and the invite sits just above the waiting button', async ({ page }) => {
+  await pretendGame(page, { host: true, alone: true, submitted: true })
+  await expect(page.getByText('/// Your songs are locked in. Send the invite link to STOP_BEING_ALONE')).toBeVisible()
+  const crewList = await page.getByText('CREW', { exact: true }).boundingBox()
+  const share = await page.getByRole('button', { name: /INVITE LINK/ }).boundingBox()
+  const waiting = await page.getByRole('button', { name: 'WAITING FOR THE CREW TO JOIN' }).boundingBox()
+  expect(share!.y, 'the invite is below the crew list, not up by the songs').toBeGreaterThan(crewList!.y)
+  expect(waiting!.y - (share!.y + share!.height), 'and right above the button that waits on it').toBeLessThan(90)
+  await page.screenshot({ path: 'test-results/screens/submit-alone.png', fullPage: true })
+})
+
+test('submit: a host who is alone and has not added anything yet is not told their songs are locked in', async ({ page }) => {
+  await pretendGame(page, { host: true, alone: true })
+  await expect(page.getByText('/// Add your songs, then send the invite link to STOP_BEING_ALONE')).toBeVisible()
+  await expect(page.getByText(/locked in/)).toHaveCount(0)
 })

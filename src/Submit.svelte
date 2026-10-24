@@ -56,8 +56,6 @@
 
 <div class="panel"><div class="label">THE {sourceOf(room.source).vibe} VIBE</div><div class="good big">{room.theme}</div></div>
 
-{#if alone}<p class="muted center">/// SEND THE INVITE LINK TO YOUR CREW</p>{/if}
-<Share />
 {#if left > 0}
   <p class="muted prose center">/// Add {left} more {left > 1 ? w.nouns : w.noun} that fit the vibe. Nobody sees who added what until the results.</p>
 {/if}
@@ -95,6 +93,10 @@
 </div>
 
 <div class="grow"></div>
+
+<!-- the invite sits right above the button that waits on it, so the way forward is the next thing the host sees -->
+{#if alone}<p class="muted prose center">/// {left === 0 ? `Your ${w.nouns} are locked in. Send` : `Add your ${w.nouns}, then send`} the invite link to STOP_BEING_ALONE</p>{/if}
+<Share />
 
 {#if isHost()}
   <Notice scope="start" />
