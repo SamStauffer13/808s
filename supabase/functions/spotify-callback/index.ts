@@ -8,14 +8,15 @@ Deno.serve(async (req) => {
   const state = await readState(url.searchParams.get('state') ?? '')
   if (!state) return new Response('This login link expired. Go back to 808s and try again.', { status: 400 })
 
-  const back = (result: string) => {
+  const back = (result: string, why?: string) => {
     const to = new URL(state.returnTo)
     to.searchParams.set('spotify', result)
+    if (why) to.searchParams.set('why', why.slice(0, 120))
     return Response.redirect(to.toString(), 302)
   }
 
   const code = url.searchParams.get('code')
-  if (!code) return back('denied')
+  if (!code) return back('denied', url.searchParams.get('error') ?? undefined)
 
   try {
     const tokens = await exchangeCode(code)
@@ -31,6 +32,9 @@ Deno.serve(async (req) => {
     return back('connected')
   } catch (e) {
     console.error('spotify login failed', e)
-    return back('failed')
+    const message = e instanceof Error ? e.message : (e as { message?: string })?.message ?? String(e)
+    // Spotify's development mode turns away anyone who is not on the app's allowlist with a 403 on /me
+    if (/GET \/me failed \(403\)/.test(message)) return back('notallowed')
+    return back('failed', message)
   }
 })

@@ -65,8 +65,10 @@
 
   const result = new URLSearchParams(location.search).get('spotify')
   if (result) {
+    const why = new URLSearchParams(location.search).get('why')
     history.replaceState(null, '', location.pathname + location.hash)
-    if (result !== 'connected') notify('create', result === 'denied' ? 'Spotify login was cancelled' : 'Spotify login failed, try again')
+    if (result === 'notallowed') notify('create', 'This Spotify account is not on the guest list yet. Ask the host of 808s to add your Spotify email, then try again.')
+    else if (result !== 'connected') notify('create', (result === 'denied' ? 'Spotify login was cancelled' : 'Spotify login failed, try again') + (why ? ` (${why})` : ''))
   }
   attempt('create', async () => (spotifyName = await account.name()))
 
