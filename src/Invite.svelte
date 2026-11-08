@@ -31,7 +31,7 @@
     <a class="btn ghost" href="#/">START YOUR OWN</a>
   {:else}
     <div class="panel framed">
-      <div class="label">{preview.mode === 'dj' ? 'YOU HAVE BEEN GRANTED ACCESS TO A LIVE SESSION' : 'INCOMING TRANSMISSION'}</div>
+      <div class="label">{preview.mode === 'dj' ? 'THE SPEAKER IS UP FOR HIJACK' : 'INCOMING TRANSMISSION'}</div>
       <div class="big">{preview.theme}</div>
     </div>
     {#if preview.mode === 'dj'}
@@ -58,7 +58,7 @@
       <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
       <p class="muted">/// USE THE NAME YOUR CREW KNOWS YOU BY</p>
       <Notice scope="join" />
-      <button class="btn">{preview.mode === 'dj' ? 'ATTACH TO THE SESSION' : 'JOIN THE EXPERIMENT'}</button>
+      <button class="btn">{preview.mode === 'dj' ? 'JOIN THE HIJACK' : 'JOIN THE EXPERIMENT'}</button>
     </form>
     {#if !practice.on}<button type="button" class="link center" onclick={() => startPractice('guest', undefined, undefined, preview?.source)}>NEW HERE? TRY THE TUTORIAL →</button>{/if}
   {/if}

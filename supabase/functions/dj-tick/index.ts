@@ -13,8 +13,8 @@ const same = (a: string, b: string) => {
 const PASSES = 11 // one scheduled run lasts about a minute, looking every 5 seconds
 const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms))
 
-// The server timer for standing sessions: the database calls this every minute (pg_cron), and it keeps every standing
-// session's music fed for that minute. A room whose speaker is off is only checked once per run, not every 5 seconds.
+// The server timer for hijacks: the database calls this every minute (pg_cron), and it keeps every hijack's
+// music fed for that minute. A room whose speaker is off is only checked once per run, not every 5 seconds.
 // The caller proves itself with the DJ_TICK_KEY secret; there is no user here, so this is not a signed-in call.
 Deno.serve(async (req) => {
   const secret = Deno.env.get('DJ_TICK_KEY')
@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
   if (!secret || !same(key, secret)) return new Response('no', { status: 403 })
 
   const db = admin()
-  const { data: rooms } = await db.from('rooms').select('*').eq('mode', 'dj').eq('standing', true)
+  const { data: rooms } = await db.from('rooms').select('*').eq('mode', 'dj')
   const ran: Record<string, number> = {}
 
   for (let pass = 0; pass < PASSES; pass++) {

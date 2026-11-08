@@ -62,7 +62,7 @@
   <Invite {code} onjoin={load} />
 {:else if game.room?.mode === 'dj'}
   <Admin {code} />
-  <p class="muted center">SESSION {code}</p>
+  <p class="muted center">HIJACK {code}</p>
   <Dj />
 {:else if game.room}
   <Admin {code} />

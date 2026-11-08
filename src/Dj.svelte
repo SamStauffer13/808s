@@ -117,7 +117,7 @@
   {#if reconnect}
     <div class="panel stack">
       <div class="label">ONE QUICK THING</div>
-      <p class="prose">Spotify needs your OK once more so the session can feed tracks to your speaker.</p>
+      <p class="prose">Spotify needs your OK once more so the hijack can feed tracks to your speaker.</p>
       <button class="btn" onclick={login}>RECONNECT SPOTIFY</button>
     </div>
   {:else if room.host_offline}
@@ -125,7 +125,7 @@
       <div class="label">HOST CHECKLIST</div>
       <div class="line"><b>1</b><span>OPEN SPOTIFY (PREMIUM) ON YOUR PHONE OR COMPUTER</span></div>
       <div class="line"><b>2</b><span>PICK THE SPEAKER AND PLAY ANY SONG</span></div>
-      <div class="line"><b>3</b><span>COME BACK HERE. THE SESSION TAKES OVER</span></div>
+      <div class="line"><b>3</b><span>COME BACK HERE. THE HIJACK TAKES OVER</span></div>
     </div>
   {/if}
   <Notice scope="dj-host" />
@@ -191,6 +191,7 @@
   </button>
 {/if}
 <Share />
+{#if isHost() && !practice.on}<a class="btn ghost plain" href="#/setup">QR CODE, NFC TAG &amp; POSTER</a>{/if}
 
 <div class="dock">
   {#if room.suggestions_paused}

@@ -402,10 +402,10 @@ iframe.wide { height: auto; aspect-ratio: 16 / 9; }
 .dj-add { animation: rise 250ms ease-out; }
 .choice[data-mode='dj'] .glyph { color: var(--accent); }
 
-/* a bar's standing jukebox: the setup page, and the poster that only shows when printing */
+/* opening a live session: the setup page, and the poster that only shows when printing */
 .break { overflow-wrap: anywhere; }
-.bar-qr { width: min(260px, 70%); margin: 0 auto; padding: 14px; border-radius: var(--radius); background: #fff; }
-.bar-qr svg { display: block; width: 100%; height: auto; }
+.setup-qr { width: min(260px, 70%); margin: 0 auto; padding: 14px; border-radius: var(--radius); background: #fff; }
+.setup-qr svg { display: block; width: 100%; height: auto; }
 .poster { display: none; }
 @media print {
   html, body { background: #fff !important; }

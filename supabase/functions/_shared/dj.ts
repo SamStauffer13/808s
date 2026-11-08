@@ -17,7 +17,7 @@ export async function feed(db: Db, room: Room) {
   if (!turn) return { state: 'busy' }
 
   const { data: account } = await db.from('spotify_accounts').select('scopes').eq('user_id', room.host_user_id).maybeSingle()
-  if (!account?.scopes.includes('user-modify-playback-state')) throw new HttpError(400, 'reconnect Spotify so the session can control your music')
+  if (!account?.scopes.includes('user-modify-playback-state')) throw new HttpError(400, 'reconnect Spotify so the hijack can control your music')
 
   const token = await userToken(room.host_user_id)
 
@@ -26,7 +26,7 @@ export async function feed(db: Db, room: Room) {
     playback = await getPlayback(token)
   } catch (e) {
     if (e instanceof SpotifyError && e.status === 429) return { state: 'rate_limited', retryAfter: e.retryAfter ?? 5 }
-    if (e instanceof SpotifyError && (e.status === 401 || e.status === 403)) throw new HttpError(400, 'reconnect Spotify so the session can control your music')
+    if (e instanceof SpotifyError && (e.status === 401 || e.status === 403)) throw new HttpError(400, 'reconnect Spotify so the hijack can control your music')
     throw e
   }
 

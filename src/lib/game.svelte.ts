@@ -22,7 +22,6 @@ export type Room = {
   now_duration_ms?: number | null
   host_offline?: boolean // DJ party: nothing is playing, or the host's Spotify has no active device
   suggestions_paused?: boolean
-  standing?: boolean // a jukebox with a fixed link (a bar's), kept for good
   block_explicit?: boolean // explicit tracks are not allowed in
 }
 export type DjTrack = { id: string; item_id: string; title: string; artist: string; art: string | null; suggested_by: string | null; status: 'pending' | 'queued' | 'playing' | 'played' | 'vetoed'; created_at: string }
@@ -146,7 +145,7 @@ async function refresh() {
   const [room, players, songs, owners, guesses, counts, tracks, vetoes] = await Promise.all([
     supabase.from('rooms').select('*').eq('id', id).single(),
     supabase.from('players').select('id, user_id, name').eq('room_id', id).order('joined_at'),
-    // a DJ session has no songs, owners or guesses to load
+    // a hijack has no songs, owners or guesses to load
     dj ? { data: [] } : supabase.from('songs').select('id, pack, source, item_id, title, artist, art_url, genres').eq('room_id', id).order('position'),
     dj ? { data: [] } : supabase.from('song_owners').select('song_id, player_id').eq('room_id', id),
     dj ? { data: [] } : supabase.from('guesses').select('song_id, guesser_id, guessed_player_id').eq('room_id', id),

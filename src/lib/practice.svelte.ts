@@ -5,12 +5,11 @@ import { isSource, type Source } from './source-ids'
 import { playTransition } from './transition.svelte'
 
 export type Role = 'host' | 'guest'
-// 'dj' is the DJ party screen. It is not on the way through the guessing game: a host who picks DJ PARTY on Home lands
-// there, and /?practice=dj or =guest-dj opens it directly.
-// 'bar' is a bar's standing jukebox setup page (/?practice=bar), also outside the guessing game's way through.
-export type Stage = 'home' | 'invite' | 'submit' | 'guess' | 'results' | 'dj' | 'bar'
+// 'dj' is the hijack screen, and 'setup' is where one is opened (a host who picks HIJACK on Home). Neither is on
+// the way through the guessing game: /?practice=dj, =guest-dj or =setup open them directly.
+export type Stage = 'home' | 'invite' | 'submit' | 'guess' | 'results' | 'dj' | 'setup'
 export const journeys: Record<Role, readonly Stage[]> = {
-  host: ['home', 'submit', 'guess', 'results', 'dj', 'bar'],
+  host: ['home', 'submit', 'guess', 'results', 'dj', 'setup'],
   guest: ['invite', 'submit', 'guess', 'results', 'dj'],
 }
 

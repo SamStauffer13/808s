@@ -23,8 +23,8 @@ const handlers: Fake = {
     const connected = sessionStorage.getItem(spotifyKey) !== null
     return { connected, name: connected ? savedName() || me.name : null, canDj: connected }
   },
-  // next you add songs, as the host (or open the session); the choice on Home picks what the experiment is about
-  'create-room': ({ source, mode }) => ((practice.source = isSource(source) ? source : 'spotify'), goStage(mode === 'dj' ? 'dj' : 'submit'), { room: { code: practiceCode } }),
+  // next you add songs, as the host; the choice on Home picks what the experiment is about
+  'create-room': ({ source }) => ((practice.source = isSource(source) ? source : 'spotify'), goStage('submit'), { room: { code: practiceCode } }),
 
   // invite (a crew member's journey)
   room_preview: () => [{ theme: theme(), phase: 'submit', source: practice.source, mode: 'game' }],
@@ -51,10 +51,10 @@ const handlers: Fake = {
     game.counts = { ...game.counts, [me.id]: Math.max(0, (game.counts[me.id] ?? 1) - 1) }
   },
 
-  // a bar's standing jukebox: opening it gives the fixed link
-  'bar-session': ({ slug, title }) => ({ room: { id: 'practice', code: String(slug).toUpperCase(), theme: title, block_explicit: false } }),
+  // starting a hijack gives its fixed link
+  'open-hijack': ({ slug, title }) => ({ room: { id: 'practice', code: String(slug).toUpperCase(), theme: title, block_explicit: false } }),
 
-  // the live session: the screen has already shown your track or vote, so these only answer like the server would
+  // the hijack: the screen has already shown your track or vote, so these only answer like the server would
   'dj-suggest': () => ({ track: {} }),
   'dj-veto': ({ track_id, undo }) => ({ status: !undo && game.dj.vetoes.filter((v) => v.track_id === track_id).length >= threshold() ? 'vetoed' : 'pending' }),
   'dj-host': ({ action, track_id }) => {

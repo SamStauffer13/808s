@@ -15,7 +15,7 @@ const stages = [
   ['guest', 'results', '/?practice=guest-results'],
   ['host', 'dj', '/?practice=dj'],
   ['guest', 'dj', '/?practice=guest-dj'],
-  ['host', 'bar', '/?practice=bar'],
+  ['host', 'setup', '/?practice=setup'],
 ] as const
 
 async function open(page: Page, url: string) {
@@ -41,8 +41,8 @@ for (const [role, stage, url] of stages) {
   })
 }
 
-// the live session (DJ mode). The wizard's overlay sits on top of the screen, so these click the elements directly.
-test.describe('live session', () => {
+// the hijack (DJ mode). The wizard's overlay sits on top of the screen, so these click the elements directly.
+test.describe('hijack', () => {
   test.use({ viewport: { width: 390, height: 844 } }) // an iPhone
 
   test('guest: enough rollbacks drop a track from staging', async ({ page }) => {
@@ -75,23 +75,23 @@ test.describe('live session', () => {
   })
 })
 
-test('standing jukebox: connect Spotify, open it, and get a fixed link with a QR code, an NFC step and a poster', async ({ page }) => {
-  await open(page, '/?practice=bar')
+test('hijack setup: connect Spotify, start it, and get a fixed link with a QR code, an NFC step and a poster', async ({ page }) => {
+  await open(page, '/?practice=setup')
   await page.locator('form label.field:nth-of-type(1) input').fill('Sam')
   await page.locator('form label.field:nth-of-type(2) input').fill('Bar Vino')
   await page.locator('form label.field:nth-of-type(3) input').fill('vino')
   await page.locator('form .btn').dispatchEvent('click') // connects Spotify first (practice's fake login comes straight back)
-  await expect(page.locator('form .btn')).toContainText('OPEN THE JUKEBOX')
+  await expect(page.locator('form .btn')).toContainText('START THE HIJACK')
   await page.locator('form .btn').dispatchEvent('click')
-  await expect(page.locator('.bar-link')).toContainText('#/VINO')
-  await expect(page.locator('.bar-qr svg')).toBeAttached()
-  await expect(page.locator('.bar-nfc')).toBeVisible()
-  await page.locator('.bar-explicit').dispatchEvent('click')
-  await expect(page.locator('.bar-explicit')).toContainText('BLOCKED')
+  await expect(page.locator('.setup-link')).toContainText('#/VINO')
+  await expect(page.locator('.setup-qr svg')).toBeAttached()
+  await expect(page.locator('.setup-nfc')).toBeVisible()
+  await page.locator('.setup-explicit').dispatchEvent('click')
+  await expect(page.locator('.setup-explicit')).toContainText('BLOCKED')
 })
 
-test('standing jukebox: the setup link name can not be a room that is already someone else', async ({ page }) => {
-  await open(page, '/?practice=bar')
+test('hijack setup: the link name can not be a room that is already someone else', async ({ page }) => {
+  await open(page, '/?practice=setup')
   await page.locator('form label.field:nth-of-type(3) input').fill('ab') // under 3 characters
   await page.locator('form .btn').dispatchEvent('click')
   await expect(page.getByText('3 TO 12 LETTERS OR NUMBERS').last()).toBeVisible()

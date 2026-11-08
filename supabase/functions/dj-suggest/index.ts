@@ -18,7 +18,7 @@ Deno.serve(
 
     // a bar can keep explicit tracks off the speaker
     const { data: room } = await db.from('rooms').select('block_explicit').eq('id', room_id).maybeSingle()
-    if (room?.block_explicit && item.explicit) throw new HttpError(400, "that one is explicit and this session doesn't allow those")
+    if (room?.block_explicit && item.explicit) throw new HttpError(400, "that one is explicit and this hijack doesn't allow those")
 
     const { data, error } = await db.rpc('dj_suggest', {
       p_user: user.id,

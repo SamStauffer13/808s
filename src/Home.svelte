@@ -2,7 +2,7 @@
   import Admin from './Admin.svelte'
   import Notice from './Notice.svelte'
   import { attempt, once, saveName, savedName } from './lib/game.svelte'
-  import { practice, startPractice } from './lib/practice.svelte'
+  import { goStage, practice, startPractice } from './lib/practice.svelte'
   import { valid } from './lib/form'
   import { isSource } from './lib/source-ids'
   import { sourceOf, sources, wordsOf, type Source } from './lib/sources'
@@ -40,28 +40,21 @@
     }
   }
   let source = $state<Source | null>(draft?.source ?? remembered())
-  // a DJ party is its own kind of room: it plays through the host's Spotify, so it is always an audio room underneath
-  let mode = $state<'game' | 'dj'>(draft?.mode ?? 'game')
-  const dj = $derived(mode === 'dj')
   const kind = $derived<Source>(source ?? 'spotify')
   const info = $derived(sourceOf(kind))
   const w = $derived(wordsOf(kind))
   // The form opens behind the matrix rain, like every other phase change, once the rain covers the screen (the title
   // shows from about 600ms). Going back to the question with CHANGE is instant.
   let picking = false
-  const pickDj = () => {
-    if (picking) return
+  // A hijack is its own flow (Setup.svelte), the same one whoever runs it and wherever it plays.
+  const openHijack = () => {
     playTransition('dj')
-    const open = () => ((mode = 'dj'), (source = 'spotify'), (picking = false))
-    if (transition.playing) {
-      picking = true
-      setTimeout(open, 600)
-    } else open()
+    if (practice.on) goStage('setup')
+    else setTimeout(() => (location.hash = '/setup'), transition.playing ? 600 : 0) // behind the matrix rain, like the other choices
   }
   const pick = (choice: Source) => {
     if (picking) return // a double tap
     playTransition(choice)
-    mode = 'game'
     if (transition.playing) {
       picking = true
       setTimeout(() => ((source = choice), (picking = false)), 600)
@@ -75,22 +68,13 @@
   const songs = $derived(info.picks.includes(wanted) ? wanted : info.defaultPicks) // what the source allows
   let editingSongs = $state(false)
   let spotifyName = $state<string | null>(null)
-  let canDj = $state(false) // the host's Spotify login can steer their player (a login from before DJ parties cannot)
 
   account.reportLogin('create')
-  attempt('create', async () => {
-    const s = await account.status()
-    spotifyName = s.name
-    canDj = s.canDj
-  })
-
-  // the playlist (a game) and the speaker (a DJ party) both need the host's Spotify; a party also needs the playback permission
-  const wantsSpotify = $derived(dj || info.playlist)
-  const needsLogin = $derived(wantsSpotify && (!spotifyName || (dj && !canDj)))
+  attempt('create', async () => (spotifyName = await account.name()))
 
   const connect = () =>
     attempt('create', async () => {
-      sessionStorage.setItem(draftKey, JSON.stringify({ name, vibe, title, songs, source, mode }))
+      sessionStorage.setItem(draftKey, JSON.stringify({ name, vibe, title, songs, source }))
       location.href = await account.loginUrl(location.origin + import.meta.env.BASE_URL)
     })
 
@@ -100,12 +84,12 @@
   let tried = $state(false)
   const submit = (e: SubmitEvent) => {
     if (!valid(e)) return void (tried = true)
-    needsLogin ? connect() : create()
+    spotifyName || !info.playlist ? create() : connect()
   }
 
   const create = once(() =>
     attempt('create', async () => {
-      const { room } = await call<{ room: { code: string } }>('create-room', { name, theme: vibe, title: info.playlist && !dj ? title : '', songs_per_player: songs, source: kind, mode })
+      const { room } = await call<{ room: { code: string } }>('create-room', { name, theme: vibe, title: info.playlist ? title : '', songs_per_player: songs, source: kind })
       saveName(name)
       location.hash = `/${room.code}`
     }),
@@ -130,17 +114,16 @@
         <em aria-hidden="true">→</em>
       </button>
     {/each}
-    <button type="button" class="choice" data-mode="dj" onclick={pickDj}>
+    <button type="button" class="choice" data-mode="dj" onclick={openHijack}>
       <span class="glyph" aria-hidden="true">♫</span>
-      <span class="what"><b>LIVE SESSION</b><span>One speaker, everyone pushes the next track</span></span>
+      <span class="what"><b>HIJACK</b><span>Take over the speaker, everyone pushes the next track</span></span>
       <em aria-hidden="true">→</em>
     </button>
-    <button type="button" class="link center" onclick={() => (location.hash = '/setup')}>RUNNING A BAR? SET UP A STANDING JUKEBOX →</button>
   </div>
 {:else}
-  <button type="button" class="row chosen" data-source={source} onclick={() => ((source = null), (mode = 'game'))}>
-    <span>{dj ? '♫' : info.icon}</span>
-    <span class="grow">{dj ? 'LIVE SESSION' : info.label}</span>
+  <button type="button" class="row chosen" data-source={source} onclick={() => (source = null)}>
+    <span>{info.icon}</span>
+    <span class="grow">{info.label}</span>
     <span class="dim">CHANGE</span>
   </button>
 
@@ -151,19 +134,17 @@
       {#if tried && !name.trim()}<span class="err">/// ENTER YOUR NAME</span>{/if}
     </label>
     <label class="field">
-      <span class="label">{dj ? 'THE SESSION NAME' : `THE ${info.vibe} VIBE`}</span>
-      <input bind:value={vibe} maxlength="140" pattern=".*\S.*" placeholder={dj ? 'e.g. rooftop friday' : info.vibePlaceholder} required />
+      <span class="label">THE {info.vibe} VIBE</span>
+      <input bind:value={vibe} maxlength="140" pattern=".*\S.*" placeholder={info.vibePlaceholder} required />
       {#if tried && !vibe.trim()}<span class="err">/// ADD A VIBE FOR YOUR CREW</span>{/if}
     </label>
-    {#if info.playlist && !dj}
+    {#if info.playlist}
       <label class="field">
         <span class="label">PLAYLIST NAME · OPTIONAL</span>
         <input bind:value={title} maxlength="100" placeholder="e.g. makeup is war paint" />
       </label>
     {/if}
-    {#if dj}
-      <!-- nothing to choose: guests can add as many songs as they like, one at a time -->
-    {:else if editingSongs}
+    {#if editingSongs}
       <div class="field">
         <span class="label">{w.NOUNS} EACH</span>
         <div class="pads" role="radiogroup" aria-label={`${w.nouns} each`}>
@@ -175,15 +156,13 @@
     {:else if info.picks.length > 1}
       <button type="button" class="link" onclick={() => (editingSongs = true)}>{songs} {songs > 1 ? w.NOUNS : w.NOUN} EACH · CHANGE</button>
     {/if}
-    {#if wantsSpotify && spotifyName && !needsLogin}
-      <p class="muted">/// {dj ? 'THE SESSION RUNS ON' : 'PLAYLIST GOES TO'} {spotifyName.toUpperCase()}'S SPOTIFY</p>
+    {#if info.playlist && spotifyName}
+      <p class="muted">/// PLAYLIST GOES TO {spotifyName.toUpperCase()}'S SPOTIFY</p>
       <button type="button" class="link" onclick={disconnect}>NOT YOU? DISCONNECT</button>
-    {:else if dj}
-      <p class="muted prose">/// Connect Spotify (Premium) so the session can feed tracks to your speaker. Your crew never logs in to anything. The login happens on Spotify's own secure page, so your password never touches this app.</p>
     {:else if info.playlist}
       <p class="muted prose">/// Connect Spotify so the experiment can make your playlist. The login happens on Spotify's own secure page, so your password never touches this app.</p>
     {/if}
     <Notice scope="create" />
-    <button class="btn">{needsLogin ? 'CONNECT SPOTIFY' : dj ? 'OPEN THE SESSION' : 'INITIALIZE THE EXPERIMENT'}</button>
+    <button class="btn">{spotifyName || !info.playlist ? 'INITIALIZE THE EXPERIMENT' : 'CONNECT SPOTIFY'}</button>
   </form>
 {/if}
