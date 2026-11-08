@@ -65,13 +65,16 @@ const hijackBody: Prompt[] = [
   { target: '.hijack-vote:not(.on)', text: "NOT FEELING A TRACK? ROLL IT BACK. ENOUGH ROLLBACKS FROM THE CREW AND IT'S GONE, SO TAP TO CAST YOURS.", skip: () => !document.querySelector('.hijack-vote:not(.on)') },
   { target: '.hijack-status', text: 'KEEP AN EYE ON THIS LINE. A FEW SECONDS BEFORE THE SONG ENDS, THE FRONT TRACK LOCKS IN. WAIT FOR IT.', when: '.hijack-row.lock' },
   { target: '.hijack-row.lock', text: "LOCKED IN. ROLLBACKS ARE CLOSED FOR IT NOW AND IT PLAYS WHEN THE SONG ENDS (IN THE REAL THING, SPOTIFY HAS IT QUEUED).", look: true, skip: () => !document.querySelector('.hijack-row.lock') },
-  { target: '.dock .btn', text: 'NOW PUSH A TRACK OF YOUR OWN.' },
-  { target: 'label.field input', text: 'SEARCH FOR THE SONG YOU WANT.', when: '.hijack-add button.row:not([disabled])' },
-  { target: '.hijack-add button.row:not([disabled])', text: 'TAP IT TO PUSH IT TO STAGING. THE CREW CAN ROLL IT BACK, SO PICK WELL.', final: true },
+  // a guest lands with the search already open, so only the host has this button to tap first
+  { target: '.dock .btn', text: 'NOW PUSH A TRACK OF YOUR OWN.', skip: () => !document.querySelector('.dock .btn:not([disabled])') },
+  { target: 'label.field input', text: 'SEARCH FOR THE SONG YOU WANT. TYPE A FEW LETTERS.', when: '.hijack-add button.row:not(.recent):not([disabled])' },
+  { target: '.hijack-add button.row:not(.recent):not([disabled])', text: 'TAP IT TO PUSH IT TO STAGING. YOU WILL SEE ABOUT HOW LONG UNTIL IT PLAYS, AND THE CREW CAN ROLL IT BACK, SO PICK WELL.', final: true },
 ]
 // what the host can do that nobody else can: promote a track to the front, remove one, or call a code freeze
 const hijackHost: Prompt[] = [
-  { target: '.hijack-row .round', text: 'AS HOST YOU CAN PROMOTE A TRACK TO THE FRONT (↑) OR REMOVE IT (×) NO MATTER WHAT THE CREW SAYS.', look: true },
+  { target: '.hijack-health', text: 'THIS TELLS YOU WHETHER THE MUSIC KEEPS FLOWING WITH YOUR PHONE LOCKED. IF IT SAYS TO KEEP THE SCREEN OPEN, THE SERVER TIMER IS NOT SET UP YET.', look: true },
+  { target: '.hijack-skip', text: 'SKIP THE SONG THAT IS PLAYING. IT TAKES TWO TAPS, SO A STRAY TOUCH CANNOT CUT THE MUSIC.', look: true },
+  { target: '.hijack-host', text: 'AS HOST YOU CAN MOVE A TRACK UP, PLAY IT RIGHT NOW, OR REMOVE IT, NO MATTER WHAT THE CREW SAYS.', look: true },
   { target: '.hijack-pause', text: 'CALL A CODE FREEZE IF STAGING GETS OUT OF HAND.', look: true },
 ]
 // starting a hijack: name it, pick the fixed link, connect Spotify, then put the link on tags and a poster
@@ -145,9 +148,9 @@ export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
     // a guest arriving from the link, a tag or the QR code: the page they land on, then they are in
     join: [
       { target: '.panel.framed', text: "THIS IS THE HIJACK YOU'VE BEEN INVITED TO. YOU GOT HERE FROM A LINK, AN NFC TAG OR A QR CODE.", look: true },
-      { target: '.panel.stack', text: 'HERE IS HOW IT WORKS. NO SPOTIFY ACCOUNT NEEDED, JUST THIS PAGE.', look: true },
-      { target: 'form input', text: 'FIRST, ENTER YOUR NAME SO THE CREW KNOWS WHO PUSHED WHAT.' },
-      { target: 'form .btn', text: "NEXT, JOIN THE HIJACK. YOU'LL LAND ON THE LIVE SCREEN." },
+      { target: '.hijack-playing', text: 'YOU CAN SEE WHAT IS PLAYING RIGHT NOW, BEFORE YOU EVEN JOIN.', look: true },
+      { target: '.hijack-as', text: "YOU'LL APPEAR TO THE CREW UNDER THIS NAME. NO TYPING NEEDED, BUT TAP CHANGE IF YOU WANT YOUR OWN.", look: true },
+      { target: 'form .btn', text: "TAP JOIN. YOU'LL LAND ON THE LIVE SCREEN WITH THE SEARCH ALREADY OPEN." },
     ],
   },
 }

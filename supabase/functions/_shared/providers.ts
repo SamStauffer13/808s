@@ -7,7 +7,7 @@ import { youtubeProvider } from './youtube.ts'
 // guessing just ask that source: nothing else knows what a Spotify song or a YouTube video is. A new source is a
 // provider file and one entry below, plus the matching entry in src/lib/sources.ts and a row in the `sources` table.
 export type Source = 'spotify' | 'youtube'
-export type Item = { id: string; title: string; artist: string; art: string | null; blocked: boolean; explicit?: boolean }
+export type Item = { id: string; title: string; artist: string; art: string | null; blocked: boolean; explicit?: boolean; durationMs?: number | null }
 export type Room = { id: string; host_user_id: string; title: string | null; theme: string }
 export type Db = ReturnType<typeof admin>
 

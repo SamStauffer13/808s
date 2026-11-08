@@ -52,8 +52,11 @@ const party = (): Partial<typeof game> => {
         suggested_by: players[by].id,
         status: 'pending' as const,
         sort_at: new Date(Date.now() - ago * 1000).toISOString(),
+        duration_ms: firstSong().durationMs,
       })),
       vetoes: [{ track_id: `t-${b.id}`, player_id: players[5].id }],
+      // tracks that played here earlier, offered again
+      recent: items().slice(9, 12).map((t) => ({ item_id: t.id, title: t.title, artist: t.artist, art: t.art })),
     },
   }
 }
@@ -86,7 +89,7 @@ const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
 export function seed(stage: Stage) {
   players[0].name = savedName() || me.name // you are whoever you said you were
   game.userId = me.user_id
-  Object.assign(game, { room: null, players: [], songs: [], owners: {}, guesses: [], counts: {}, hijack: { tracks: [], vetoes: [] } })
+  Object.assign(game, { room: null, players: [], songs: [], owners: {}, guesses: [], counts: {}, hijack: { tracks: [], vetoes: [], recent: [] } })
   if (stage === 'invite' || stage === 'join') return null
   Object.assign(game, { players }, seeds[stage]?.())
   return stage === 'hijack' ? startDemo() : () => {}

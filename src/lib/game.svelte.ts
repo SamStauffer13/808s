@@ -1,3 +1,4 @@
+import { REPEAT_MINUTES } from '../../supabase/functions/_shared/rules'
 import { practice } from './practice.svelte'
 import type { Source } from './source-ids'
 import { call, rpc, signIn, supabase } from './supabase'
@@ -24,11 +25,13 @@ export type Room = {
   suggestions_paused?: boolean
   block_explicit?: boolean // explicit tracks are not allowed in
 }
-export type HijackTrack = { id: string; item_id: string; title: string; artist: string; art: string | null; suggested_by: string | null; status: 'pending' | 'queued' | 'playing' | 'played' | 'vetoed'; sort_at: string }
+export type HijackTrack = { id: string; item_id: string; title: string; artist: string; art: string | null; suggested_by: string | null; status: 'pending' | 'queued' | 'playing' | 'played' | 'vetoed'; sort_at: string; duration_ms: number | null }
+// a track that played here earlier today, to offer again (the server also keeps a recent repeat out)
+export type HijackRecent = { item_id: string; title: string; artist: string; art: string | null }
 export type HijackVeto = { track_id: string; player_id: string }
 export type Player = { id: string; user_id: string; name: string }
 export type Song = { id: string; pack: string | null; source: Source; item_id: string; title: string; artist: string; art_url: string | null; genres: string[] }
-export type Item = { id: string; title: string; artist: string; art: string | null; blocked: boolean }
+export type Item = { id: string; title: string; artist: string; art: string | null; blocked: boolean; durationMs?: number | null }
 export type Guess = { song_id: string; guesser_id: string; guessed_player_id: string }
 export type Pack = { id: string; songs: Song[] }
 
@@ -40,7 +43,7 @@ export const game = $state({
   owners: {} as Record<string, string>, // song id -> player id; only what RLS lets this player see
   guesses: [] as Guess[],
   counts: {} as Record<string, number>, // songs locked in per player
-  hijack: { tracks: [] as HijackTrack[], vetoes: [] as HijackVeto[] }, // hijack party: the line of songs and who voted against what
+  hijack: { tracks: [] as HijackTrack[], vetoes: [] as HijackVeto[], recent: [] as HijackRecent[] }, // hijack: the line of tracks, who voted against what, and what played here earlier
 })
 
 // A notice belongs to one spot on a screen (its scope), so it shows next to the control that caused it.
@@ -94,13 +97,19 @@ export const saveName = (name: string) => {
   } catch {}
 }
 
-// returns the room code once joined
-export const joinGame = (code: string, name: string) =>
-  attempt('join', async () => {
+// Returns the room code once joined. With `retryTaken`, a name that is already taken is not shown as an error: it
+// returns null so the caller can try another (a hijack gives guests a name automatically).
+export const joinGame = async (code: string, name: string, retryTaken = false) => {
+  clearNotice('join')
+  try {
     const room = await rpc('join_room', { p_code: code, p_name: name })
     saveName(name)
     return room.code as string
-  })
+  } catch (e) {
+    if (retryTaken && /taken/i.test((e as Error).message)) return null
+    notify('join', (e as Error).message)
+  }
+}
 
 // Play again: the host starts the next experiment from a finished one, and everyone else joins it from their own
 // results screen. Both land in the new room. Joining takes the name each person already had.
@@ -137,12 +146,22 @@ export async function refreshCounts() {
   game.counts = countsOf(data ?? [])
 }
 
+// What played here earlier, once each and newest first, leaving out anything recent enough that the server would refuse it
+type PlayedRow = HijackRecent & { queued_at: string | null; created_at: string }
+const REPEAT_MS = REPEAT_MINUTES * 60_000
+function recentOf(rows: PlayedRow[]): HijackRecent[] {
+  const seen = new Set<string>()
+  return rows
+    .filter((r) => Date.now() - Date.parse(r.queued_at ?? r.created_at) > REPEAT_MS && !seen.has(r.item_id) && seen.add(r.item_id))
+    .slice(0, 6)
+    .map(({ item_id, title, artist, art }) => ({ item_id, title, artist, art }))
+}
 async function refresh() {
   if (practice.on) return // practice has no server to reload from
   const id = game.room!.id
   const submitting = game.room!.phase === 'submit' && game.room!.mode !== 'hijack' // a hijack never counts songs
   const hijack = game.room!.mode === 'hijack'
-  const [room, players, songs, owners, guesses, counts, tracks, vetoes] = await Promise.all([
+  const [room, players, songs, owners, guesses, counts, tracks, played, vetoes] = await Promise.all([
     supabase.from('rooms').select('*').eq('id', id).single(),
     supabase.from('players').select('id, user_id, name').eq('room_id', id).order('joined_at'),
     // a hijack has no songs, owners or guesses to load
@@ -151,7 +170,8 @@ async function refresh() {
     hijack ? { data: [] } : supabase.from('guesses').select('song_id, guesser_id, guessed_player_id').eq('room_id', id),
     submitting ? supabase.rpc('submission_counts', { p_room: id }) : { data: [] },
     // only what is still going on: finished tracks pile up all night, and a phone reloads this on every change
-    hijack ? supabase.from('hijack_tracks').select('id, item_id, title, artist, art, suggested_by, status, sort_at').eq('room_id', id).in('status', ['pending', 'queued', 'playing']).order('sort_at') : { data: [] },
+    hijack ? supabase.from('hijack_tracks').select('id, item_id, title, artist, art, suggested_by, status, sort_at, duration_ms').eq('room_id', id).in('status', ['pending', 'queued', 'playing']).order('sort_at') : { data: [] },
+    hijack ? supabase.from('hijack_tracks').select('item_id, title, artist, art, queued_at, created_at').eq('room_id', id).eq('status', 'played').order('created_at', { ascending: false }).limit(40) : { data: [] },
     hijack ? supabase.from('hijack_vetoes').select('track_id, player_id, hijack_tracks!inner(status)').eq('room_id', id).eq('hijack_tracks.status', 'pending') : { data: [] },
   ])
   if (room.error?.code === 'PGRST116') return location.reload() // this seat was taken over elsewhere
@@ -161,7 +181,7 @@ async function refresh() {
   game.owners = Object.fromEntries((owners.data ?? []).map((o) => [o.song_id, o.player_id]))
   game.guesses = guesses.data ?? []
   game.counts = countsOf(counts.data ?? [])
-  game.hijack = { tracks: (tracks.data ?? []) as HijackTrack[], vetoes: (vetoes.data ?? []) as HijackVeto[] }
+  game.hijack = { tracks: (tracks.data ?? []) as HijackTrack[], vetoes: (vetoes.data ?? []) as HijackVeto[], recent: recentOf((played.data ?? []) as PlayedRow[]) }
 }
 
 // Several changes often land together, and a player's own write is followed by its realtime echo,
@@ -186,7 +206,7 @@ function applyChange(table: string, { eventType, new: row }: Change) {
   else if (table === 'hijack_tracks') {
     // the real row replaces the guess shown while the server was thinking (same track)
     const rest = game.hijack.tracks.filter((t) => t.id !== row.id && !(t.id.startsWith('temp-') && t.item_id === row.item_id))
-    const track: HijackTrack = { id: row.id, item_id: row.item_id, title: row.title, artist: row.artist, art: row.art, suggested_by: row.suggested_by, status: row.status, sort_at: row.sort_at }
+    const track: HijackTrack = { id: row.id, item_id: row.item_id, title: row.title, artist: row.artist, art: row.art, suggested_by: row.suggested_by, status: row.status, sort_at: row.sort_at, duration_ms: row.duration_ms ?? null }
     game.hijack.tracks = liveStatus.includes(row.status) ? [...rest, track] : rest
   } else if (table === 'hijack_vetoes' && !game.hijack.vetoes.some((v) => v.track_id === row.track_id && v.player_id === row.player_id)) {
     game.hijack.vetoes = [...game.hijack.vetoes, { track_id: row.track_id, player_id: row.player_id }]

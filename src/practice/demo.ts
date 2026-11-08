@@ -23,6 +23,9 @@ export const HIJACK_NAME = 'rooftop friday'
 
 const live = ['pending', 'queued', 'playing']
 
+// What the host's skip and play-now buttons do to the demo (set while it runs)
+export const control: { skip?: () => void; playNow?: (trackId: string) => void } = {}
+
 export function startDemo() {
   const k = speed()
   const { durationMs, leftMs } = firstSong()
@@ -39,7 +42,7 @@ export function startDemo() {
     const t = fresh()
     if (!t) return
     used.add(t.id)
-    game.hijack.tracks = [...game.hijack.tracks, { id: `crew-${t.id}`, item_id: t.id, title: t.title, artist: t.artist, art: t.art, suggested_by: players[who].id, status: 'pending', sort_at: new Date().toISOString() }]
+    game.hijack.tracks = [...game.hijack.tracks, { id: `crew-${t.id}`, item_id: t.id, title: t.title, artist: t.artist, art: t.art, suggested_by: players[who].id, status: 'pending', sort_at: new Date().toISOString(), duration_ms: durationMs }]
   }
   // a crew member's rollback; the track drops out as soon as it has enough, like the server decides
   const rollBack = (who: number, trackId: string) => {
@@ -92,6 +95,17 @@ export function startDemo() {
     setInterval(look, 500),
     setInterval(() => game.hijack.tracks.filter((t) => t.status === 'pending').length < 3 && push((guest = (guest % 5) + 1)), 18_000 / k),
   ]
+  // skipping just ends the song now; playing a track now locks it in first, so it is the one that plays next
+  control.skip = () => void (current.startedAt = Date.now() - durationMs)
+  control.playNow = (trackId) => {
+    game.hijack.tracks = game.hijack.tracks.map((t): HijackTrack => (t.id === trackId ? { ...t, status: 'queued' } : t))
+    queuedAt.set(trackId, Date.now())
+    control.skip!()
+  }
   look()
-  return () => timers.forEach((t) => (clearTimeout(t), clearInterval(t)))
+  return () => {
+    timers.forEach((t) => (clearTimeout(t), clearInterval(t)))
+    delete control.skip
+    delete control.playNow
+  }
 }

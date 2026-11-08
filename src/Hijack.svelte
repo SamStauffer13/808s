@@ -7,15 +7,16 @@
   import Notice from './Notice.svelte'
   import Share from './Share.svelte'
   import Slot from './Slot.svelte'
-  import { host, iVoted, keepFed, line, LOCK_MS, locked, myWaiting, positionOf, suggest, taken, threshold, upNext, vote, votesOn } from './lib/hijack.svelte'
-  import { attempt, game, isHost, me, nameOf, type HijackTrack, type Item } from './lib/game.svelte'
+  import { aboutMinutes, etaMs, host, iVoted, keepFed, line, LOCK_MS, locked, myWaiting, positionOf, suggest, taken, threshold, upNext, vote, votesOn } from './lib/hijack.svelte'
+  import { attempt, game, isHost, me, nameOf, notify, type HijackRecent, type HijackTrack, type Item } from './lib/game.svelte'
   import { reduced } from './lib/motion'
   import { practice } from './lib/practice.svelte'
   import * as account from './lib/spotify-account'
 
   const room = $derived(game.room!)
   const needed = $derived(threshold())
-  let adding = $state(false)
+  // a guest lands with the search already open: one tap into the box and they are picking a song
+  let adding = $state(!isHost())
 
   // a clock for the countdowns and the progress bar
   let now = $state(Date.now())
@@ -32,11 +33,13 @@
   const waiting = $derived(line())
   const front = $derived(upNext())
   const mine = $derived(myWaiting())
+  const mineEta = $derived(mine ? etaMs(mine.id, now) : null)
+  const when = (t: HijackTrack) => (t.id === mine?.id && mineEta !== null ? aboutMinutes(mineEta) : '')
   const lockedIn = $derived(locked())
 
   // one plain sentence that always says what is going on
   const status = $derived.by(() => {
-    if (room.host_offline) return isHost() ? 'NOTHING LIVE · START A SONG IN SPOTIFY ON YOUR SPEAKER' : 'NOTHING LIVE · WAITING FOR THE HOST TO START THE SPEAKER'
+    if (room.host_offline) return isHost() ? 'NOTHING LIVE · START A SONG IN SPOTIFY ON YOUR SPEAKER' : 'NOTHING PLAYING RIGHT NOW · ASK THE HOST TO PRESS PLAY'
     if (lockedIn) return `LOCKED IN: ${lockedIn.title.toUpperCase()}`
     if (!front) return waiting.length ? '' : "STAGING EMPTY · THE HOST'S PLAYLIST KEEPS PROD ALIVE"
     if (remaining === null) return `${front.title.toUpperCase()} IS FIRST IN STAGING`
@@ -71,8 +74,34 @@
     vote(t, iVoted(t.id))
   }
 
-  let reconnect = $state(false)
-  $effect(() => (isHost() && !practice.on ? keepFed(room.code, (needed) => (reconnect = needed)) : undefined))
+  // the host's view of whether the music will keep flowing: Spotify login, anything Spotify refused, and the server timer
+  let health = $state<{ reconnect: boolean; timerAgoMs: number | null; problem?: string }>({ reconnect: false, timerAgoMs: practice.on ? 8000 : null })
+  const timerOn = $derived(health.timerAgoMs !== null && health.timerAgoMs < 150_000)
+  $effect(() => (isHost() && !practice.on ? keepFed(room.code, (status) => (health = status)) : undefined))
+
+  // cutting the music is a tap twice, so a stray touch cannot do it
+  let armed = $state<string>()
+  const twice = (what: string, go: () => void) => () => {
+    if (armed === what) return void ((armed = undefined), go())
+    armed = what
+    setTimeout(() => armed === what && (armed = undefined), 3000)
+  }
+
+  // the moments that are yours: your track locks in (it is next), and your track starts playing
+  let lastMoment: string | undefined
+  $effect(() => {
+    const live = game.hijack.tracks.find((t) => t.suggested_by === me()?.id && (t.status === 'queued' || t.status === 'playing'))
+    const key = live ? `${live.id}:${live.status}` : ''
+    if (lastMoment !== undefined && key && key !== lastMoment) {
+      notify('hijack', live!.status === 'queued' ? 'YOUR TRACK IS NEXT' : 'YOUR TRACK IS LIVE')
+      navigator.vibrate?.(live!.status === 'queued' ? 30 : [30, 60, 30])
+    }
+    lastMoment = key
+  })
+  const nowMine = $derived(game.hijack.tracks.some((t) => t.status === 'playing' && t.suggested_by === me()?.id))
+
+  // play an earlier track again
+  const again = (r: HijackRecent) => add({ id: r.item_id, title: r.title, artist: r.artist, art: r.art, blocked: false }, 'hijack')
 
   const login = () =>
     attempt('hijack-host', async () => {
@@ -83,7 +112,7 @@
 <Head step={`${game.players.length} ATTACHED`} title={room.theme} />
 
 <!-- what the speaker is playing right now -->
-<div class="panel hijack-now" class:idle={!room.now_title}>
+<div class="panel hijack-now" class:idle={!room.now_title} class:mine={nowMine}>
   <Art src={room.now_art ?? null} big />
   <div class="grow-text">
     <div class="label">{room.now_title ? 'NOW LIVE' : 'NOTHING LIVE YET'} {#if room.now_title}<Eq />{/if}</div>
@@ -94,12 +123,18 @@
   </div>
   <div class="hijack-bar" class:hot={ending}><i style:transform={`scaleX(${progress})`}></i></div>
   {#if remaining !== null}<div class="hijack-time muted">{clock(remaining)} LEFT</div>{/if}
+  {#if isHost() && room.now_title}<button class="pill hijack-skip" onclick={twice('skip', () => host('skip'))}>{armed === 'skip' ? 'TAP AGAIN TO SKIP' : 'SKIP SONG'}</button>{/if}
 </div>
 
 {#if status}<p class="center good hijack-status">{status}</p>{/if}
+<Notice scope="hijack" />
 
 {#if isHost()}
-  {#if reconnect}
+  <div class="row hijack-health" class:on={timerOn}>
+    <span class="grow">{timerOn ? 'RUNS WITHOUT THIS SCREEN · YOU CAN LOCK YOUR PHONE' : 'STOPS WHEN THIS SCREEN CLOSES · KEEP IT OPEN'}</span>
+  </div>
+  {#if health.problem}<p class="notice">{health.problem}</p>{/if}
+  {#if health.reconnect}
     <div class="panel stack">
       <div class="label">ONE QUICK THING</div>
       <p class="prose">Spotify needs your OK once more so the hijack can feed tracks to your speaker.</p>
@@ -114,6 +149,25 @@
     </div>
   {/if}
   <Notice scope="hijack-host" />
+{/if}
+
+{#if adding}
+  <div class="panel stack hijack-add">
+    <Slot n={1} label="PUSH A TRACK" {taken} onpick={add} />
+    {#if game.hijack.recent.length}
+      <div class="stack hijack-recent">
+        <span class="label">PLAYED EARLIER · TAP TO REPLAY</span>
+        {#each game.hijack.recent as r (r.item_id)}
+          <button class="row recent" disabled={taken({ id: r.item_id, title: r.title, artist: r.artist, art: r.art, blocked: false })} onclick={() => again(r)}>
+            <Art src={r.art} />
+            <div class="grow-text"><div>{r.title}</div><div class="dim">{r.artist}</div></div>
+            <span class="round">+</span>
+          </button>
+        {/each}
+      </div>
+    {/if}
+    {#if isHost()}<button class="link center" onclick={() => (adding = false)}>CANCEL</button>{/if}
+  </div>
 {/if}
 
 <!-- the line -->
@@ -136,7 +190,7 @@
     <Art src={t.art} />
     <div class="grow-text">
       <div>{t.title}</div>
-      <div class="dim">{t.artist} · {by(t)}</div>
+      <div class="dim">{when(t) ? `PLAYS IN ${when(t)}` : `${t.artist} · ${by(t)}`}</div>
     </div>
     {#if isLocked}
       <span class="tag">LOCKED IN</span>
@@ -152,21 +206,13 @@
     {/if}
     {#if isHost() && !isLocked}
       <div class="hijack-host">
-        <button class="round" onclick={() => host('top', t)} aria-label="Promote this track to the front" disabled={isNext}>↑</button>
-        <button class="round" onclick={() => host('remove', t)} aria-label="Remove this track">×</button>
+        <button class="pill" onclick={() => host('top', t)} disabled={isNext}>MOVE UP</button>
+        <button class="pill" onclick={twice(`now-${t.id}`, () => host('play_now', t))} disabled={!!lockedIn} title={lockedIn ? 'A track is locked in, so it plays first' : ''}>{armed === `now-${t.id}` ? 'TAP AGAIN' : 'PLAY NOW'}</button>
+        <button class="pill" onclick={() => host('remove', t)}>REMOVE</button>
       </div>
     {/if}
   </div>
 {/snippet}
-
-<Notice scope="hijack" />
-
-{#if adding}
-  <div class="panel stack hijack-add">
-    <Slot n={1} label="PUSH A TRACK" {taken} onpick={add} />
-    <button class="link center" onclick={() => (adding = false)}>CANCEL</button>
-  </div>
-{/if}
 
 <div class="grow"></div>
 
@@ -182,7 +228,7 @@
   {#if room.suggestions_paused}
     <button class="btn" disabled>CODE FREEZE · NO NEW TRACKS</button>
   {:else if mine}
-    <button class="btn" disabled>YOU'RE #{positionOf(mine.id)} IN STAGING</button>
+    <button class="btn" disabled>YOU'RE #{positionOf(mine.id)}{mineEta !== null ? ` · ${aboutMinutes(mineEta)}` : ''}</button>
   {:else if !adding}
     <button class="btn plain" onclick={() => (adding = true)}>+ PUSH A TRACK</button>
   {/if}

@@ -32,6 +32,7 @@ Deno.serve(
       p_title: item.title,
       p_artist: item.artist,
       p_art: item.art,
+      p_duration_ms: item.durationMs ?? null,
       p_repeat_minutes: REPEAT_MINUTES,
       p_cooldown_minutes: COOLDOWN_MINUTES,
     })

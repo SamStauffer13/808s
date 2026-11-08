@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
   const { data: busy } = await db.from('hijack_feed').select('room_id').gt('active_at', since)
   const due: Record<string, number> = Object.fromEntries((busy ?? []).map((b) => [b.room_id, 0])) // everyone is looked at once at the start
   const ran: Record<string, number> = {}
+  if (Object.keys(due).length) await db.from('hijack_feed').update({ ticked_at: new Date().toISOString() }).in('room_id', Object.keys(due)) // the host's screen shows this
 
   const started = Date.now()
   while (Object.keys(due).length && Date.now() - started < RUN_MS) {

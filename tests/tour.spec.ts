@@ -71,9 +71,12 @@ test.describe('hijack', () => {
   test('a guest joins from the link and lands on the live screen', async ({ page }) => {
     await open(page, '/?practice=guest-join')
     await expect(page.getByText('THE SPEAKER IS UP FOR HIJACK')).toBeVisible()
-    await page.locator('form input').fill('Sam')
+    await expect(page.locator('.hijack-playing')).toBeVisible() // a stranger can see what is playing before joining
+    await expect(page.locator('.hijack-as b')).toContainText('GUEST') // no typing needed: a name is already chosen
+    await expect(page.locator('form input')).toHaveCount(0)
     await page.locator('form .btn').dispatchEvent('click')
     await expect(page.locator('.hijack-now')).toBeVisible()
+    await expect(page.locator('.hijack-add input')).toBeVisible() // and the search is already open
   })
 
   test('the host setup leads into the live screen', async ({ page }) => {
@@ -96,12 +99,40 @@ test.describe('hijack', () => {
 
   test('guest: pushing a track puts it in staging, one at a time', async ({ page }) => {
     await open(page, '/?practice=guest-hijack')
-    await page.locator('.dock .btn').dispatchEvent('click')
-    await page.locator('.hijack-add input').fill('so') // search starts at two letters
-    await page.locator('.hijack-add button.row:not([disabled])').first().dispatchEvent('click')
+    await page.locator('.hijack-add input').fill('so') // the search is already open; it starts at two letters
+    await page.locator('.hijack-add button.row:not(.recent):not([disabled])').first().dispatchEvent('click')
     await expect(page.locator('.hijack-row')).toHaveCount(4)
-    await expect(page.locator('.dock .btn')).toContainText("YOU'RE #4 IN STAGING")
+    await expect(page.locator('.dock .btn')).toContainText(/YOU'RE #4 · (ABOUT|UNDER)/) // and when it will play
     await expect(page.locator('.dock .btn')).toBeDisabled()
+  })
+
+  test('a guest can play something that played here earlier with one tap', async ({ page }) => {
+    await open(page, '/?practice=guest-hijack')
+    await expect(page.locator('.hijack-recent button.row')).toHaveCount(3)
+    await page.locator('.hijack-recent button.row').first().dispatchEvent('click')
+    await expect(page.locator('.hijack-row')).toHaveCount(4)
+  })
+
+  test('host: skipping and playing now take two taps, so a stray touch cannot cut the music', async ({ page }) => {
+    await open(page, '/?practice=hijack')
+    const title = page.locator('.hijack-title')
+    const before = await title.textContent()
+    await page.locator('.hijack-skip').dispatchEvent('click')
+    await expect(page.locator('.hijack-skip')).toContainText('TAP AGAIN')
+    await expect(title).toHaveText(before!) // one tap changes nothing
+    await page.locator('.hijack-skip').dispatchEvent('click')
+    await expect(title).not.toHaveText(before!, { timeout: 5000 })
+
+    const first = page.locator('.hijack-row').first()
+    const next = (await first.locator('.grow-text div').first().textContent())!
+    await first.locator('.pill:has-text("PLAY NOW")').dispatchEvent('click')
+    await first.locator('.pill:has-text("TAP AGAIN")').dispatchEvent('click')
+    await expect(title).toContainText(next, { timeout: 5000 }) // the track you chose is on
+  })
+
+  test('host: sees whether the music keeps flowing with the phone locked', async ({ page }) => {
+    await open(page, '/?practice=hijack')
+    await expect(page.locator('.hijack-health.on')).toContainText('YOU CAN LOCK YOUR PHONE')
   })
 
   test('host: can call a code freeze', async ({ page }) => {
@@ -113,7 +144,7 @@ test.describe('hijack', () => {
   test('fits an iPhone: no sideways scroll, and the buttons are big enough to tap', async ({ page }) => {
     await open(page, '/?practice=guest-hijack')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-    for (const sel of ['.hijack-vote', '.dock .btn']) expect((await page.locator(sel).first().boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    for (const sel of ['.hijack-vote', '.hijack-add input']) expect((await page.locator(sel).first().boundingBox())!.height).toBeGreaterThanOrEqual(44)
   })
 })
 

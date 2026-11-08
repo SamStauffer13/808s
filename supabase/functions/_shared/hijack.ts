@@ -1,7 +1,7 @@
 import { admin, HttpError } from './http.ts'
 import { planFeed, type Plan, type Playback, type Track } from './feed-plan.ts'
 import { LOCK_MS, STALE_QUEUE_MS } from './rules.ts'
-import { getPlayback, queueTrack, SpotifyError, toItem, userToken } from './spotify.ts'
+import { getPlayback, queueTrack, skipTrack, SpotifyError, toItem, userToken } from './spotify.ts'
 
 type Db = ReturnType<typeof admin>
 // deno-lint-ignore no-explicit-any
@@ -16,6 +16,13 @@ export async function touch(db: Db, roomId: string) {
 
 // the shortest time between two looks at one player (a host's app and the server timer can both be due at once)
 const MIN_GAP_MS = 800
+
+// Spotify's refusals, in words the host can act on
+function problemWith(e: unknown) {
+  if (e instanceof SpotifyError && e.status === 404) return new HttpError(400, 'nothing is playing on your Spotify right now')
+  if (e instanceof SpotifyError && e.status === 403) return new HttpError(400, 'Spotify would not allow that: controlling playback needs Premium')
+  return e
+}
 
 const backOff = (e: SpotifyError) => ({ state: 'rate_limited', retryAfter: e.retryAfter ?? 5, nextMs: (e.retryAfter ?? 5) * 1000 })
 
@@ -86,7 +93,34 @@ async function queueNext(db: Db, token: string, plan: Plan) {
       await db.from('hijack_tracks').update({ status: 'pending', queued_at: null }).eq('id', next.id)
       if (e.status === 429) return backOff(e)
     }
-    throw e
+    throw problemWith(e)
   }
   return { state: 'queued', remaining: plan.remaining, nextMs: plan.nextMs, item_id: next.item_id }
+}
+
+// The host's two ways of cutting in: skip the song that is playing, or play a waiting track right now. Spotify's queue
+// cannot be reordered, so "play now" queues the track and then skips to it, which only works while nothing else is
+// locked in ahead of it (that one plays first).
+export async function steer(db: Db, userId: string, roomId: string, action: 'skip' | 'play_now', trackId?: string) {
+  const { data: room } = await db.from('rooms').select('id, host_user_id').eq('id', roomId).eq('mode', 'hijack').maybeSingle()
+  if (!room || room.host_user_id !== userId) throw new HttpError(403, 'only the host can do that')
+  const token = await userToken(room.host_user_id, 'user-modify-playback-state')
+
+  if (action === 'play_now') {
+    const { data: locked } = await db.from('hijack_tracks').select('id').eq('room_id', roomId).eq('status', 'queued').limit(1)
+    if (locked?.length) throw new HttpError(400, 'a track is already locked in, so it plays first')
+    const { data: claimed } = await db.from('hijack_tracks').update({ status: 'queued', queued_at: new Date().toISOString() }).eq('id', trackId ?? '').eq('room_id', roomId).eq('status', 'pending').select('item_id')
+    if (!claimed?.length) throw new HttpError(400, 'that track is not waiting any more')
+    try {
+      await queueTrack(token, claimed[0].item_id)
+    } catch (e) {
+      await db.from('hijack_tracks').update({ status: 'pending', queued_at: null }).eq('id', trackId!)
+      throw problemWith(e)
+    }
+  }
+  try {
+    await skipTrack(token)
+  } catch (e) {
+    throw problemWith(e)
+  }
 }

@@ -390,7 +390,7 @@ iframe.wide { height: auto; aspect-ratio: 16 / 9; }
 .hijack-status { font-size: 13px; letter-spacing: 0.1em; min-height: 1.4em; }
 .hijack-row { flex-wrap: wrap; }
 .hijack-row .grow-text { flex: 1 1 0; } /* a long title shrinks instead of pushing the vote button onto its own line */
-.hijack-host { display: flex; justify-content: flex-end; gap: 8px; flex-basis: 100%; } /* the host's buttons get their own line, so titles keep their room */
+.hijack-host { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; flex-basis: 100%; } /* the host's buttons get their own line, so titles keep their room */
 .hijack-row.next { border-color: var(--accent); box-shadow: 0 0 18px -6px var(--accent); }
 .hijack-row.lock { border-color: var(--accent); background: var(--accent-tint); }
 .hijack-vote { flex: none; display: flex; align-items: center; gap: 8px; min-height: var(--control); padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: inherit; font: inherit; font-size: 11px; letter-spacing: 0.1em; cursor: pointer; transition: transform 120ms, background-color 150ms, border-color 150ms, color 150ms; }
@@ -416,3 +416,11 @@ iframe.wide { height: auto; aspect-ratio: 16 / 9; }
   .poster-qr svg { display: block; width: 100%; height: auto; }
   .poster .fine { font-size: 14px; overflow-wrap: anywhere; }
 }
+/* the host's labelled buttons, and what tells them whether the music will keep flowing */
+.pill { min-height: 44px; padding: 0 16px; border: 1px solid var(--border); border-radius: 22px; background: transparent; color: var(--accent); font: inherit; font-size: 11px; letter-spacing: 0.1em; cursor: pointer; transition: background-color 150ms, border-color 150ms, color 150ms, transform 120ms; }
+.pill:active:not(:disabled) { transform: scale(0.95); }
+.pill:disabled { opacity: 0.35; cursor: not-allowed; }
+.hijack-skip { grid-column: 1 / -1; justify-self: end; margin-top: 4px; }
+.hijack-health { font-size: 11px; letter-spacing: 0.1em; color: var(--text-secondary); border-style: dashed; }
+.hijack-health.on { border-color: var(--accent); border-style: solid; color: var(--accent); }
+.hijack-now.mine { box-shadow: 0 0 34px -4px var(--accent); border-color: var(--accent); }

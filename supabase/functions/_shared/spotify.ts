@@ -140,6 +140,11 @@ export async function getPlayback(token: string): Promise<Playing | null> {
   return await spotify(token, '/me/player')
 }
 
+// Skips to the next track: the locked-in one if there is one, otherwise whatever the host's playlist has next.
+export async function skipTrack(token: string) {
+  await spotify(token, '/me/player/next', { method: 'POST' })
+}
+
 // Adds to the END of the host's queue. Spotify has no way to remove or reorder what is already there.
 export async function queueTrack(token: string, id: string) {
   await spotify(token, `/me/player/queue?uri=${encodeURIComponent(`spotify:track:${id}`)}`, { method: 'POST' })
@@ -155,6 +160,7 @@ export function toItem(t: any): Item {
     art: (images[1] ?? images[0])?.url ?? null,
     blocked: tooEasyToTrace.test(artist),
     explicit: !!t.explicit,
+    durationMs: (t.duration_ms as number | undefined) ?? null,
   }
 }
 

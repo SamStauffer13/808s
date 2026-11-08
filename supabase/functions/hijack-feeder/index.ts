@@ -16,6 +16,8 @@ Deno.serve(
     if (room.host_user_id !== user.id) throw new HttpError(403, 'only the host can run the music')
 
     await touch(db, room.id)
-    return await feed(db, room)
+    const [result, { data: timer }] = await Promise.all([feed(db, room), db.from('hijack_feed').select('ticked_at').eq('room_id', room.id).maybeSingle()])
+    // how long ago the server timer last looked after this hijack (null: never), so the host knows if it is safe to close this screen
+    return { ...result, timerAgoMs: timer?.ticked_at ? Date.now() - Date.parse(timer.ticked_at) : null }
   }),
 )
