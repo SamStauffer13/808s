@@ -1,7 +1,7 @@
 // Practice's stand-in for the server: the app's calls (`rpc` and `call` in lib/supabase.ts) land here, keyed by
 // name, so the real screens work end to end without a network. Each handler does what the real server would,
 // including moving to the next stage when the real game would move on.
-import { threshold } from '../lib/dj.svelte'
+import { threshold } from '../lib/hijack.svelte'
 import { game, packsOf, savedName, type Song } from '../lib/game.svelte'
 import { goStage, practice, practiceCode, spotifyKey } from '../lib/practice.svelte'
 import { isSource } from '../lib/source-ids'
@@ -21,7 +21,7 @@ const handlers: Fake = {
     }
     if (action === 'disconnect') sessionStorage.removeItem(spotifyKey)
     const connected = sessionStorage.getItem(spotifyKey) !== null
-    return { connected, name: connected ? savedName() || me.name : null, canDj: connected }
+    return { connected, name: connected ? savedName() || me.name : null, canHijack: connected }
   },
   // next you add songs, as the host; the choice on Home picks what the experiment is about
   'create-room': ({ source }) => ((practice.source = isSource(source) ? source : 'spotify'), goStage('submit'), { room: { code: practiceCode } }),
@@ -55,12 +55,12 @@ const handlers: Fake = {
   'open-hijack': ({ slug, title }) => ({ room: { id: 'practice', code: String(slug).toUpperCase(), theme: title, block_explicit: false } }),
 
   // the hijack: the screen has already shown your track or vote, so these only answer like the server would
-  'dj-suggest': () => ({ track: {} }),
-  'dj-veto': ({ track_id, undo }) => ({ status: !undo && game.dj.vetoes.filter((v) => v.track_id === track_id).length >= threshold() ? 'vetoed' : 'pending' }),
-  'dj-host': ({ action, track_id }) => {
-    const { tracks } = game.dj
-    if (action === 'remove') game.dj.tracks = tracks.map((t) => (t.id === track_id ? { ...t, status: 'vetoed' } : t))
-    if (action === 'top') game.dj.tracks = tracks.map((t) => (t.id === track_id ? { ...t, created_at: new Date(0).toISOString() } : t))
+  'hijack-suggest': () => ({ track: {} }),
+  'hijack-veto': ({ track_id, undo }) => ({ status: !undo && game.hijack.vetoes.filter((v) => v.track_id === track_id).length >= threshold() ? 'vetoed' : 'pending' }),
+  'hijack-host': ({ action, track_id }) => {
+    const { tracks } = game.hijack
+    if (action === 'remove') game.hijack.tracks = tracks.map((t) => (t.id === track_id ? { ...t, status: 'vetoed' } : t))
+    if (action === 'top') game.hijack.tracks = tracks.map((t) => (t.id === track_id ? { ...t, sort_at: new Date(0).toISOString() } : t))
     if (action === 'pause' || action === 'resume') game.room!.suggestions_paused = action === 'pause'
     return { ok: true }
   },

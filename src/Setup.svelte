@@ -3,6 +3,7 @@
   import Admin from './Admin.svelte'
   import Notice from './Notice.svelte'
   import { attempt, notify, once, saveName, savedName, type Room } from './lib/game.svelte'
+  import { isLinkName } from '../supabase/functions/_shared/rules'
   import { valid } from './lib/form'
   import * as account from './lib/spotify-account'
   import { call } from './lib/supabase'
@@ -32,12 +33,12 @@
   let title = $state(draft?.title ?? '')
   let slug = $state(draft?.slug ?? last())
   let spotifyName = $state<string | null>(null)
-  let canDj = $state(false)
+  let canHijack = $state(false)
   let room = $state<Room | null>(null)
   let tried = $state(false)
   let copied = $state(false)
 
-  const needsLogin = $derived(!spotifyName || !canDj)
+  const needsLogin = $derived(!spotifyName || !canHijack)
   const link = $derived(room ? `${location.origin}${location.pathname}#/${room.code}` : '')
   // a QR code on a white card, so any phone camera reads it whatever theme the app is in
   const qr = $derived.by(() => {
@@ -53,10 +54,10 @@
   attempt('setup', async () => {
     const s = await account.status()
     spotifyName = s.name
-    canDj = s.canDj
+    canHijack = s.canHijack
     // a return visit (not the trip back from Spotify's login, which keeps the form to be finished): bring the hijack back.
     // Without a name for it this can only find an existing one, so a miss is fine.
-    if (slug && canDj && !draft) room = (await call<{ room: Room }>('open-hijack', { name, title, slug }).catch(() => null))?.room ?? null
+    if (slug && canHijack && !draft) room = (await call<{ room: Room }>('open-hijack', { name, title, slug }).catch(() => null))?.room ?? null
   })
 
   const connect = () =>
@@ -97,7 +98,7 @@
   const toggleExplicit = () =>
     attempt('setup', async () => {
       const block = !room!.block_explicit
-      await call('dj-host', { room_id: room!.id, action: block ? 'block_explicit' : 'allow_explicit' })
+      await call('hijack-host', { room_id: room!.id, action: block ? 'block_explicit' : 'allow_explicit' })
       room = { ...room!, block_explicit: block }
     })
 </script>
@@ -121,9 +122,9 @@
     <label class="field">
       <span class="label">LINK NAME · 3 TO 12 LETTERS OR NUMBERS</span>
       <input bind:value={slug} minlength="3" maxlength="12" pattern="[A-Za-z0-9]+" placeholder="e.g. vino" required autocapitalize="characters" />
-      {#if tried && !/^[A-Za-z0-9]{3,12}$/.test(slug.trim())}<span class="err">/// 3 TO 12 LETTERS OR NUMBERS</span>{/if}
+      {#if tried && !isLinkName(slug.trim().toUpperCase())}<span class="err">/// 3 TO 12 LETTERS OR NUMBERS</span>{/if}
     </label>
-    {#if spotifyName && canDj}
+    {#if spotifyName && canHijack}
       <p class="muted">/// THE HIJACK PLAYS ON {spotifyName.toUpperCase()}'S SPOTIFY (PREMIUM)</p>
     {:else}
       <p class="muted prose">/// Connect the Spotify account that plays your speakers (Premium). The login happens on Spotify's own secure page, so your password never touches this app.</p>

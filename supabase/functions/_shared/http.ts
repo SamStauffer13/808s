@@ -29,6 +29,21 @@ export class HttpError extends Error {
   }
 }
 
+// compares without stopping at the first wrong character
+export const same = (a: string, b: string) => {
+  const x = new TextEncoder().encode(a)
+  const y = new TextEncoder().encode(b)
+  let diff = x.length ^ y.length
+  for (let i = 0; i < Math.max(x.length, y.length); i++) diff |= (x[i] ?? 0) ^ (y[i] ?? 0)
+  return diff === 0
+}
+
+// an id that came from a client must look like one before it goes near the database
+export function uuid(value: unknown) {
+  if (typeof value !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) throw new HttpError(400, 'bad id')
+  return value
+}
+
 export function handler(fn: (req: Request) => Promise<unknown>) {
   return async (req: Request) => {
     const headers = corsFor(req)

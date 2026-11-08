@@ -13,19 +13,19 @@ export type Room = {
   playlist_id: string | null
   playlist_url: string | null
   next_room_id?: string | null // set once the host starts the next experiment with this crew
-  mode: 'game' | 'dj' // a DJ party has no guessing: guests line songs up for the host's speaker
-  now_item_id?: string | null // DJ party: what the host's speaker is playing
+  mode: 'game' | 'hijack' // a hijack party has no guessing: guests line songs up for the host's speaker
+  now_item_id?: string | null // hijack party: what the host's speaker is playing
   now_title?: string | null
   now_artist?: string | null
   now_art?: string | null
   now_ends_at?: string | null
   now_duration_ms?: number | null
-  host_offline?: boolean // DJ party: nothing is playing, or the host's Spotify has no active device
+  host_offline?: boolean // hijack party: nothing is playing, or the host's Spotify has no active device
   suggestions_paused?: boolean
   block_explicit?: boolean // explicit tracks are not allowed in
 }
-export type DjTrack = { id: string; item_id: string; title: string; artist: string; art: string | null; suggested_by: string | null; status: 'pending' | 'queued' | 'playing' | 'played' | 'vetoed'; created_at: string }
-export type DjVeto = { track_id: string; player_id: string }
+export type HijackTrack = { id: string; item_id: string; title: string; artist: string; art: string | null; suggested_by: string | null; status: 'pending' | 'queued' | 'playing' | 'played' | 'vetoed'; sort_at: string }
+export type HijackVeto = { track_id: string; player_id: string }
 export type Player = { id: string; user_id: string; name: string }
 export type Song = { id: string; pack: string | null; source: Source; item_id: string; title: string; artist: string; art_url: string | null; genres: string[] }
 export type Item = { id: string; title: string; artist: string; art: string | null; blocked: boolean }
@@ -40,7 +40,7 @@ export const game = $state({
   owners: {} as Record<string, string>, // song id -> player id; only what RLS lets this player see
   guesses: [] as Guess[],
   counts: {} as Record<string, number>, // songs locked in per player
-  dj: { tracks: [] as DjTrack[], vetoes: [] as DjVeto[] }, // DJ party: the line of songs and who voted against what
+  hijack: { tracks: [] as HijackTrack[], vetoes: [] as HijackVeto[] }, // hijack party: the line of songs and who voted against what
 })
 
 // A notice belongs to one spot on a screen (its scope), so it shows next to the control that caused it.
@@ -140,18 +140,19 @@ export async function refreshCounts() {
 async function refresh() {
   if (practice.on) return // practice has no server to reload from
   const id = game.room!.id
-  const submitting = game.room!.phase === 'submit' && game.room!.mode !== 'dj' // a DJ party never counts songs
-  const dj = game.room!.mode === 'dj'
+  const submitting = game.room!.phase === 'submit' && game.room!.mode !== 'hijack' // a hijack never counts songs
+  const hijack = game.room!.mode === 'hijack'
   const [room, players, songs, owners, guesses, counts, tracks, vetoes] = await Promise.all([
     supabase.from('rooms').select('*').eq('id', id).single(),
     supabase.from('players').select('id, user_id, name').eq('room_id', id).order('joined_at'),
     // a hijack has no songs, owners or guesses to load
-    dj ? { data: [] } : supabase.from('songs').select('id, pack, source, item_id, title, artist, art_url, genres').eq('room_id', id).order('position'),
-    dj ? { data: [] } : supabase.from('song_owners').select('song_id, player_id').eq('room_id', id),
-    dj ? { data: [] } : supabase.from('guesses').select('song_id, guesser_id, guessed_player_id').eq('room_id', id),
+    hijack ? { data: [] } : supabase.from('songs').select('id, pack, source, item_id, title, artist, art_url, genres').eq('room_id', id).order('position'),
+    hijack ? { data: [] } : supabase.from('song_owners').select('song_id, player_id').eq('room_id', id),
+    hijack ? { data: [] } : supabase.from('guesses').select('song_id, guesser_id, guessed_player_id').eq('room_id', id),
     submitting ? supabase.rpc('submission_counts', { p_room: id }) : { data: [] },
-    dj ? supabase.from('dj_tracks').select('id, item_id, title, artist, art, suggested_by, status, created_at').eq('room_id', id).order('created_at') : { data: [] },
-    dj ? supabase.from('dj_vetoes').select('track_id, player_id').eq('room_id', id) : { data: [] },
+    // only what is still going on: finished tracks pile up all night, and a phone reloads this on every change
+    hijack ? supabase.from('hijack_tracks').select('id, item_id, title, artist, art, suggested_by, status, sort_at').eq('room_id', id).in('status', ['pending', 'queued', 'playing']).order('sort_at') : { data: [] },
+    hijack ? supabase.from('hijack_vetoes').select('track_id, player_id, hijack_tracks!inner(status)').eq('room_id', id).eq('hijack_tracks.status', 'pending') : { data: [] },
   ])
   if (room.error?.code === 'PGRST116') return location.reload() // this seat was taken over elsewhere
   game.room = room.data
@@ -160,7 +161,7 @@ async function refresh() {
   game.owners = Object.fromEntries((owners.data ?? []).map((o) => [o.song_id, o.player_id]))
   game.guesses = guesses.data ?? []
   game.counts = countsOf(counts.data ?? [])
-  game.dj = { tracks: (tracks.data ?? []) as DjTrack[], vetoes: (vetoes.data ?? []) as DjVeto[] }
+  game.hijack = { tracks: (tracks.data ?? []) as HijackTrack[], vetoes: (vetoes.data ?? []) as HijackVeto[] }
 }
 
 // Several changes often land together, and a player's own write is followed by its realtime echo,
@@ -184,7 +185,7 @@ export async function open(code: string) {
   await refresh()
 
   const channel = supabase.channel(`room-${data.id}`)
-  for (const table of data.mode === 'dj' ? ['rooms', 'players', 'dj_tracks', 'dj_vetoes'] : ['rooms', 'players', 'songs', 'guesses']) {
+  for (const table of data.mode === 'hijack' ? ['rooms', 'players', 'hijack_tracks', 'hijack_vetoes'] : ['rooms', 'players', 'songs', 'guesses']) {
     const filter = table === 'rooms' ? `id=eq.${data.id}` : `room_id=eq.${data.id}`
     channel.on('postgres_changes', { event: '*', schema: 'public', table, filter }, refreshSoon)
   }

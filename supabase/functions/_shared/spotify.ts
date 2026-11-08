@@ -33,10 +33,12 @@ export async function appToken() {
 // time. A new login changes the stored row (its updated_at), so an older token is never reused after reconnecting.
 const userCache = new Map<string, { stamp: string; token: string; expires: number }>()
 
-export async function userToken(userId: string) {
+export async function userToken(userId: string, needs?: string) {
   const db = admin()
-  const { data } = await db.from('spotify_accounts').select('refresh_token, updated_at').eq('user_id', userId).maybeSingle()
+  const { data } = await db.from('spotify_accounts').select('refresh_token, updated_at, scopes').eq('user_id', userId).maybeSingle()
   if (!data) throw new HttpError(400, 'connect your Spotify account first')
+  // a login from before this permission existed has to be made again
+  if (needs && !data.scopes.includes(needs)) throw new HttpError(400, 'reconnect Spotify so the hijack can control your music')
   const stamp = `${data.refresh_token}|${data.updated_at}`
   const hit = userCache.get(userId)
   if (hit?.stamp === stamp && hit.expires > Date.now() + 30_000) return hit.token

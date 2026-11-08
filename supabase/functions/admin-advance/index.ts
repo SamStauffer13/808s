@@ -1,14 +1,5 @@
-import { admin, currentUser, handler, HttpError } from '../_shared/http.ts'
+import { admin, currentUser, handler, HttpError, same } from '../_shared/http.ts'
 import { beginGuess } from '../_shared/guess.ts'
-
-// compares without stopping at the first wrong character
-const same = (a: string, b: string) => {
-  const x = new TextEncoder().encode(a)
-  const y = new TextEncoder().encode(b)
-  let diff = x.length ^ y.length
-  for (let i = 0; i < Math.max(x.length, y.length); i++) diff |= (x[i] ?? 0) ^ (y[i] ?? 0)
-  return diff === 0
-}
 
 // The owner's override: moves any room to its next phase without the host. Needs the ADMIN_KEY secret;
 // without a room code it only checks the key.

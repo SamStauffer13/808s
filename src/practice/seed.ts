@@ -29,7 +29,7 @@ const party = (): Partial<typeof game> => {
   return {
     room: {
       ...room('submit'),
-      mode: 'dj',
+      mode: 'hijack',
       theme: 'rooftop friday',
       now_item_id: playing.id,
       now_title: playing.title,
@@ -40,7 +40,7 @@ const party = (): Partial<typeof game> => {
       host_offline: false,
       suggestions_paused: false,
     },
-    dj: {
+    hijack: {
       tracks: waiting.map(({ item, by, ago }) => ({
         id: `t-${item.id}`,
         item_id: item.id,
@@ -49,7 +49,7 @@ const party = (): Partial<typeof game> => {
         art: item.art,
         suggested_by: players[by].id,
         status: 'pending' as const,
-        created_at: new Date(Date.now() - ago * 1000).toISOString(),
+        sort_at: new Date(Date.now() - ago * 1000).toISOString(),
       })),
       vetoes: [{ track_id: `t-${b.id}`, player_id: players[5].id }],
     },
@@ -76,7 +76,7 @@ const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
   // everyone else has guessed everything; you have matched 3 of your 5, and only the right two crew members are left to pick
   guess: () => ({ room: room('guess'), songs: songsInOrder(), owners: ownersOf([0]), guesses: guessesBy(0, [3, 5, 2]) }),
   results: finished,
-  dj: party,
+  hijack: party,
 }
 
 // Returns what a room cleanup returns, or null when this browser is not in the room yet (the invite stage),
@@ -84,7 +84,7 @@ const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
 export function seed(stage: Stage) {
   players[0].name = savedName() || me.name // you are whoever you said you were
   game.userId = me.user_id
-  Object.assign(game, { room: null, players: [], songs: [], owners: {}, guesses: [], counts: {}, dj: { tracks: [], vetoes: [] } })
+  Object.assign(game, { room: null, players: [], songs: [], owners: {}, guesses: [], counts: {}, hijack: { tracks: [], vetoes: [] } })
   if (stage === 'invite') return null
   Object.assign(game, { players }, seeds[stage]?.())
   return () => {}

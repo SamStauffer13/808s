@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SETUP_LINK } from '../supabase/functions/_shared/rules'
   import Setup from './Setup.svelte'
   import Boot from './Boot.svelte'
   import Home from './Home.svelte'
@@ -34,7 +35,7 @@
     {/key}
     {#await import('./practice/Wizard.svelte') then wizard}<wizard.default />{/await}
   {/await}
-{:else if code === 'SETUP'}
+{:else if code === SETUP_LINK}
   <Setup />
 {:else if code}
   {#key code}<Room {code} />{/key}

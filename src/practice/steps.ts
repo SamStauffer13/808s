@@ -14,7 +14,7 @@ export const titles: Record<Stage, string> = {
   },
   guess: 'GUESS',
   results: 'RESULTS',
-  dj: 'THE HIJACK',
+  hijack: 'THE HIJACK',
   setup: 'START A HIJACK',
 }
 
@@ -55,12 +55,12 @@ const results: Prompt[] = [
 
 // the hijack, as seen by anyone attached: what is live, what is in staging, then push a track of your own
 const hijack: Prompt[] = [
-  { target: '.dj-now', text: "THIS IS WHAT'S LIVE ON THE SPEAKER RIGHT NOW.", look: true },
-  { target: '.dj-list', text: 'THESE TRACKS ARE IN STAGING. THE FIRST ONE LOCKS INTO SPOTIFY ABOUT 25 SECONDS BEFORE THE CURRENT SONG ENDS.', look: true },
-  { target: '.dj-vote', text: "NOT FEELING A TRACK? ROLL IT BACK. ENOUGH ROLLBACKS FROM THE CREW AND IT'S GONE, SO TAP TO CAST YOURS." },
+  { target: '.hijack-now', text: "THIS IS WHAT'S LIVE ON THE SPEAKER RIGHT NOW.", look: true },
+  { target: '.hijack-list', text: 'THESE TRACKS ARE IN STAGING. THE FIRST ONE LOCKS INTO SPOTIFY ABOUT 25 SECONDS BEFORE THE CURRENT SONG ENDS.', look: true },
+  { target: '.hijack-vote', text: "NOT FEELING A TRACK? ROLL IT BACK. ENOUGH ROLLBACKS FROM THE CREW AND IT'S GONE, SO TAP TO CAST YOURS." },
   { target: '.dock .btn', text: 'NOW PUSH A TRACK OF YOUR OWN.' },
-  { target: 'label.field input', text: 'SEARCH FOR THE SONG YOU WANT.', when: '.dj-add button.row:not([disabled])' },
-  { target: '.dj-add button.row:not([disabled])', text: 'TAP IT TO PUSH IT TO STAGING. THE CREW CAN ROLL IT BACK, SO PICK WELL.', final: true },
+  { target: 'label.field input', text: 'SEARCH FOR THE SONG YOU WANT.', when: '.hijack-add button.row:not([disabled])' },
+  { target: '.hijack-add button.row:not([disabled])', text: 'TAP IT TO PUSH IT TO STAGING. THE CREW CAN ROLL IT BACK, SO PICK WELL.', final: true },
 ]
 
 // starting a hijack: name it, pick the fixed link, connect Spotify, then put the link on tags and a poster
@@ -112,7 +112,7 @@ export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
     guess,
     results,
     // the host also keeps the speaker fed: they can push a track to the front, remove one, or freeze new ones
-    dj: [...hijack.slice(0, 2), { target: '.dj-row .round', text: 'AS HOST YOU CAN PROMOTE A TRACK TO THE FRONT (↑) OR REMOVE IT (×) NO MATTER WHAT THE CREW SAYS.', look: true }, { target: '.dj-pause', text: 'CALL A CODE FREEZE IF STAGING GETS OUT OF HAND.', look: true }, ...hijack.slice(2)],
+    hijack: [...hijack.slice(0, 2), { target: '.hijack-row .round', text: 'AS HOST YOU CAN PROMOTE A TRACK TO THE FRONT (↑) OR REMOVE IT (×) NO MATTER WHAT THE CREW SAYS.', look: true }, { target: '.hijack-pause', text: 'CALL A CODE FREEZE IF STAGING GETS OUT OF HAND.', look: true }, ...hijack.slice(2)],
     setup,
   },
   guest: {
@@ -129,6 +129,6 @@ export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
     ],
     guess,
     results,
-    dj: hijack,
+    hijack: hijack,
   },
 }

@@ -7,7 +7,7 @@ const phases: Record<string, { title: string; glyphs: string }> = {
   // the host's first choice on Home, named by its source
   spotify: { title: 'AUDIO SIGNAL LOCKED', glyphs: 'CHOOSE YOUR SIGNAL EVERYONE ADDS A SET GUESS WHO ADDED WHAT' },
   youtube: { title: 'VIDEO SIGNAL LOCKED', glyphs: 'CHOOSE YOUR SIGNAL EVERYONE ADDS A SET GUESS WHO ADDED WHAT' },
-  dj: { title: 'HIJACK IN PROGRESS', glyphs: 'TAKE OVER THE SPEAKER PUSH A TRACK ROLL BACK THE BAD ONES KEEP PROD ALIVE' },
+  hijack: { title: 'HIJACK IN PROGRESS', glyphs: 'TAKE OVER THE SPEAKER PUSH A TRACK ROLL BACK THE BAD ONES KEEP PROD ALIVE' },
   guess: { title: 'THE EXPERIMENT BEGINS', glyphs: 'SUBJECTS LOCKED IN MATCH EVERY SET TO ITS OWNER TRUST NO ONE' },
   results: { title: 'DECRYPTING THE RESULTS', glyphs: 'ALL GUESSES RECEIVED THE FINDINGS ARE IN SIGNAL LOCKED' },
 }

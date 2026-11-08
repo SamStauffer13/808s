@@ -7,12 +7,11 @@
   import Notice from './Notice.svelte'
   import Share from './Share.svelte'
   import Slot from './Slot.svelte'
-  import { host, iVoted, line, LOCK_MS, locked, myWaiting, positionOf, suggest, taken, threshold, upNext, vote, votesOn } from './lib/dj.svelte'
-  import { attempt, game, isHost, me, nameOf, once, type DjTrack, type Item } from './lib/game.svelte'
+  import { host, iVoted, keepFed, line, LOCK_MS, locked, myWaiting, positionOf, suggest, taken, threshold, upNext, vote, votesOn } from './lib/hijack.svelte'
+  import { attempt, game, isHost, me, nameOf, type HijackTrack, type Item } from './lib/game.svelte'
   import { reduced } from './lib/motion'
   import { practice } from './lib/practice.svelte'
   import * as account from './lib/spotify-account'
-  import { call } from './lib/supabase'
 
   const room = $derived(game.room!)
   const needed = $derived(threshold())
@@ -45,7 +44,7 @@
     return until > 0 ? `${front.title.toUpperCase()} LOCKS IN ${clock(until)} · ROLL IT BACK BEFORE THEN` : 'LOCKING IN THE NEXT TRACK…'
   })
 
-  const by = (t: DjTrack) => (t.suggested_by ? nameOf(t.suggested_by).toUpperCase() : 'HOST')
+  const by = (t: HijackTrack) => (t.suggested_by ? nameOf(t.suggested_by).toUpperCase() : 'A GUEST')
 
   // enter: a terminal wipe. leave: the row shakes, flashes red and fades. Both stay off for people who ask for less motion.
   const enter = (_node: Element) => ({
@@ -67,30 +66,16 @@
   const add = async (t: Item, scope: string) => {
     if (await suggest(t, scope)) adding = false
   }
-  const cast = (t: DjTrack) => {
+  const cast = (t: HijackTrack) => {
     navigator.vibrate?.(15)
     vote(t, iVoted(t.id))
   }
 
-  // the host's open app keeps the music fed, so a sleeping server timer is never the only thing between the room and silence
   let reconnect = $state(false)
-  const tick = once(async () => {
-    try {
-      await call('dj-feeder', { code: room.code })
-      reconnect = false
-    } catch (e) {
-      if (/reconnect/i.test((e as Error).message)) reconnect = true
-    }
-  })
-  $effect(() => {
-    if (!isHost() || practice.on) return
-    tick()
-    const timer = setInterval(() => document.hidden || tick(), 5000)
-    return () => clearInterval(timer)
-  })
+  $effect(() => (isHost() && !practice.on ? keepFed(room.code, (needed) => (reconnect = needed)) : undefined))
 
   const login = () =>
-    attempt('dj-host', async () => {
+    attempt('hijack-host', async () => {
       location.href = await account.loginUrl(`${location.origin}${import.meta.env.BASE_URL}#/${room.code}`)
     })
 </script>
@@ -98,20 +83,20 @@
 <Head step={`${game.players.length} ATTACHED`} title={room.theme} />
 
 <!-- what the speaker is playing right now -->
-<div class="panel dj-now" class:idle={!room.now_title}>
+<div class="panel hijack-now" class:idle={!room.now_title}>
   <Art src={room.now_art ?? null} big />
   <div class="grow-text">
     <div class="label">{room.now_title ? 'NOW LIVE' : 'NOTHING LIVE YET'} {#if room.now_title}<Eq />{/if}</div>
     {#key room.now_item_id}
-      <div class="big dj-title">{room.now_title ?? '···'}</div>
+      <div class="big hijack-title">{room.now_title ?? '···'}</div>
     {/key}
     <div class="dim">{room.now_artist ?? ''}</div>
   </div>
-  <div class="dj-bar" class:hot={ending}><i style:transform={`scaleX(${progress})`}></i></div>
-  {#if remaining !== null}<div class="dj-time muted">{clock(remaining)} LEFT</div>{/if}
+  <div class="hijack-bar" class:hot={ending}><i style:transform={`scaleX(${progress})`}></i></div>
+  {#if remaining !== null}<div class="hijack-time muted">{clock(remaining)} LEFT</div>{/if}
 </div>
 
-{#if status}<p class="center good dj-status">{status}</p>{/if}
+{#if status}<p class="center good hijack-status">{status}</p>{/if}
 
 {#if isHost()}
   {#if reconnect}
@@ -128,12 +113,12 @@
       <div class="line"><b>3</b><span>COME BACK HERE. THE HIJACK TAKES OVER</span></div>
     </div>
   {/if}
-  <Notice scope="dj-host" />
+  <Notice scope="hijack-host" />
 {/if}
 
 <!-- the line -->
 <div class="split"><span>STAGING</span><span class="muted">{waiting.length + (lockedIn ? 1 : 0)} QUEUED</span></div>
-<div class="stack dj-list">
+<div class="stack hijack-list">
   {#if lockedIn}
     {@render entry(lockedIn, true)}
   {/if}
@@ -146,8 +131,8 @@
   {/each}
 </div>
 
-{#snippet entry(t: DjTrack, isLocked: boolean, isNext = false)}
-  <div class="row dj-row" class:next={isNext} class:lock={isLocked}>
+{#snippet entry(t: HijackTrack, isLocked: boolean, isNext = false)}
+  <div class="row hijack-row" class:next={isNext} class:lock={isLocked}>
     <Art src={t.art} />
     <div class="grow-text">
       <div>{t.title}</div>
@@ -158,15 +143,15 @@
     {:else if t.suggested_by === me()?.id}
       <span class="tag">{isNext ? 'YOURS · NEXT' : `YOURS · #${positionOf(t.id)}`}</span>
     {:else}
-      <button class="dj-vote" class:on={iVoted(t.id)} onclick={() => cast(t)} aria-label={iVoted(t.id) ? 'Take back your vote' : 'Roll back this track: vote it off'}>
-        <span class="dj-dots" aria-hidden="true">
+      <button class="hijack-vote" class:on={iVoted(t.id)} onclick={() => cast(t)} aria-label={iVoted(t.id) ? 'Take back your vote' : 'Roll back this track: vote it off'}>
+        <span class="hijack-dots" aria-hidden="true">
           {#each Array(needed) as _, k}<i class:lit={k < votesOn(t.id)}></i>{/each}
         </span>
         <span>{iVoted(t.id) ? 'UNDO' : 'ROLLBACK'}</span>
       </button>
     {/if}
     {#if isHost() && !isLocked}
-      <div class="dj-host">
+      <div class="hijack-host">
         <button class="round" onclick={() => host('top', t)} aria-label="Promote this track to the front" disabled={isNext}>↑</button>
         <button class="round" onclick={() => host('remove', t)} aria-label="Remove this track">×</button>
       </div>
@@ -174,10 +159,10 @@
   </div>
 {/snippet}
 
-<Notice scope="dj" />
+<Notice scope="hijack" />
 
 {#if adding}
-  <div class="panel stack dj-add">
+  <div class="panel stack hijack-add">
     <Slot n={1} label="PUSH A TRACK" {taken} onpick={add} />
     <button class="link center" onclick={() => (adding = false)}>CANCEL</button>
   </div>
@@ -186,7 +171,7 @@
 <div class="grow"></div>
 
 {#if isHost()}
-  <button class="btn ghost plain dj-pause" onclick={() => host(room.suggestions_paused ? 'resume' : 'pause')}>
+  <button class="btn ghost plain hijack-pause" onclick={() => host(room.suggestions_paused ? 'resume' : 'pause')}>
     {room.suggestions_paused ? 'CODE FREEZE ON · TAP TO LIFT IT' : 'CALL A CODE FREEZE'}
   </button>
 {/if}

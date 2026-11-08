@@ -48,7 +48,7 @@
   let picking = false
   // A hijack is its own flow (Setup.svelte), the same one whoever runs it and wherever it plays.
   const openHijack = () => {
-    playTransition('dj')
+    playTransition('hijack')
     if (practice.on) goStage('setup')
     else setTimeout(() => (location.hash = '/setup'), transition.playing ? 600 : 0) // behind the matrix rain, like the other choices
   }
@@ -70,7 +70,7 @@
   let spotifyName = $state<string | null>(null)
 
   account.reportLogin('create')
-  attempt('create', async () => (spotifyName = await account.name()))
+  attempt('create', async () => (spotifyName = (await account.status()).name))
 
   const connect = () =>
     attempt('create', async () => {
@@ -114,7 +114,7 @@
         <em aria-hidden="true">→</em>
       </button>
     {/each}
-    <button type="button" class="choice" data-mode="dj" onclick={openHijack}>
+    <button type="button" class="choice" data-mode="hijack" onclick={openHijack}>
       <span class="glyph" aria-hidden="true">♫</span>
       <span class="what"><b>HIJACK</b><span>Take over the speaker, everyone pushes the next track</span></span>
       <em aria-hidden="true">→</em>

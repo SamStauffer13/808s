@@ -107,6 +107,30 @@ A video experiment makes no playlist, so its host never connects Spotify. The gu
 (YouTube's embed takes a list of video ids), and every video also opens on YouTube from its row. A video that cannot be embedded (a rented movie, say) is skipped by the player; its row still links out.
 A video's duplicate key is its id (a song's is title plus first artist). A YouTube category stands in for a song's genres, so the vibe, subnets and awards still work. Practice runs a video experiment at `/?practice=submit&source=youtube`.
 
+## Hijack: guests take over the speaker
+
+A hijack is a room (`rooms.mode = 'hijack'`) where guests, with no Spotify login, push tracks to the host's Spotify queue and roll back the ones
+they can't stand. Whoever's Spotify account is playing is the host (Premium, and the account has to be on the Spotify app's allowlist); the playlist doesn't matter.
+
+- **Starting one:** Home → HIJACK, or `/#/setup`. `open-hijack` makes the room with a fixed link name (its room code, e.g. `#/VINO`), shown with a QR code,
+  an NFC write button (Chrome on Android; on an iPhone use the NFC Tools app) and a printable poster. The host's own screen is `Hijack.svelte`.
+- **How the music is fed:** `hijack-feeder` (the host's open app, every 5s) and `hijack-tick` (the server timer, below) both call `feed()` in `_shared/hijack.ts`.
+  What to do about each look at the player is decided by the pure `planFeed()` in `_shared/feed-plan.ts`; about 25s before a song ends the front track is queued in
+  Spotify (its queue can't be edited, so rollbacks close then). A queued track that never starts is dropped after 10 minutes.
+- **One copy of each rule:** `_shared/rules.ts` (lock-in time, rollbacks needed, repeat and cooldown minutes, link names) is imported by the edge functions, the app and the tests.
+  The SQL functions take those numbers as arguments instead of repeating them.
+- **Server timer (one-time setup per project):** pg_cron calls `hijack-tick` every minute (migration `hijack_timer`). It needs the same key in two places, and does nothing until both exist:
+  ```
+  npx supabase secrets set HIJACK_TICK_KEY=<a long random string>
+  npx supabase db query --remote "select vault.create_secret('https://yvvcqkuszlcxyvpimavs.supabase.co', 'project_url'); select vault.create_secret('<the same string>', 'hijack_tick_key');"
+  ```
+  It only looks after hijacks used in the last 2 hours. Without it a hijack still works, but only while the host's app is open.
+- **Practice:** `/?practice=hijack` (host) and `/?practice=guest-hijack` (guest) are the session screen; `/?practice=setup` is the setup page.
+- **Cleanup:** a hijack is kept until 90 days without use; its finished tracks go after a day and its guests (not the host) after three days, so their names are free again.
+- **Public-link limits:** one waiting track per guest, 3 rollbacks out per guest, a rolled-back track can't be pushed again for 30 minutes, 200 guests, 3 hijacks per host. Anonymous sign-in
+  is free, so a few throwaway accounts can still gang up on a track: the host's CODE FREEZE and remove button are the backstop.
+- **Tests:** the feeder's decisions and the shared rules are unit tests (`tests/hijack-rules.spec.ts`, no browser). The edge functions and SQL rules are only exercised by hand.
+
 ## Runs by itself
 
 - Nightly (04:00 UTC) pg_cron job `808s-cleanup` deletes experiments older than 28 days that never made a playlist, and
