@@ -28,18 +28,30 @@ export async function appToken() {
   return appCache.token
 }
 
-// a host's own account: their refresh token is kept by spotify-callback, and Spotify may rotate it
+// A host's own account: their refresh token is kept by spotify-callback, and Spotify may rotate it.
+// The access token is kept while the worker stays warm, so the host's 5-second polling is not a token request every
+// time. A new login changes the stored row (its updated_at), so an older token is never reused after reconnecting.
+const userCache = new Map<string, { stamp: string; token: string; expires: number }>()
+
 export async function userToken(userId: string) {
   const db = admin()
-  const { data } = await db.from('spotify_accounts').select('refresh_token').eq('user_id', userId).maybeSingle()
+  const { data } = await db.from('spotify_accounts').select('refresh_token, updated_at').eq('user_id', userId).maybeSingle()
   if (!data) throw new HttpError(400, 'connect your Spotify account first')
+  const stamp = `${data.refresh_token}|${data.updated_at}`
+  const hit = userCache.get(userId)
+  if (hit?.stamp === stamp && hit.expires > Date.now() + 30_000) return hit.token
   let j
   try {
     j = await tokenRequest({ grant_type: 'refresh_token', refresh_token: data.refresh_token })
   } catch {
     throw new HttpError(400, 'Spotify access expired: connect your account again')
   }
-  if (j.refresh_token) await db.from('spotify_accounts').update({ refresh_token: j.refresh_token, updated_at: new Date().toISOString() }).eq('user_id', userId)
+  let rotated = { refresh_token: data.refresh_token, updated_at: data.updated_at }
+  if (j.refresh_token) {
+    rotated = { refresh_token: j.refresh_token, updated_at: new Date().toISOString() }
+    await db.from('spotify_accounts').update(rotated).eq('user_id', userId)
+  }
+  userCache.set(userId, { stamp: `${rotated.refresh_token}|${rotated.updated_at}`, token: j.access_token, expires: Date.now() + j.expires_in * 1000 })
   return j.access_token as string
 }
 
@@ -63,6 +75,9 @@ export async function readState(state: string): Promise<{ userId: string; return
   return e > Date.now() ? { userId: u, returnTo: r } : null
 }
 
+// make the playlist (game rooms), and read and steer the host's player (DJ rooms)
+export const scopes = 'playlist-modify-public user-modify-playback-state user-read-playback-state'
+
 const callbackUrl = () => `${Deno.env.get('SUPABASE_URL')}/functions/v1/spotify-callback`
 
 export async function exchangeCode(code: string) {
@@ -75,11 +90,20 @@ export function authorizeUrl(state: string) {
     new URLSearchParams({
       response_type: 'code',
       client_id: Deno.env.get('SPOTIFY_CLIENT_ID')!,
-      scope: 'playlist-modify-public',
+      scope: scopes,
+      // a fresh consent screen, so an existing host gets a token that carries the new playback scopes
+      show_dialog: 'true',
       redirect_uri: callbackUrl(),
       state,
     })
   )
+}
+
+// still an Error with the same message as before; the status and Retry-After are there for callers that need them
+export class SpotifyError extends Error {
+  constructor(message: string, public status: number, public retryAfter?: number) {
+    super(message)
+  }
 }
 
 export async function spotify(token: string, path: string, init: RequestInit = {}) {
@@ -87,9 +111,24 @@ export async function spotify(token: string, path: string, init: RequestInit = {
     ...init,
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...init.headers },
   })
-  if (!res.ok) throw new Error(`Spotify ${init.method ?? 'GET'} ${path.split('?')[0]} failed (${res.status})`)
+  if (!res.ok) {
+    const wait = Number(res.headers.get('Retry-After'))
+    throw new SpotifyError(`Spotify ${init.method ?? 'GET'} ${path.split('?')[0]} failed (${res.status})`, res.status, wait > 0 ? wait : undefined)
+  }
   const body = await res.text()
   return body ? JSON.parse(body) : null
+}
+
+// What the host's player is doing. Null when nothing is playing (Spotify answers 204 with no body).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Playing = { is_playing: boolean; progress_ms: number; item: ({ id: string; duration_ms: number } & Record<string, any>) | null }
+export async function getPlayback(token: string): Promise<Playing | null> {
+  return await spotify(token, '/me/player')
+}
+
+// Adds to the END of the host's queue. Spotify has no way to remove or reorder what is already there.
+export async function queueTrack(token: string, id: string) {
+  await spotify(token, `/me/player/queue?uri=${encodeURIComponent(`spotify:track:${id}`)}`, { method: 'POST' })
 }
 
 export function toItem(t: any): Item {

@@ -5,10 +5,12 @@ import { isSource, type Source } from './source-ids'
 import { playTransition } from './transition.svelte'
 
 export type Role = 'host' | 'guest'
-export type Stage = 'home' | 'invite' | 'submit' | 'guess' | 'results'
+// 'dj' is the DJ party screen. It is not on the way through the guessing game: a host who picks DJ PARTY on Home lands
+// there, and /?practice=dj or =guest-dj opens it directly.
+export type Stage = 'home' | 'invite' | 'submit' | 'guess' | 'results' | 'dj'
 export const journeys: Record<Role, readonly Stage[]> = {
-  host: ['home', 'submit', 'guess', 'results'],
-  guest: ['invite', 'submit', 'guess', 'results'],
+  host: ['home', 'submit', 'guess', 'results', 'dj'],
+  guest: ['invite', 'submit', 'guess', 'results', 'dj'],
 }
 
 // "logged in to Spotify" lasts for the tab, so the round trip through Spotify looks like the real one

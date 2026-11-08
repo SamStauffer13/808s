@@ -13,6 +13,8 @@ const stages = [
   ['guest', 'submit', '/?practice=guest-submit'],
   ['guest', 'guess', '/?practice=guest-guess'],
   ['guest', 'results', '/?practice=guest-results'],
+  ['host', 'dj', '/?practice=dj'],
+  ['guest', 'dj', '/?practice=guest-dj'],
 ] as const
 
 async function open(page: Page, url: string) {
@@ -37,6 +39,40 @@ for (const [role, stage, url] of stages) {
     await expect(page.getByText(/not available in the practice round/i)).toHaveCount(0)
   })
 }
+
+// the live session (DJ mode). The wizard's overlay sits on top of the screen, so these click the elements directly.
+test.describe('live session', () => {
+  test.use({ viewport: { width: 390, height: 844 } }) // an iPhone
+
+  test('guest: enough rollbacks drop a track from staging', async ({ page }) => {
+    await open(page, '/?practice=guest-dj')
+    await expect(page.locator('.dj-row')).toHaveCount(3)
+    await page.locator('.dj-vote').nth(1).dispatchEvent('click') // that one already has a rollback: this is the second, which is enough
+    await expect(page.locator('.dj-row')).toHaveCount(2)
+  })
+
+  test('guest: pushing a track puts it in staging, one at a time', async ({ page }) => {
+    await open(page, '/?practice=guest-dj')
+    await page.locator('.dock .btn').dispatchEvent('click')
+    await page.locator('.dj-add input').fill('so') // search starts at two letters
+    await page.locator('.dj-add button.row:not([disabled])').first().dispatchEvent('click')
+    await expect(page.locator('.dj-row')).toHaveCount(4)
+    await expect(page.locator('.dock .btn')).toContainText("YOU'RE #4 IN STAGING")
+    await expect(page.locator('.dock .btn')).toBeDisabled()
+  })
+
+  test('host: can call a code freeze', async ({ page }) => {
+    await open(page, '/?practice=dj')
+    await page.locator('.dj-pause').dispatchEvent('click')
+    await expect(page.locator('.dock .btn')).toContainText('CODE FREEZE')
+  })
+
+  test('fits an iPhone: no sideways scroll, and the buttons are big enough to tap', async ({ page }) => {
+    await open(page, '/?practice=guest-dj')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    for (const sel of ['.dj-vote', '.dock .btn']) expect((await page.locator(sel).first().boundingBox())!.height).toBeGreaterThanOrEqual(44)
+  })
+})
 
 test('results: scoreboard shows the genre features', async ({ page }) => {
   await open(page, '/?practice=results')

@@ -2,10 +2,16 @@
 // needs one (see `playlist` in sources.ts); players never connect anything.
 import { call } from './supabase'
 
-const ask = (body: object) => call<{ connected?: boolean; name?: string; url?: string }>('spotify-account', body)
+const ask = (body: object) => call<{ connected?: boolean; name?: string; url?: string; canDj?: boolean }>('spotify-account', body)
 
 // who the host is connected as, or null when they are not
 export const name = async () => (await ask({ action: 'status' })).name ?? null
+
+// who the host is connected as, and whether that login can steer their player (needed for a DJ party)
+export const status = async () => {
+  const s = await ask({ action: 'status' })
+  return { name: s.name ?? null, canDj: !!s.canDj }
+}
 
 // Spotify's login leaves the page: this is where to send the browser, and `returnTo` is where it comes back to
 export const loginUrl = async (returnTo: string) => (await ask({ action: 'login', return_to: returnTo })).url!

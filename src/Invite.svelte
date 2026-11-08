@@ -9,7 +9,7 @@
   let { code, onjoin } = $props()
 
   let name = $state(savedName())
-  let preview = $state<{ theme: string; phase: string; source: Source } | null>()
+  let preview = $state<{ theme: string; phase: string; source: Source; mode?: 'game' | 'dj' } | null>()
 
   $effect(() => {
     attempt('preview', async () => (preview = (await rpc('room_preview', { p_code: code }))[0] ?? null))
@@ -31,10 +31,18 @@
     <a class="btn ghost" href="#/">START YOUR OWN</a>
   {:else}
     <div class="panel framed">
-      <div class="label">INCOMING TRANSMISSION</div>
+      <div class="label">{preview.mode === 'dj' ? 'YOU HAVE BEEN GRANTED ACCESS TO A LIVE SESSION' : 'INCOMING TRANSMISSION'}</div>
       <div class="big">{preview.theme}</div>
     </div>
-    {#if preview.phase === 'submit'}
+    {#if preview.mode === 'dj'}
+      <div class="panel stack">
+        <div class="label">HOW IT WORKS</div>
+        <div class="line"><b class="good">1</b><span>ENTER YOUR NAME AND ATTACH</span></div>
+        <div class="line"><b class="good">2</b><span>PUSH A TRACK TO STAGING FOR THE SPEAKER</span></div>
+        <div class="line"><b class="good">3</b><span>ROLL BACK TRACKS YOU CAN'T STAND (THAT MEANS VOTE THEM OFF)</span></div>
+        <div class="line"><b class="good">4</b><span>NO SPOTIFY NEEDED. JUST THIS PAGE</span></div>
+      </div>
+    {:else if preview.phase === 'submit'}
       <div class="panel stack">
         <div class="label">MISSION BRIEFING</div>
         <div class="line"><b class="good">1</b><span>ENTER YOUR NAME BELOW AND JOIN</span></div>
@@ -50,7 +58,7 @@
       <label class="field"><span class="label">YOUR NAME</span><input bind:value={name} maxlength="16" required /></label>
       <p class="muted">/// USE THE NAME YOUR CREW KNOWS YOU BY</p>
       <Notice scope="join" />
-      <button class="btn">JOIN THE EXPERIMENT</button>
+      <button class="btn">{preview.mode === 'dj' ? 'ATTACH TO THE SESSION' : 'JOIN THE EXPERIMENT'}</button>
     </form>
     {#if !practice.on}<button type="button" class="link center" onclick={() => startPractice('guest', undefined, undefined, preview?.source)}>NEW HERE? TRY THE TUTORIAL →</button>{/if}
   {/if}

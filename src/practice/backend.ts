@@ -1,6 +1,7 @@
 // Practice's stand-in for the server: the app's calls (`rpc` and `call` in lib/supabase.ts) land here, keyed by
 // name, so the real screens work end to end without a network. Each handler does what the real server would,
 // including moving to the next stage when the real game would move on.
+import { threshold } from '../lib/dj.svelte'
 import { game, packsOf, savedName, type Song } from '../lib/game.svelte'
 import { goStage, practice, practiceCode, spotifyKey } from '../lib/practice.svelte'
 import { isSource } from '../lib/source-ids'
@@ -20,13 +21,13 @@ const handlers: Fake = {
     }
     if (action === 'disconnect') sessionStorage.removeItem(spotifyKey)
     const connected = sessionStorage.getItem(spotifyKey) !== null
-    return { connected, name: connected ? savedName() || me.name : null }
+    return { connected, name: connected ? savedName() || me.name : null, canDj: connected }
   },
-  // next you add songs, as the host; the choice on Home picks what the experiment is about
-  'create-room': ({ source }) => ((practice.source = isSource(source) ? source : 'spotify'), goStage('submit'), { room: { code: practiceCode } }),
+  // next you add songs, as the host (or open the session); the choice on Home picks what the experiment is about
+  'create-room': ({ source, mode }) => ((practice.source = isSource(source) ? source : 'spotify'), goStage(mode === 'dj' ? 'dj' : 'submit'), { room: { code: practiceCode } }),
 
   // invite (a crew member's journey)
-  room_preview: () => [{ theme: theme(), phase: 'submit', source: practice.source }],
+  room_preview: () => [{ theme: theme(), phase: 'submit', source: practice.source, mode: 'game' }],
   join_room: () => (goStage('submit'), { code: practiceCode }),
 
   // adding songs
@@ -48,6 +49,17 @@ const handlers: Fake = {
   remove_song: ({ p_song }) => {
     game.songs = game.songs.filter((s) => s.id !== p_song)
     game.counts = { ...game.counts, [me.id]: Math.max(0, (game.counts[me.id] ?? 1) - 1) }
+  },
+
+  // the live session: the screen has already shown your track or vote, so these only answer like the server would
+  'dj-suggest': () => ({ track: {} }),
+  'dj-veto': ({ track_id, undo }) => ({ status: !undo && game.dj.vetoes.filter((v) => v.track_id === track_id).length >= threshold() ? 'vetoed' : 'pending' }),
+  'dj-host': ({ action, track_id }) => {
+    const { tracks } = game.dj
+    if (action === 'remove') game.dj.tracks = tracks.map((t) => (t.id === track_id ? { ...t, status: 'vetoed' } : t))
+    if (action === 'top') game.dj.tracks = tracks.map((t) => (t.id === track_id ? { ...t, created_at: new Date(0).toISOString() } : t))
+    if (action === 'pause' || action === 'resume') game.room!.suggestions_paused = action === 'pause'
+    return { ok: true }
   },
 
   // the host moves the game along

@@ -26,6 +26,7 @@ Deno.serve(async (req) => {
       spotify_id: me.id,
       display_name: me.display_name ?? me.id,
       refresh_token: tokens.refresh_token,
+      scopes: tokens.scope ?? '',
       updated_at: new Date().toISOString(),
     })
     if (error) throw error

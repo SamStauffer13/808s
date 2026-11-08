@@ -22,7 +22,8 @@ Deno.serve(
       return {}
     }
 
-    const { data } = await db.from('spotify_accounts').select('display_name').eq('user_id', user.id).maybeSingle()
-    return { connected: !!data, name: data?.display_name ?? null }
+    const { data } = await db.from('spotify_accounts').select('display_name, scopes').eq('user_id', user.id).maybeSingle()
+    // canDj: the stored login was made with the playback scopes. An older login was not, so that host connects again.
+    return { connected: !!data, name: data?.display_name ?? null, canDj: !!data?.scopes?.includes('user-modify-playback-state') }
   }),
 )

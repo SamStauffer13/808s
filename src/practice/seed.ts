@@ -2,7 +2,7 @@
 import { game, savedName, type Room } from '../lib/game.svelte'
 import { practice, practiceCode, type Stage } from '../lib/practice.svelte'
 import { stampFor, stamps, statsOf } from '../lib/stamps'
-import { guessesBy, me, order, players, playlist, sets, setSongs, songId, theme } from './data'
+import { guessesBy, items, me, order, players, playlist, sets, setSongs, songId, theme } from './data'
 
 const room = (phase: Room['phase']): Room => ({
   id: 'practice',
@@ -14,7 +14,47 @@ const room = (phase: Room['phase']): Room => ({
   phase,
   playlist_id: playlist()?.split('/').pop() ?? null,
   playlist_url: playlist(),
+  mode: 'game',
 })
+
+// A party in full swing: one song playing, three waiting (the second already has a vote against it), and you
+// have not added anything yet. Tracks come from items the practice search skips, so searching still finds new ones.
+const party = (): Partial<typeof game> => {
+  const [a, b, c, playing] = [items()[1], items()[2], items()[3], items()[4]]
+  const waiting = [
+    { item: a, by: 2, ago: 30 },
+    { item: b, by: 3, ago: 20 },
+    { item: c, by: 4, ago: 10 },
+  ]
+  return {
+    room: {
+      ...room('submit'),
+      mode: 'dj',
+      theme: 'rooftop friday',
+      now_item_id: playing.id,
+      now_title: playing.title,
+      now_artist: playing.artist,
+      now_art: playing.art,
+      now_duration_ms: 200_000,
+      now_ends_at: new Date(Date.now() + 140_000).toISOString(),
+      host_offline: false,
+      suggestions_paused: false,
+    },
+    dj: {
+      tracks: waiting.map(({ item, by, ago }) => ({
+        id: `t-${item.id}`,
+        item_id: item.id,
+        title: item.title,
+        artist: item.artist,
+        art: item.art,
+        suggested_by: players[by].id,
+        status: 'pending' as const,
+        created_at: new Date(Date.now() - ago * 1000).toISOString(),
+      })),
+      vetoes: [{ track_id: `t-${b.id}`, player_id: players[5].id }],
+    },
+  }
+}
 
 // read when a stage opens, not at load: the experiment can turn out to be about videos after this file has loaded
 const songsInOrder = () => order.flatMap(setSongs)
@@ -36,6 +76,7 @@ const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
   // everyone else has guessed everything; you have matched 3 of your 5, and only the right two crew members are left to pick
   guess: () => ({ room: room('guess'), songs: songsInOrder(), owners: ownersOf([0]), guesses: guessesBy(0, [3, 5, 2]) }),
   results: finished,
+  dj: party,
 }
 
 // Returns what a room cleanup returns, or null when this browser is not in the room yet (the invite stage),
@@ -43,7 +84,7 @@ const seeds: Partial<Record<Stage, () => Partial<typeof game>>> = {
 export function seed(stage: Stage) {
   players[0].name = savedName() || me.name // you are whoever you said you were
   game.userId = me.user_id
-  Object.assign(game, { room: null, players: [], songs: [], owners: {}, guesses: [], counts: {} })
+  Object.assign(game, { room: null, players: [], songs: [], owners: {}, guesses: [], counts: {}, dj: { tracks: [], vetoes: [] } })
   if (stage === 'invite') return null
   Object.assign(game, { players }, seeds[stage]?.())
   return () => {}

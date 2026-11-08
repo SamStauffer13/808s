@@ -13,7 +13,7 @@
   import { sourceOf, wordsOf } from './lib/sources'
   import { call } from './lib/supabase'
 
-  let { n, taken, onpick }: { n: number; taken: (t: Item) => boolean; onpick: (t: Item, scope: string) => void } = $props()
+  let { n, taken, onpick, label }: { n: number; taken: (t: Item) => boolean; onpick: (t: Item, scope: string) => void; label?: string } = $props()
 
   const scope = $derived(`slot-${n}`)
   // a Spotify room and a YouTube room never share results
@@ -52,7 +52,7 @@
 
 <div class="stack">
   <label class="field">
-    <span class="label">{wordsOf().NOUN} {n}</span>
+    <span class="label">{label ?? `${wordsOf().NOUN} ${n}`}</span>
     <input bind:value={q} oninput={() => clearNotice(scope)} autocomplete="off" placeholder={sourceOf().placeholder} />
   </label>
   <Notice {scope} />

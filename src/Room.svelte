@@ -5,6 +5,7 @@
   import Guess from './Guess.svelte'
   import Reveal from './Reveal.svelte'
   import Results from './Results.svelte'
+  import Dj from './Dj.svelte'
   import { game, open, packsOf } from './lib/game.svelte'
   import { practice } from './lib/practice.svelte'
   import { playTransition } from './lib/transition.svelte'
@@ -59,6 +60,10 @@
 
 {#if stranger}
   <Invite {code} onjoin={load} />
+{:else if game.room?.mode === 'dj'}
+  <Admin {code} />
+  <p class="muted center">SESSION {code}</p>
+  <Dj />
 {:else if game.room}
   <Admin {code} />
   <p class="muted center">EXPERIMENT {code}</p>
