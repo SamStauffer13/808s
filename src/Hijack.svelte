@@ -20,7 +20,7 @@
   // a clock for the countdowns and the progress bar
   let now = $state(Date.now())
   $effect(() => {
-    const timer = setInterval(() => (now = Date.now()), 250)
+    const timer = setInterval(() => (now = Date.now()), 1000)
     return () => clearInterval(timer)
   })
 

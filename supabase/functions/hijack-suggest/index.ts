@@ -1,6 +1,6 @@
 import { admin, currentUser, handler, HttpError, uuid } from '../_shared/http.ts'
 import { touch } from '../_shared/hijack.ts'
-import { providerFor } from '../_shared/providers.ts'
+import { isTrackId, lookupTrack } from '../_shared/spotify.ts'
 import { COOLDOWN_MINUTES, REPEAT_MINUTES } from '../_shared/rules.ts'
 
 // A guest pushes a track. Who they are and what the room allows are checked before Spotify is asked anything, and the
@@ -18,9 +18,9 @@ Deno.serve(
     const room = seat.rooms as unknown as { mode: string; block_explicit: boolean }
     if (room.mode !== 'hijack') throw new HttpError(400, 'this is not a hijack')
 
-    const provider = providerFor('spotify')
-    if (!provider.isId(String(body.item_id ?? ''))) throw new HttpError(400, 'bad id')
-    const item = await provider.lookup(body.item_id)
+    if (!isTrackId(String(body.item_id ?? ''))) throw new HttpError(400, 'bad id')
+    const touched = touch(db, room_id) // alongside the Spotify lookup, not after it
+    const item = await lookupTrack(body.item_id)
     if (!item) throw new HttpError(400, 'could not find that one')
     if (item.blocked) throw new HttpError(400, "don't be boring/basic")
     if (room.block_explicit && item.explicit) throw new HttpError(400, "that one is explicit and this hijack doesn't allow those")
@@ -36,7 +36,7 @@ Deno.serve(
       p_cooldown_minutes: COOLDOWN_MINUTES,
     })
     if (error) throw new HttpError(400, error.message)
-    await touch(db, room_id)
+    await touched
     return { track: data }
   }),
 )

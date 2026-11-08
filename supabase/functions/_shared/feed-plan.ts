@@ -12,6 +12,7 @@ export type Plan = {
   newSong: boolean // a different song started since the last look
   stale: string[] // queued tracks that never started: done
   queue: Track | null // the pending track to put in Spotify's queue now
+  nextMs: number // when to look again: soon around a song change, later in the middle of a song
   remaining?: number
 }
 
@@ -25,8 +26,10 @@ type Input = {
   tracks: Track[]
 }
 
+const clamp = (n: number, low: number, high: number) => Math.min(high, Math.max(low, n))
+
 export function planFeed({ now, lockMs, staleMs, driftMs, room, playback, tracks }: Input): Plan {
-  const none = { writeRoom: false, newSong: false, stale: [], queue: null }
+  const none = { writeRoom: false, newSong: false, stale: [], queue: null, nextMs: 15_000 }
   if (!playback?.item) return { ...none, state: 'offline', now: null, writeRoom: !room.host_offline }
 
   const { item, progress_ms, is_playing } = playback
@@ -36,7 +39,9 @@ export function planFeed({ now, lockMs, staleMs, driftMs, room, playback, tracks
   const moved = (was === null) !== (endsAt === null) || (was !== null && Math.abs(was - endsAt!) > driftMs)
   const newSong = room.now_item_id !== item.id
   const current = { item_id: item.id, ends_at: endsAt, duration_ms: item.duration_ms }
-  const base = { ...none, now: current, newSong, writeRoom: newSong || room.host_offline || moved, remaining }
+  // Look closely when something is about to happen (the lock-in, then the song change) and rarely when nothing is.
+  const nextMs = !is_playing ? 5000 : remaining <= lockMs ? clamp(remaining + 700, 1000, 5000) : clamp(remaining - lockMs - 1000, 1000, 10_000)
+  const base = { ...none, now: current, newSong, writeRoom: newSong || room.host_offline || moved, remaining, nextMs }
 
   const stale = tracks.filter((t) => t.status === 'queued' && t.item_id !== item.id && t.queued_at && now - Date.parse(t.queued_at) > staleMs).map((t) => t.id)
   if (!is_playing || remaining > lockMs) return { ...base, stale, state: 'waiting' }

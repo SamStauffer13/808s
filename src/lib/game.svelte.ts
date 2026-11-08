@@ -173,6 +173,26 @@ export function refreshSoon() {
   refreshTimer = setTimeout(refresh, 150)
 }
 
+// A hijack takes each change as it arrives (the realtime payload already holds the row) instead of reloading the whole
+// room, so a vote or a new track reaches every phone without a single query. Realtime does not deliver deletes for
+// filtered tables (a vote taken back, a guest purged), so a slow reload catches those.
+type Change = { eventType: 'INSERT' | 'UPDATE' | 'DELETE'; new: Record<string, any> }
+const liveStatus = ['pending', 'queued', 'playing']
+
+function applyChange(table: string, { eventType, new: row }: Change) {
+  if (eventType === 'DELETE') return
+  if (table === 'rooms') game.room = { ...game.room!, ...row } as Room
+  else if (table === 'players') game.players = [...game.players.filter((p) => p.id !== row.id), { id: row.id, user_id: row.user_id, name: row.name }]
+  else if (table === 'hijack_tracks') {
+    // the real row replaces the guess shown while the server was thinking (same track)
+    const rest = game.hijack.tracks.filter((t) => t.id !== row.id && !(t.id.startsWith('temp-') && t.item_id === row.item_id))
+    const track: HijackTrack = { id: row.id, item_id: row.item_id, title: row.title, artist: row.artist, art: row.art, suggested_by: row.suggested_by, status: row.status, sort_at: row.sort_at }
+    game.hijack.tracks = liveStatus.includes(row.status) ? [...rest, track] : rest
+  } else if (table === 'hijack_vetoes' && !game.hijack.vetoes.some((v) => v.track_id === row.track_id && v.player_id === row.player_id)) {
+    game.hijack.vetoes = [...game.hijack.vetoes, { track_id: row.track_id, player_id: row.player_id }]
+  }
+}
+
 // Loads the room, keeps it fresh through realtime, and returns a cleanup. Null if this
 // browser is not a member of the room.
 export async function open(code: string) {
@@ -187,9 +207,10 @@ export async function open(code: string) {
   const channel = supabase.channel(`room-${data.id}`)
   for (const table of data.mode === 'hijack' ? ['rooms', 'players', 'hijack_tracks', 'hijack_vetoes'] : ['rooms', 'players', 'songs', 'guesses']) {
     const filter = table === 'rooms' ? `id=eq.${data.id}` : `room_id=eq.${data.id}`
-    channel.on('postgres_changes', { event: '*', schema: 'public', table, filter }, refreshSoon)
+    channel.on('postgres_changes', { event: '*', schema: 'public', table, filter }, data.mode === 'hijack' ? (change) => applyChange(table, change as unknown as Change) : refreshSoon)
   }
   channel.subscribe()
+  const slowReload = data.mode === 'hijack' ? setInterval(() => document.hidden || refreshSoon(), 30_000) : undefined
 
   // a phone suspends a backgrounded tab and its realtime connection, so catch up as soon as the player is back
   const comeBack = () => document.hidden || refreshSoon()
@@ -199,6 +220,7 @@ export async function open(code: string) {
     document.removeEventListener('visibilitychange', comeBack)
     window.removeEventListener('pageshow', comeBack)
     clearTimeout(refreshTimer)
+    clearInterval(slowReload)
     supabase.removeChannel(channel)
   }
 }

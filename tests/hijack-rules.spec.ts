@@ -57,6 +57,16 @@ test.describe('feeder plan', () => {
     expect(plan(song('a', 5000), []).state).toBe('empty')
   })
 
+  test('when to look again: rarely mid song, closely around the lock-in and the song change', () => {
+    expect(plan(song('a', 120_000)).nextMs).toBe(10_000) // far from anything happening
+    expect(plan(song('a', 30_000)).nextMs).toBe(4000) // wakes just before the lock-in
+    expect(plan(song('a', 20_000)).nextMs).toBe(5000) // inside the lock-in window
+    expect(plan(song('a', 2000)).nextMs).toBe(2700) // lands just after the song changes
+    expect(plan(song('a', 100)).nextMs).toBe(1000) // never faster than a second
+    expect(plan(song('a', 5000, false)).nextMs).toBe(5000) // paused: nothing is about to happen
+    expect(plan(null).nextMs).toBe(15_000) // nothing playing
+  })
+
   test('a new song, and how much the end time may wobble before it is written', () => {
     expect(plan(song('a', 100_000), [], { now_item_id: 'b' }).newSong).toBe(true)
     const ends = new Date(NOW + 100_000).toISOString()

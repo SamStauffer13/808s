@@ -1,7 +1,7 @@
 // The hijack: the line of tracks, who voted what, and what guests and the host can do. The server decides everything;
 // the screen updates first (optimistically) so a tap feels instant, then settles on what the server says.
 import { LOCK_MS, threshold as votesNeeded } from '../../supabase/functions/_shared/rules'
-import { attempt, game, me, once, refreshSoon, type HijackTrack, type Item } from './game.svelte'
+import { attempt, game, me, type HijackTrack, type Item } from './game.svelte'
 import { call } from './supabase'
 
 export { LOCK_MS } // how long before a song ends the next one is locked in (the same number the server uses)
@@ -31,7 +31,6 @@ export async function suggest(item: Item, scope: string) {
   game.hijack.tracks = [...game.hijack.tracks, temp]
   const ok = await attempt(scope, () => call('hijack-suggest', { room_id: game.room!.id, item_id: item.id }))
   if (!ok) game.hijack.tracks = game.hijack.tracks.filter((t) => t.id !== temp.id)
-  refreshSoon()
   return !!ok
 }
 
@@ -48,24 +47,33 @@ export async function vote(track: HijackTrack, undo = false) {
   const reply = await attempt('hijack', () => call<{ status: string }>('hijack-veto', { room_id: game.room!.id, track_id: track.id, undo }))
   if (!reply) setVote(undo)
   else if (reply.status === 'vetoed') game.hijack.tracks = game.hijack.tracks.map((t) => (t.id === track.id ? { ...t, status: 'vetoed' } : t))
-  refreshSoon()
 }
 
 export const host = (action: 'remove' | 'top' | 'pause' | 'resume' | 'block_explicit' | 'allow_explicit', track?: HijackTrack) =>
-  attempt('hijack-host', async () => (await call('hijack-host', { room_id: game.room!.id, action, track_id: track?.id }), refreshSoon()))
+  attempt('hijack-host', () => call('hijack-host', { room_id: game.room!.id, action, track_id: track?.id }))
 
 // The host's open app keeps the music fed too (the server timer does the same), so neither is the only thing between
-// the room and silence. `reconnect` is told when the host's Spotify login needs making again. Returns a cleanup.
+// the room and silence. Each answer says when the next look is worth making (soon around a song change, later in the
+// middle of one). `reconnect` is told when the host's Spotify login needs making again. Returns a cleanup.
 export function keepFed(code: string, reconnect: (needed: boolean) => void) {
-  const tick = once(async () => {
-    try {
-      await call('hijack-feeder', { code })
-      reconnect(false)
-    } catch (e) {
-      if (/reconnect/i.test((e as Error).message)) reconnect(true)
+  let timer: ReturnType<typeof setTimeout>
+  let stopped = false
+  const look = async () => {
+    let wait = 5000
+    if (!document.hidden) {
+      try {
+        const { nextMs } = await call<{ nextMs?: number }>('hijack-feeder', { code })
+        reconnect(false)
+        wait = nextMs ?? wait
+      } catch (e) {
+        if (/reconnect/i.test((e as Error).message)) reconnect(true)
+      }
     }
-  })
-  tick()
-  const timer = setInterval(() => document.hidden || tick(), 5000)
-  return () => clearInterval(timer)
+    if (!stopped) timer = setTimeout(look, wait)
+  }
+  look()
+  return () => {
+    stopped = true
+    clearTimeout(timer)
+  }
 }

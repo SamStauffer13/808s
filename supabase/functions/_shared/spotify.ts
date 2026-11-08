@@ -29,19 +29,32 @@ export async function appToken() {
 }
 
 // A host's own account: their refresh token is kept by spotify-callback, and Spotify may rotate it.
-// The access token is kept while the worker stays warm, so the host's 5-second polling is not a token request every
-// time. A new login changes the stored row (its updated_at), so an older token is never reused after reconnecting.
-const userCache = new Map<string, { stamp: string; token: string; expires: number }>()
+// The access token is kept while the worker stays warm, and the stored login is only re-read from the database once a
+// minute (not on every look at the player), so a new login (a reconnect, new permissions) is picked up within a minute.
+const userCache = new Map<string, { stamp: string; token: string; scopes: string; expires: number; checked: number }>()
+const RECHECK_MS = 60_000
+
+// a login from before this permission existed has to be made again
+function allowed(scopes: string, needs?: string) {
+  if (needs && !scopes.includes(needs)) throw new HttpError(400, 'reconnect Spotify so the hijack can control your music')
+}
 
 export async function userToken(userId: string, needs?: string) {
+  const known = userCache.get(userId)
+  if (known && Date.now() - known.checked < RECHECK_MS && known.expires > Date.now() + 30_000) {
+    allowed(known.scopes, needs)
+    return known.token
+  }
+
   const db = admin()
   const { data } = await db.from('spotify_accounts').select('refresh_token, updated_at, scopes').eq('user_id', userId).maybeSingle()
   if (!data) throw new HttpError(400, 'connect your Spotify account first')
-  // a login from before this permission existed has to be made again
-  if (needs && !data.scopes.includes(needs)) throw new HttpError(400, 'reconnect Spotify so the hijack can control your music')
+  allowed(data.scopes, needs)
   const stamp = `${data.refresh_token}|${data.updated_at}`
-  const hit = userCache.get(userId)
-  if (hit?.stamp === stamp && hit.expires > Date.now() + 30_000) return hit.token
+  if (known?.stamp === stamp && known.expires > Date.now() + 30_000) {
+    userCache.set(userId, { ...known, scopes: data.scopes, checked: Date.now() })
+    return known.token
+  }
   let j
   try {
     j = await tokenRequest({ grant_type: 'refresh_token', refresh_token: data.refresh_token })
@@ -53,10 +66,9 @@ export async function userToken(userId: string, needs?: string) {
     rotated = { refresh_token: j.refresh_token, updated_at: new Date().toISOString() }
     await db.from('spotify_accounts').update(rotated).eq('user_id', userId)
   }
-  userCache.set(userId, { stamp: `${rotated.refresh_token}|${rotated.updated_at}`, token: j.access_token, expires: Date.now() + j.expires_in * 1000 })
+  userCache.set(userId, { stamp: `${rotated.refresh_token}|${rotated.updated_at}`, token: j.access_token, scopes: data.scopes, expires: Date.now() + j.expires_in * 1000, checked: Date.now() })
   return j.access_token as string
 }
-
 // Spotify bounces the browser back to our callback with this state, so it is signed: the callback learns
 // who started the login, and nobody can attach their Spotify account to someone else.
 async function sign(payload: string) {
@@ -160,10 +172,17 @@ export async function genresOf(token: string, rawTrack: any): Promise<string[]> 
 
 // The Spotify source. Search and lookups use our app token (players never log in); the host's own account is only
 // for making the playlist.
+export const isTrackId = (id: string) => /^[A-Za-z0-9]{22}$/.test(id)
+
+// One track by id, with no genres (they are a second Spotify call, and only the guessing game uses them)
+export async function lookupTrack(id: string) {
+  return toItem(await spotify(await appToken(), `/tracks/${id}`))
+}
+
 export const spotifyProvider: Provider = {
   needsHostAccount: true,
   maxPicks: 5,
-  isId: (id) => /^[A-Za-z0-9]{22}$/.test(id),
+  isId: isTrackId,
 
   async search(q) {
     const data = await spotify(await appToken(), `/search?type=track&limit=6&q=${encodeURIComponent(q)}`)
