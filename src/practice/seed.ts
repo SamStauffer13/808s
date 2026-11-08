@@ -2,6 +2,7 @@
 import { game, savedName, type Room } from '../lib/game.svelte'
 import { practice, practiceCode, type Stage } from '../lib/practice.svelte'
 import { stampFor, stamps, statsOf } from '../lib/stamps'
+import { firstSong, HIJACK_NAME, startDemo } from './demo'
 import { guessesBy, items, me, order, players, playlist, sets, setSongs, songId, theme } from './data'
 
 const room = (phase: Room['phase']): Room => ({
@@ -17,8 +18,9 @@ const room = (phase: Room['phase']): Room => ({
   mode: 'game',
 })
 
-// A party in full swing: one song playing, three waiting (the second already has a vote against it), and you
-// have not added anything yet. Tracks come from items the practice search skips, so searching still finds new ones.
+// A hijack in full swing: one song playing (not for long), three waiting (the second already has a rollback against it),
+// and you have not pushed anything yet. Tracks come from items the practice search skips, so searching still finds new ones.
+// Once it opens, the demo (demo.ts) carries on by itself.
 const party = (): Partial<typeof game> => {
   const [a, b, c, playing] = [items()[1], items()[2], items()[3], items()[4]]
   const waiting = [
@@ -30,13 +32,13 @@ const party = (): Partial<typeof game> => {
     room: {
       ...room('submit'),
       mode: 'hijack',
-      theme: 'rooftop friday',
+      theme: HIJACK_NAME,
       now_item_id: playing.id,
       now_title: playing.title,
       now_artist: playing.artist,
       now_art: playing.art,
-      now_duration_ms: 200_000,
-      now_ends_at: new Date(Date.now() + 140_000).toISOString(),
+      now_duration_ms: firstSong().durationMs,
+      now_ends_at: new Date(Date.now() + firstSong().leftMs).toISOString(),
       host_offline: false,
       suggestions_paused: false,
     },
@@ -85,9 +87,9 @@ export function seed(stage: Stage) {
   players[0].name = savedName() || me.name // you are whoever you said you were
   game.userId = me.user_id
   Object.assign(game, { room: null, players: [], songs: [], owners: {}, guesses: [], counts: {}, hijack: { tracks: [], vetoes: [] } })
-  if (stage === 'invite') return null
+  if (stage === 'invite' || stage === 'join') return null
   Object.assign(game, { players }, seeds[stage]?.())
-  return () => {}
+  return stage === 'hijack' ? startDemo() : () => {}
 }
 
 // Every stamp in lib/stamps.ts must be earned by some set of the finished game, so practice always shows it.

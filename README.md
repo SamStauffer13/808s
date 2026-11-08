@@ -125,7 +125,10 @@ they can't stand. Whoever's Spotify account is playing is the host (Premium, and
   npx supabase db query --remote "select vault.create_secret('https://yvvcqkuszlcxyvpimavs.supabase.co', 'project_url'); select vault.create_secret('<the same string>', 'hijack_tick_key');"
   ```
   It only looks after hijacks used in the last 2 hours. Without it a hijack still works, but only while the host's app is open.
-- **Practice:** `/?practice=hijack` (host) and `/?practice=guest-hijack` (guest) are the session screen; `/?practice=setup` is the setup page.
+- **Practice:** `/?practice=setup` (host: open one, then it leads into the live screen), `/?practice=guest-join` (a guest arriving from the link) and `/?practice=hijack` / `guest-hijack`
+  (the live screen). The live screen plays out by itself (`src/practice/demo.ts`): the song counts down, the front track locks in and then plays, and crew members push and roll tracks back.
+  It decides what happens with the real `planFeed()`, so it cannot drift from the feeder. The walkthrough waits for the lock-in to happen. Tests set `sessionStorage['808s-demo-speed']`
+  to run it fast (or `0.01` to freeze the crew).
 - **Cleanup:** a hijack is kept until 90 days without use; its finished tracks go after a day and its guests (not the host) after three days, so their names are free again.
 - **Public-link limits:** one waiting track per guest, 3 rollbacks out per guest, a rolled-back track can't be pushed again for 30 minutes, 200 guests, 3 hijacks per host. Anonymous sign-in
   is free, so a few throwaway accounts can still gang up on a track: the host's CODE FREEZE and remove button are the backstop.

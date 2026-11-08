@@ -16,6 +16,7 @@ export const titles: Record<Stage, string> = {
   results: 'RESULTS',
   hijack: 'THE HIJACK',
   setup: 'START A HIJACK',
+  join: 'JOIN THE HIJACK',
 }
 
 // Each prompt is one friendly sentence in order (First, Next, Then, Finally) saying what its thing is for. A text box is
@@ -53,16 +54,26 @@ const results: Prompt[] = [
   { target: 'a.btn', text: 'NOW START A REAL EXPERIMENT OF YOUR OWN.', final: true },
 ]
 
-// the hijack, as seen by anyone attached: what is live, what is in staging, then push a track of your own
-const hijack: Prompt[] = [
+// The hijack plays out by itself in practice (see demo.ts), and these follow it: what is live, what is in staging, a
+// rollback, then the lock-in as it happens, then pushing a track of your own. Anyone attached sees all of it; the host
+// has a few extra controls in the middle.
+const hijackIntro: Prompt[] = [
   { target: '.hijack-now', text: "THIS IS WHAT'S LIVE ON THE SPEAKER RIGHT NOW.", look: true },
-  { target: '.hijack-list', text: 'THESE TRACKS ARE IN STAGING. THE FIRST ONE LOCKS INTO SPOTIFY ABOUT 25 SECONDS BEFORE THE CURRENT SONG ENDS.', look: true },
-  { target: '.hijack-vote', text: "NOT FEELING A TRACK? ROLL IT BACK. ENOUGH ROLLBACKS FROM THE CREW AND IT'S GONE, SO TAP TO CAST YOURS." },
+  { target: '.hijack-list', text: 'THESE TRACKS ARE IN STAGING, IN THE ORDER THEY WILL PLAY. EVERYONE ATTACHED CAN SEE THEM AND CHANGE THEM.', look: true },
+]
+const hijackBody: Prompt[] = [
+  { target: '.hijack-vote:not(.on)', text: "NOT FEELING A TRACK? ROLL IT BACK. ENOUGH ROLLBACKS FROM THE CREW AND IT'S GONE, SO TAP TO CAST YOURS.", skip: () => !document.querySelector('.hijack-vote:not(.on)') },
+  { target: '.hijack-status', text: 'KEEP AN EYE ON THIS LINE. A FEW SECONDS BEFORE THE SONG ENDS, THE FRONT TRACK LOCKS IN. WAIT FOR IT.', when: '.hijack-row.lock' },
+  { target: '.hijack-row.lock', text: "LOCKED IN. ROLLBACKS ARE CLOSED FOR IT NOW AND IT PLAYS WHEN THE SONG ENDS (IN THE REAL THING, SPOTIFY HAS IT QUEUED).", look: true, skip: () => !document.querySelector('.hijack-row.lock') },
   { target: '.dock .btn', text: 'NOW PUSH A TRACK OF YOUR OWN.' },
   { target: 'label.field input', text: 'SEARCH FOR THE SONG YOU WANT.', when: '.hijack-add button.row:not([disabled])' },
   { target: '.hijack-add button.row:not([disabled])', text: 'TAP IT TO PUSH IT TO STAGING. THE CREW CAN ROLL IT BACK, SO PICK WELL.', final: true },
 ]
-
+// what the host can do that nobody else can: promote a track to the front, remove one, or call a code freeze
+const hijackHost: Prompt[] = [
+  { target: '.hijack-row .round', text: 'AS HOST YOU CAN PROMOTE A TRACK TO THE FRONT (↑) OR REMOVE IT (×) NO MATTER WHAT THE CREW SAYS.', look: true },
+  { target: '.hijack-pause', text: 'CALL A CODE FREEZE IF STAGING GETS OUT OF HAND.', look: true },
+]
 // starting a hijack: name it, pick the fixed link, connect Spotify, then put the link on tags and a poster
 const setup: Prompt[] = [
   { target: 'form label.field:nth-of-type(2) input', text: 'FIRST, NAME YOUR HIJACK. THIS IS WHAT YOUR GUESTS SEE.', required: true },
@@ -77,7 +88,8 @@ const setup: Prompt[] = [
   { target: '.setup-link', text: 'THIS IS YOUR LINK. IT NEVER CHANGES, SO WRITE IT TO TAGS ONCE.', look: true },
   { target: '.setup-qr', text: 'ANY PHONE CAMERA CAN SCAN THIS CODE, FOR GUESTS WITHOUT NFC.', look: true },
   { target: '.setup-nfc', text: 'WRITE THE LINK TO AN NFC TAG HERE. ONCE WRITTEN, ANYONE WHO TAPS THEIR PHONE ON IT JOINS.', look: true },
-  { target: '.setup-poster', text: 'PRINT A POSTER WITH THE CODE FOR THE BAR.', look: true, final: true },
+  { target: '.setup-poster', text: 'PRINT A POSTER WITH THE CODE FOR THE BAR.', look: true },
+  { target: '.setup-enter', text: 'NOW OPEN THE HIJACK SCREEN TO SEE IT IN ACTION.', skipTo: 'hijack' },
 ]
 
 export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
@@ -112,7 +124,7 @@ export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
     guess,
     results,
     // the host also keeps the speaker fed: they can push a track to the front, remove one, or freeze new ones
-    hijack: [...hijack.slice(0, 2), { target: '.hijack-row .round', text: 'AS HOST YOU CAN PROMOTE A TRACK TO THE FRONT (↑) OR REMOVE IT (×) NO MATTER WHAT THE CREW SAYS.', look: true }, { target: '.hijack-pause', text: 'CALL A CODE FREEZE IF STAGING GETS OUT OF HAND.', look: true }, ...hijack.slice(2)],
+    hijack: [...hijackIntro, ...hijackHost, ...hijackBody],
     setup,
   },
   guest: {
@@ -129,6 +141,13 @@ export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
     ],
     guess,
     results,
-    hijack: hijack,
+    hijack: [...hijackIntro, ...hijackBody],
+    // a guest arriving from the link, a tag or the QR code: the page they land on, then they are in
+    join: [
+      { target: '.panel.framed', text: "THIS IS THE HIJACK YOU'VE BEEN INVITED TO. YOU GOT HERE FROM A LINK, AN NFC TAG OR A QR CODE.", look: true },
+      { target: '.panel.stack', text: 'HERE IS HOW IT WORKS. NO SPOTIFY ACCOUNT NEEDED, JUST THIS PAGE.', look: true },
+      { target: 'form input', text: 'FIRST, ENTER YOUR NAME SO THE CREW KNOWS WHO PUSHED WHAT.' },
+      { target: 'form .btn', text: "NEXT, JOIN THE HIJACK. YOU'LL LAND ON THE LIVE SCREEN." },
+    ],
   },
 }

@@ -5,6 +5,7 @@
   import { attempt, notify, once, saveName, savedName, type Room } from './lib/game.svelte'
   import { isLinkName } from '../supabase/functions/_shared/rules'
   import { valid } from './lib/form'
+  import { goStage, practice } from './lib/practice.svelte'
   import * as account from './lib/spotify-account'
   import { call } from './lib/supabase'
 
@@ -77,6 +78,9 @@
   )
 
   const submit = (e: SubmitEvent) => (valid(e) ? (needsLogin ? connect() : open()) : (tried = true))
+
+  // practice ignores the address, so it moves to the next stage instead
+  const enter = () => (practice.on ? goStage('hijack') : (location.hash = `/${room!.code}`))
 
   const copy = async () => {
     await navigator.clipboard.writeText(link)
@@ -163,7 +167,7 @@
   </button>
 
   <button class="btn ghost plain setup-poster" onclick={() => window.print()}>PRINT A POSTER</button>
-  <a class="btn" href={`#/${room.code}`}>OPEN THE HIJACK SCREEN</a>
+  <button class="btn setup-enter" onclick={enter}>OPEN THE HIJACK SCREEN</button>
 
   <div class="poster">
     <h1>{room.theme}</h1>

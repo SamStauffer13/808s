@@ -16,6 +16,7 @@ const stages = [
   ['host', 'hijack', '/?practice=hijack'],
   ['guest', 'hijack', '/?practice=guest-hijack'],
   ['host', 'setup', '/?practice=setup'],
+  ['guest', 'join', '/?practice=guest-join'],
 ] as const
 
 async function open(page: Page, url: string) {
@@ -42,8 +43,49 @@ for (const [role, stage, url] of stages) {
 }
 
 // the hijack (hijack mode). The wizard's overlay sits on top of the screen, so these click the elements directly.
+// The practice hijack plays out by itself (src/practice/demo.ts). These tests freeze it so the crew does not change the
+// line mid-test, except the ones about the demo itself, which run it fast.
+const demoSpeed = (page: Page, speed: number) => page.addInitScript((s) => sessionStorage.setItem('808s-demo-speed', String(s)), speed)
+
 test.describe('hijack', () => {
   test.use({ viewport: { width: 390, height: 844 } }) // an iPhone
+  test.beforeEach(({ page }) => demoSpeed(page, 0.01))
+
+  test('the demo locks in the front track and then plays it', async ({ page }) => {
+    await demoSpeed(page, 15)
+    await open(page, '/?practice=guest-hijack')
+    const locked = page.locator('.hijack-row.lock')
+    await expect(locked).toBeVisible({ timeout: 10_000 }) // rollbacks close for it
+    const title = (await locked.locator('.grow-text div').first().textContent())!
+    await expect(page.locator('.hijack-title')).toContainText(title, { timeout: 10_000 }) // and when the song ends it plays
+    await expect(locked).toHaveCount(0)
+  })
+
+  test('the crew rolls a track back on its own', async ({ page }) => {
+    await demoSpeed(page, 15)
+    await open(page, '/?practice=guest-hijack')
+    await expect(page.locator('.hijack-row:has-text("Baby, You Would")')).toHaveCount(1) // it starts with one rollback against it
+    await expect(page.locator('.hijack-row:has-text("Baby, You Would")')).toHaveCount(0, { timeout: 10_000 })
+  })
+
+  test('a guest joins from the link and lands on the live screen', async ({ page }) => {
+    await open(page, '/?practice=guest-join')
+    await expect(page.getByText('THE SPEAKER IS UP FOR HIJACK')).toBeVisible()
+    await page.locator('form input').fill('Sam')
+    await page.locator('form .btn').dispatchEvent('click')
+    await expect(page.locator('.hijack-now')).toBeVisible()
+  })
+
+  test('the host setup leads into the live screen', async ({ page }) => {
+    await open(page, '/?practice=setup')
+    await page.locator('form label.field:nth-of-type(1) input').fill('Sam')
+    await page.locator('form label.field:nth-of-type(2) input').fill('Bar Vino')
+    await page.locator('form label.field:nth-of-type(3) input').fill('vino')
+    await page.locator('form .btn').dispatchEvent('click') // connects Spotify first
+    await page.locator('form .btn:has-text("START")').dispatchEvent('click')
+    await page.locator('.setup-enter').dispatchEvent('click')
+    await expect(page.locator('.hijack-now')).toBeVisible()
+  })
 
   test('guest: enough rollbacks drop a track from staging', async ({ page }) => {
     await open(page, '/?practice=guest-hijack')

@@ -5,12 +5,13 @@ import { isSource, type Source } from './source-ids'
 import { playTransition } from './transition.svelte'
 
 export type Role = 'host' | 'guest'
-// 'hijack' is the hijack screen, and 'setup' is where one is opened (a host who picks HIJACK on Home). Neither is on
-// the way through the guessing game: /?practice=hijack, =guest-hijack or =setup open them directly.
-export type Stage = 'home' | 'invite' | 'submit' | 'guess' | 'results' | 'hijack' | 'setup'
+// 'hijack' is the hijack screen, 'setup' is where a host opens one (picking HIJACK on Home) and 'join' is where a guest
+// arrives from its link. None is on the way through the guessing game: /?practice=hijack, =guest-hijack, =setup and
+// =guest-join open them directly.
+export type Stage = 'home' | 'invite' | 'submit' | 'guess' | 'results' | 'hijack' | 'setup' | 'join'
 export const journeys: Record<Role, readonly Stage[]> = {
   host: ['home', 'submit', 'guess', 'results', 'hijack', 'setup'],
-  guest: ['invite', 'submit', 'guess', 'results', 'hijack'],
+  guest: ['invite', 'submit', 'guess', 'results', 'hijack', 'join'],
 }
 
 // "logged in to Spotify" lasts for the tab, so the round trip through Spotify looks like the real one

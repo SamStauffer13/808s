@@ -6,6 +6,7 @@ import { game, packsOf, savedName, type Song } from '../lib/game.svelte'
 import { goStage, practice, practiceCode, spotifyKey } from '../lib/practice.svelte'
 import { isSource } from '../lib/source-ids'
 import { fake, type Fake } from '../lib/supabase'
+import { HIJACK_NAME } from './demo'
 import { chosen, items, me, players, searchable, theme } from './data'
 
 // have you matched every set that is not yours?
@@ -27,8 +28,8 @@ const handlers: Fake = {
   'create-room': ({ source }) => ((practice.source = isSource(source) ? source : 'spotify'), goStage('submit'), { room: { code: practiceCode } }),
 
   // invite (a crew member's journey)
-  room_preview: () => [{ theme: theme(), phase: 'submit', source: practice.source, mode: 'game' }],
-  join_room: () => (goStage('submit'), { code: practiceCode }),
+  room_preview: () => [{ theme: practice.stage === 'join' ? HIJACK_NAME : theme(), phase: 'submit', source: practice.source, mode: practice.stage === 'join' ? 'hijack' : 'game' }],
+  join_room: () => (goStage(practice.stage === 'join' ? 'hijack' : 'submit'), { code: practiceCode }),
 
   // adding songs
   'media-search': ({ q }) => {
