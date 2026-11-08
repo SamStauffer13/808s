@@ -52,5 +52,5 @@ export async function vote(track: DjTrack, undo = false) {
   refreshSoon()
 }
 
-export const host = (action: 'remove' | 'top' | 'pause' | 'resume', track?: DjTrack) =>
+export const host = (action: 'remove' | 'top' | 'pause' | 'resume' | 'block_explicit' | 'allow_explicit', track?: DjTrack) =>
   attempt('dj-host', async () => (await call('dj-host', { room_id: game.room!.id, action, track_id: track?.id }), refreshSoon()))

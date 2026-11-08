@@ -15,6 +15,7 @@ export const titles: Record<Stage, string> = {
   guess: 'GUESS',
   results: 'RESULTS',
   dj: 'THE LIVE SESSION',
+  bar: 'STANDING JUKEBOX',
 }
 
 // Each prompt is one friendly sentence in order (First, Next, Then, Finally) saying what its thing is for. A text box is
@@ -62,6 +63,23 @@ const session: Prompt[] = [
   { target: '.dj-add button.row:not([disabled])', text: 'TAP IT TO PUSH IT TO STAGING. THE CREW CAN ROLL IT BACK, SO PICK WELL.', final: true },
 ]
 
+// a bar's standing jukebox: name it, pick the fixed link, connect Spotify, then put the link on tags and a poster
+const bar: Prompt[] = [
+  { target: 'form label.field:nth-of-type(2) input', text: 'FIRST, NAME YOUR JUKEBOX. THIS IS WHAT YOUR GUESTS SEE.', required: true },
+  { target: 'form label.field:nth-of-type(3) input', text: 'NEXT, PICK THE LINK NAME. IT NEVER CHANGES, SO IT CAN GO ON NFC TAGS AND POSTERS.', required: true },
+  {
+    target: 'form .btn',
+    text: () =>
+      document.querySelector('form .btn')?.textContent?.includes('CONNECT')
+        ? 'FINALLY, CONNECT THE SPOTIFY ACCOUNT THAT PLAYS YOUR SPEAKERS.'
+        : 'ONCE SPOTIFY IS CONNECTED, OPEN THE JUKEBOX.',
+  },
+  { target: '.bar-link', text: 'THIS IS YOUR LINK. IT NEVER CHANGES, SO WRITE IT TO TAGS ONCE.', look: true },
+  { target: '.bar-qr', text: 'ANY PHONE CAMERA CAN SCAN THIS CODE, FOR GUESTS WITHOUT NFC.', look: true },
+  { target: '.bar-nfc', text: 'WRITE THE LINK TO AN NFC TAG HERE. ONCE WRITTEN, ANYONE WHO TAPS THEIR PHONE ON IT JOINS.', look: true },
+  { target: '.bar-poster', text: 'PRINT A POSTER WITH THE CODE FOR THE BAR.', look: true, final: true },
+]
+
 export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
   host: {
     home: [
@@ -95,6 +113,7 @@ export const tour: Record<Role, Partial<Record<Stage, Prompt[]>>> = {
     results,
     // the host also keeps the speaker fed: they can push a track to the front, remove one, or freeze new ones
     dj: [...session.slice(0, 2), { target: '.dj-row .round', text: 'AS HOST YOU CAN PROMOTE A TRACK TO THE FRONT (↑) OR REMOVE IT (×) NO MATTER WHAT THE CREW SAYS.', look: true }, { target: '.dj-pause', text: 'CALL A CODE FREEZE IF STAGING GETS OUT OF HAND.', look: true }, ...session.slice(2)],
+    bar,
   },
   guest: {
     invite: [

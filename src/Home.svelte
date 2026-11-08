@@ -1,7 +1,7 @@
 <script lang="ts">
   import Admin from './Admin.svelte'
   import Notice from './Notice.svelte'
-  import { attempt, notify, once, saveName, savedName } from './lib/game.svelte'
+  import { attempt, once, saveName, savedName } from './lib/game.svelte'
   import { practice, startPractice } from './lib/practice.svelte'
   import { valid } from './lib/form'
   import { isSource } from './lib/source-ids'
@@ -77,13 +77,7 @@
   let spotifyName = $state<string | null>(null)
   let canDj = $state(false) // the host's Spotify login can steer their player (a login from before DJ parties cannot)
 
-  const result = new URLSearchParams(location.search).get('spotify')
-  if (result) {
-    const why = new URLSearchParams(location.search).get('why')
-    history.replaceState(null, '', location.pathname + location.hash)
-    if (result === 'notallowed') notify('create', 'This Spotify account is not on the guest list yet. Ask the host of 808s to add your Spotify email, then try again.')
-    else if (result !== 'connected') notify('create', (result === 'denied' ? 'Spotify login was cancelled' : 'Spotify login failed, try again') + (why ? ` (${why})` : ''))
-  }
+  account.reportLogin('create')
   attempt('create', async () => {
     const s = await account.status()
     spotifyName = s.name
@@ -141,6 +135,7 @@
       <span class="what"><b>LIVE SESSION</b><span>One speaker, everyone pushes the next track</span></span>
       <em aria-hidden="true">→</em>
     </button>
+    <button type="button" class="link center" onclick={() => (location.hash = '/setup')}>RUNNING A BAR? SET UP A STANDING JUKEBOX →</button>
   </div>
 {:else}
   <button type="button" class="row chosen" data-source={source} onclick={() => ((source = null), (mode = 'game'))}>

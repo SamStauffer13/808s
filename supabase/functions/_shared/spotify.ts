@@ -140,6 +140,7 @@ export function toItem(t: any): Item {
     artist,
     art: (images[1] ?? images[0])?.url ?? null,
     blocked: tooEasyToTrace.test(artist),
+    explicit: !!t.explicit,
   }
 }
 

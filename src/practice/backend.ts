@@ -51,6 +51,9 @@ const handlers: Fake = {
     game.counts = { ...game.counts, [me.id]: Math.max(0, (game.counts[me.id] ?? 1) - 1) }
   },
 
+  // a bar's standing jukebox: opening it gives the fixed link
+  'bar-session': ({ slug, title }) => ({ room: { id: 'practice', code: String(slug).toUpperCase(), theme: title, block_explicit: false } }),
+
   // the live session: the screen has already shown your track or vote, so these only answer like the server would
   'dj-suggest': () => ({ track: {} }),
   'dj-veto': ({ track_id, undo }) => ({ status: !undo && game.dj.vetoes.filter((v) => v.track_id === track_id).length >= threshold() ? 'vetoed' : 'pending' }),

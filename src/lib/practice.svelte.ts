@@ -7,9 +7,10 @@ import { playTransition } from './transition.svelte'
 export type Role = 'host' | 'guest'
 // 'dj' is the DJ party screen. It is not on the way through the guessing game: a host who picks DJ PARTY on Home lands
 // there, and /?practice=dj or =guest-dj opens it directly.
-export type Stage = 'home' | 'invite' | 'submit' | 'guess' | 'results' | 'dj'
+// 'bar' is a bar's standing jukebox setup page (/?practice=bar), also outside the guessing game's way through.
+export type Stage = 'home' | 'invite' | 'submit' | 'guess' | 'results' | 'dj' | 'bar'
 export const journeys: Record<Role, readonly Stage[]> = {
-  host: ['home', 'submit', 'guess', 'results', 'dj'],
+  host: ['home', 'submit', 'guess', 'results', 'dj', 'bar'],
   guest: ['invite', 'submit', 'guess', 'results', 'dj'],
 }
 

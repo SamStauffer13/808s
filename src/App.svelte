@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Bar from './Bar.svelte'
   import Boot from './Boot.svelte'
   import Home from './Home.svelte'
   import Rain from './Rain.svelte'
@@ -29,10 +30,12 @@
   <!-- the real screens on a fake game; the address is ignored while practicing -->
   {#await installPractice() then}
     {#key practice.stage}
-      {#if practice.stage === 'home'}<Home />{:else}<Room code={practiceCode} />{/if}
+      {#if practice.stage === 'home'}<Home />{:else if practice.stage === 'bar'}<Bar />{:else}<Room code={practiceCode} />{/if}
     {/key}
     {#await import('./practice/Wizard.svelte') then wizard}<wizard.default />{/await}
   {/await}
+{:else if code === 'SETUP'}
+  <Bar />
 {:else if code}
   {#key code}<Room {code} />{/key}
 {:else}

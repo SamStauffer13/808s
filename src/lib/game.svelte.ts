@@ -22,6 +22,8 @@ export type Room = {
   now_duration_ms?: number | null
   host_offline?: boolean // DJ party: nothing is playing, or the host's Spotify has no active device
   suggestions_paused?: boolean
+  standing?: boolean // a jukebox with a fixed link (a bar's), kept for good
+  block_explicit?: boolean // explicit tracks are not allowed in
 }
 export type DjTrack = { id: string; item_id: string; title: string; artist: string; art: string | null; suggested_by: string | null; status: 'pending' | 'queued' | 'playing' | 'played' | 'vetoed'; created_at: string }
 export type DjVeto = { track_id: string; player_id: string }

@@ -417,3 +417,7 @@ enabled = true
 [functions.spotify-callback]
 # Spotify redirects the browser here, so there is no Supabase session to check
 verify_jwt = false
+
+[functions.dj-tick]
+# the database's scheduler calls this, so there is no Supabase session; it checks the DJ_TICK_KEY secret itself
+verify_jwt = false
