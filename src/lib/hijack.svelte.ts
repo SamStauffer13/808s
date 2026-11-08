@@ -1,7 +1,7 @@
 // The hijack: the line of tracks, who voted what, and what guests and the host can do. The server decides everything;
 // the screen updates first (optimistically) so a tap feels instant, then settles on what the server says.
 import { LOCK_MS, threshold as votesNeeded } from '../../supabase/functions/_shared/rules'
-import { attempt, game, me, type HijackTrack, type Item } from './game.svelte'
+import { attempt, game, me, notify, type HijackTrack, type Item } from './game.svelte'
 import { practice } from './practice.svelte'
 import { call } from './supabase'
 
@@ -62,6 +62,13 @@ export async function vote(track: HijackTrack, undo = false) {
   const reply = await attempt('hijack', () => call<{ status: string }>('hijack-veto', { room_id: game.room!.id, track_id: track.id, undo }))
   if (!reply) setVote(undo)
   else if (reply.status === 'vetoed') game.hijack.tracks = game.hijack.tracks.map((t) => (t.id === track.id ? { ...t, status: 'vetoed' } : t))
+}
+
+// A guest votes to skip the song on. It is skipped once as many have voted as it takes to roll a track back.
+export async function voteSkip() {
+  const reply = await attempt('hijack', () => call<{ skipped: boolean; votes: number; needed: number }>('hijack-skip', { room_id: game.room!.id }))
+  if (!reply) return
+  if (!reply.skipped) notify('hijack', `${reply.votes} OF ${reply.needed} VOTES TO SKIP`)
 }
 
 type HostAction = 'remove' | 'top' | 'pause' | 'resume' | 'block_explicit' | 'allow_explicit' | 'skip' | 'play_now'

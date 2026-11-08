@@ -58,6 +58,10 @@ const handlers: Fake = {
   // the hijack: the screen has already shown your track or vote, so these only answer like the server would
   'hijack-suggest': () => ({ track: {} }),
   'hijack-veto': ({ track_id, undo }) => ({ status: !undo && game.hijack.vetoes.filter((v) => v.track_id === track_id).length >= threshold() ? 'vetoed' : 'pending' }),
+  'hijack-skip': () => {
+    control.skip?.()
+    return { skipped: true, votes: threshold(), needed: threshold() }
+  },
   'hijack-host': ({ action, track_id }) => {
     const { tracks } = game.hijack
     if (action === 'remove') game.hijack.tracks = tracks.map((t) => (t.id === track_id ? { ...t, status: 'vetoed' } : t))

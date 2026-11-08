@@ -7,7 +7,7 @@
   import Notice from './Notice.svelte'
   import Share from './Share.svelte'
   import Slot from './Slot.svelte'
-  import { aboutMinutes, etaMs, host, iVoted, keepFed, line, LOCK_MS, locked, myWaiting, positionOf, suggest, taken, threshold, upNext, vote, votesOn } from './lib/hijack.svelte'
+  import { aboutMinutes, etaMs, host, iVoted, keepFed, line, LOCK_MS, locked, myWaiting, positionOf, suggest, taken, threshold, upNext, vote, voteSkip, votesOn } from './lib/hijack.svelte'
   import { attempt, game, isHost, me, nameOf, notify, type HijackRecent, type HijackTrack, type Item } from './lib/game.svelte'
   import { reduced } from './lib/motion'
   import { practice } from './lib/practice.svelte'
@@ -124,6 +124,7 @@
   <div class="hijack-bar" class:hot={ending}><i style:transform={`scaleX(${progress})`}></i></div>
   {#if remaining !== null}<div class="hijack-time muted">{clock(remaining)} LEFT</div>{/if}
   {#if isHost() && room.now_title}<button class="pill hijack-skip" onclick={twice('skip', () => host('skip'))}>{armed === 'skip' ? 'TAP AGAIN TO SKIP' : 'SKIP SONG'}</button>{/if}
+  {#if !isHost() && room.now_title}<button class="pill hijack-skip" onclick={voteSkip}>SKIP SONG</button>{/if}
 </div>
 
 {#if status}<p class="center good hijack-status">{status}</p>{/if}
