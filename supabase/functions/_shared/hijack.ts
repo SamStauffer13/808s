@@ -106,16 +106,25 @@ export async function steer(db: Db, userId: string, roomId: string, action: 'ski
   if (!room || room.host_user_id !== userId) throw new HttpError(403, 'only the host can do that')
   const token = await userToken(room.host_user_id, 'user-modify-playback-state')
 
-  if (action === 'play_now') {
-    const { data: locked } = await db.from('hijack_tracks').select('id').eq('room_id', roomId).eq('status', 'queued').limit(1)
-    if (locked?.length) throw new HttpError(400, 'a track is already locked in, so it plays first')
-    const { data: claimed } = await db.from('hijack_tracks').update({ status: 'queued', queued_at: new Date().toISOString() }).eq('id', trackId ?? '').eq('room_id', roomId).eq('status', 'pending').select('item_id')
-    if (!claimed?.length) throw new HttpError(400, 'that track is not waiting any more')
-    try {
-      await queueTrack(token, claimed[0].item_id)
-    } catch (e) {
-      await db.from('hijack_tracks').update({ status: 'pending', queued_at: null }).eq('id', trackId!)
-      throw problemWith(e)
+  // The queue cannot be edited, so a cut-in only lands on a guest's track if it is in the queue first: a track already
+  // locked in is what plays next; otherwise the one asked for (play now) or the first in line (skip) is locked in now.
+  const { data: locked } = await db.from('hijack_tracks').select('id').eq('room_id', roomId).eq('status', 'queued').limit(1)
+  if (action === 'play_now' && locked?.length) throw new HttpError(400, 'a track is already locked in, so it plays first')
+  let pick = trackId
+  if (action === 'skip' && !locked?.length) {
+    const { data: first } = await db.from('hijack_tracks').select('id').eq('room_id', roomId).eq('status', 'pending').order('sort_at').limit(1)
+    pick = first?.[0]?.id
+  }
+  if (pick && !locked?.length) {
+    const { data: claimed } = await db.from('hijack_tracks').update({ status: 'queued', queued_at: new Date().toISOString() }).eq('id', pick).eq('room_id', roomId).eq('status', 'pending').select('item_id')
+    if (!claimed?.length && action === 'play_now') throw new HttpError(400, 'that track is not waiting any more')
+    if (claimed?.length) {
+      try {
+        await queueTrack(token, claimed[0].item_id)
+      } catch (e) {
+        await db.from('hijack_tracks').update({ status: 'pending', queued_at: null }).eq('id', pick)
+        throw problemWith(e)
+      }
     }
   }
   try {
